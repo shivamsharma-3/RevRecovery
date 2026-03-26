@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 import { AuthProvider } from '@/components/AuthProvider';
 import { CookieConsent } from '@/components/CookieConsent';
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
@@ -29,6 +30,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           {children}
           <CookieConsent />
           <SpeedInsights />
+          <Analytics />
         </AuthProvider>
       </body>
     </html>
