@@ -5,9 +5,11 @@ import { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { useRouter, usePathname } from 'next/navigation';
 import { Activity, Menu, X } from 'lucide-react';
+import { LoginModal } from './LoginModal';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -16,6 +18,14 @@ export function Navbar() {
     logout();
     router.push('/');
     setIsMenuOpen(false);
+  };
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setIsLoginModalOpen(true);
+      setIsMenuOpen(false);
+    }
   };
 
   return (
@@ -77,8 +87,8 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/dashboard" className="hidden md:block text-slate-600 hover:text-teal-700 font-semibold px-3 py-1.5 transition-colors text-sm">Login</Link>
-                  <Link href="/dashboard" className="hidden md:block bg-gradient-to-b from-primary to-primary-container text-on-primary px-4 py-1.5 rounded-lg font-semibold shadow-sm hover:opacity-90 transition-all text-xs md:text-sm">
+                  <Link href="/dashboard" onClick={handleLoginClick} className="hidden md:block text-slate-600 hover:text-teal-700 font-semibold px-3 py-1.5 transition-colors text-sm">Login</Link>
+                  <Link href="/dashboard" onClick={handleLoginClick} className="hidden md:block bg-gradient-to-b from-primary to-primary-container text-on-primary px-4 py-1.5 rounded-lg font-semibold shadow-sm hover:opacity-90 transition-all text-xs md:text-sm">
                     Get Started
                   </Link>
                 </>
@@ -141,10 +151,15 @@ export function Navbar() {
               <button onClick={handleSignOut} className="block text-base font-semibold text-slate-600 hover:text-teal-700 text-left w-full">Sign Out</button>
             </>
           ) : (
-            <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="block text-base font-semibold text-teal-700">Login / Sign Up</Link>
+            <Link href="/dashboard" onClick={handleLoginClick} className="block text-base font-semibold text-teal-700">Login / Sign Up</Link>
           )}
         </div>
       )}
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </nav>
   );
 }

@@ -9,7 +9,7 @@ import {
   Activity, Megaphone, CreditCard, Settings, Bell, Search, 
   LayoutDashboard, PlusCircle, Zap, ShieldCheck, Users, 
   TrendingUp, MessageSquare, ChevronRight, MoreHorizontal,
-  Plus
+  Plus, X
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -47,19 +47,28 @@ export default function DashboardHome() {
     messagesSent: 4291
   });
 
+  const [selectedInsight, setSelectedInsight] = useState<{title: string, desc: string, time: string, color: string} | null>(null);
+
   useEffect(() => {
     // Simulate data loading if hasData is true
     if (hasData) {
       const interval = setInterval(() => {
         setMetrics(prev => ({
           ...prev,
-          totalRecovered: +(prev.totalRecovered + Math.random() * 0.01).toFixed(2),
-          recoveryRate: +(prev.recoveryRate + (Math.random() - 0.5) * 0.2).toFixed(1)
+          totalRecovered: +(prev.totalRecovered + Math.random() * 50).toFixed(2),
+          messagesSent: prev.messagesSent + (Math.random() > 0.7 ? 1 : 0),
+          recoveryRate: +(prev.recoveryRate + (Math.random() - 0.5) * 0.05).toFixed(1)
         }));
-      }, 5000);
+      }, 3000);
       return () => clearInterval(interval);
     }
   }, [hasData]);
+
+  const insights = [
+    { title: 'High-Yield Opportunity', desc: 'AI detected 14 unfiled claims in Cardiology ($24k total). Our engine suggests immediate batch processing to avoid timely filing denials.', time: '2 mins ago', color: 'bg-teal-500' },
+    { title: 'Audit Warning', desc: 'Minor compliance gap in Patient Form 4-B detected across 8 records. Automated correction is available for review.', time: '45 mins ago', color: 'bg-amber-500' },
+    { title: 'Recovery Milestone', desc: 'Monthly recovery goal reached 4 days ahead of schedule. Current yield is 12% higher than last quarter.', time: '2 hours ago', color: 'bg-blue-500' },
+  ];
 
   if (!isMounted) {
     return (
@@ -309,15 +318,16 @@ export default function DashboardHome() {
                 <MoreHorizontal className="w-5 h-5 text-slate-300 cursor-pointer" />
               </div>
               <div className="space-y-8">
-                {[
-                  { title: 'High-Yield Opportunity', desc: 'AI detected 14 unfiled claims in Cardiology ($24k total).', time: '2 mins ago', color: 'bg-teal-500' },
-                  { title: 'Audit Warning', desc: 'Minor compliance gap in Patient Form 4-B.', time: '45 mins ago', color: 'bg-amber-500' },
-                ].map((insight, i) => (
-                  <div key={i} className="flex gap-4">
+                {insights.map((insight, i) => (
+                  <div 
+                    key={i} 
+                    className="flex gap-4 cursor-pointer group hover:bg-slate-50 p-2 -m-2 rounded-xl transition-colors"
+                    onClick={() => setSelectedInsight(insight)}
+                  >
                     <div className={`w-1.5 h-1.5 rounded-full ${insight.color} mt-2 shrink-0`} />
                     <div>
-                      <p className="text-sm font-bold text-slate-900">{insight.title}</p>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{insight.desc}</p>
+                      <p className="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">{insight.title}</p>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{insight.desc}</p>
                       <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-wider">{insight.time}</p>
                     </div>
                   </div>
@@ -326,6 +336,47 @@ export default function DashboardHome() {
             </div>
           </div>
         </div>
+
+        {/* Insight Detail Modal */}
+        {selectedInsight && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="relative w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-teal-500/10">
+              <button 
+                onClick={() => setSelectedInsight(null)}
+                className="absolute top-8 right-8 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className={`w-12 h-12 ${selectedInsight.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg`}>
+                <Zap className="w-6 h-6" />
+              </div>
+              
+              <h3 className="text-2xl font-bold mb-4 text-slate-900 font-headline">{selectedInsight.title}</h3>
+              <p className="text-slate-600 font-medium leading-relaxed mb-8">{selectedInsight.desc}</p>
+              
+              <div className="flex items-center gap-3 mb-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <Bell className="w-3 h-3" />
+                <span>Detected {selectedInsight.time}</span>
+              </div>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setSelectedInsight(null)}
+                  className="flex-1 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 active:scale-[0.98]"
+                >
+                  Take Action
+                </button>
+                <button 
+                  onClick={() => setSelectedInsight(null)}
+                  className="px-6 py-3.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-[0.98]"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

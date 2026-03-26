@@ -1,11 +1,26 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle, ArrowRight } from 'lucide-react';
+import { LoginModal } from '@/components/LoginModal';
+import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle, ArrowRight, X, Loader2 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function LandingPage() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const { user } = useAuth();
+
+  const handleStartTrial = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setIsLoginModalOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Navbar />
@@ -28,17 +43,18 @@ export default function LandingPage() {
                 The clinical-grade engine that predicts patient no-shows and recovers overdue payments with sovereign precision. Built for modern dental and medical practices.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/dashboard">
+                <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-6 py-3 rounded-xl font-bold transition-all hover:bg-teal-700 shadow-lg shadow-teal-500/20 active:scale-[0.98]">
                     Start Free Trial
                   </button>
                 </Link>
-                <Link href="/solutions">
-                  <button className="bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors">
-                    <PlayCircle className="w-4 h-4 text-teal-600" />
-                    Watch 1-min demo
-                  </button>
-                </Link>
+                <button 
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors"
+                >
+                  <PlayCircle className="w-4 h-4 text-teal-600" />
+                  Watch 1-min demo
+                </button>
               </div>
             </div>
             <div className="flex-1 relative w-full mt-8 md:mt-0 flex justify-center md:justify-end">
@@ -73,17 +89,17 @@ export default function LandingPage() {
         <section className="py-6 bg-white border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-6">
             <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Trusted by leading clinics and surgical centers</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5">
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 cursor-default">
+              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
                 PURE DENTAL
               </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5">
+              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
                 CLINIC PLUS
               </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5">
+              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
                 ORTHO VEDA
               </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5">
+              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
                 REGEN HUB
               </div>
             </div>
@@ -99,7 +115,7 @@ export default function LandingPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[220px] md:auto-rows-[260px]">
               {/* Large Feature Card */}
-              <div className="md:col-span-2 md:row-span-2 bg-white rounded-2xl p-6 md:p-8 flex flex-col justify-between overflow-hidden relative shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+              <div className="md:col-span-2 md:row-span-2 bg-white rounded-2xl p-6 md:p-8 flex flex-col justify-between overflow-hidden relative shadow-sm border border-slate-100 hover:shadow-md transition-shadow group cursor-pointer">
                 <div className="absolute inset-0 z-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
                   <Image 
                     src="https://picsum.photos/seed/patient-care/800/800" 
@@ -111,10 +127,10 @@ export default function LandingPage() {
                   />
                 </div>
                 <div className="relative z-10">
-                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4">
+                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Brain className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-extrabold tracking-tight mb-3 font-headline text-slate-900">Predictive No-Show Engine</h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold tracking-tight mb-3 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Predictive No-Show Engine</h3>
                   <p className="text-xs md:text-sm text-slate-600 max-w-md leading-relaxed font-medium">Our neural networks analyze 40+ behavioral variables to flag "high-risk" appointments 48 hours in advance.</p>
                 </div>
                 <div className="relative z-10 mt-6 flex gap-2">
@@ -126,7 +142,7 @@ export default function LandingPage() {
                 </div>
               </div>
               {/* Small Feature Card 1 */}
-              <div className="bg-teal-600 text-white rounded-2xl p-6 flex flex-col justify-between shadow-lg shadow-teal-600/10 relative overflow-hidden group">
+              <div className="bg-teal-600 text-white rounded-2xl p-6 flex flex-col justify-between shadow-lg shadow-teal-600/10 relative overflow-hidden group cursor-pointer">
                 <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Image 
                     src="https://picsum.photos/seed/digital-payment/400/400" 
@@ -138,7 +154,7 @@ export default function LandingPage() {
                   />
                 </div>
                 <div className="relative z-10">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-4">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline">Automated Arrears</h3>
@@ -146,7 +162,7 @@ export default function LandingPage() {
                 </div>
               </div>
               {/* Small Feature Card 2 */}
-              <div className="bg-white rounded-2xl p-6 flex flex-col justify-between border border-slate-100 shadow-sm relative overflow-hidden group">
+              <div className="bg-white rounded-2xl p-6 flex flex-col justify-between border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer">
                 <div className="absolute inset-0 z-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
                   <Image 
                     src="https://picsum.photos/seed/data-security/400/400" 
@@ -158,31 +174,31 @@ export default function LandingPage() {
                   />
                 </div>
                 <div className="relative z-10">
-                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4">
+                  <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Shield className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline text-slate-900">Sovereign Security</h3>
+                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Sovereign Security</h3>
                   <p className="text-[11px] text-slate-500 leading-relaxed font-medium">SOC2 Type II &amp; HIPAA compliant. Your clinical data never leaves the encrypted vault.</p>
                 </div>
               </div>
               {/* Wide Card */}
-              <div className="md:col-span-3 bg-slate-100 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              <div className="md:col-span-3 bg-slate-100 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 md:gap-12 hover:bg-slate-200/50 transition-colors cursor-default">
                 <div className="flex-1">
                   <h3 className="text-lg font-extrabold tracking-tight mb-3 font-headline">Deep Integration Ecosystem</h3>
                   <p className="text-xs text-slate-600 mb-4 font-medium leading-relaxed">Connects seamlessly with Open Dental, Dentrix, and Eaglesoft in under 15 minutes. No manual data entry required.</p>
                   <div className="flex flex-wrap gap-2">
-                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider">DENTRIX GOLD</div>
-                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider">OPEN DENTAL</div>
-                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider">EAGLESOFT</div>
+                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider hover:text-teal-600 transition-colors cursor-pointer">DENTRIX GOLD</div>
+                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider hover:text-teal-600 transition-colors cursor-pointer">OPEN DENTAL</div>
+                    <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider hover:text-teal-600 transition-colors cursor-pointer">EAGLESOFT</div>
                   </div>
                 </div>
                 <div className="flex-1 flex justify-end w-full md:w-auto">
                   <div className="grid grid-cols-2 gap-3 w-full max-w-[280px]">
-                    <div className="bg-white p-3 rounded-xl shadow-sm text-center">
+                    <div className="bg-white p-3 rounded-xl shadow-sm text-center transform hover:scale-105 transition-transform cursor-default">
                       <div className="text-xl font-extrabold text-teal-600 tracking-tighter font-headline">15m</div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Setup Time</div>
                     </div>
-                    <div className="bg-white p-3 rounded-xl shadow-sm text-center">
+                    <div className="bg-white p-3 rounded-xl shadow-sm text-center transform hover:scale-105 transition-transform cursor-default">
                       <div className="text-xl font-extrabold text-teal-600 tracking-tighter font-headline">0</div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Code Required</div>
                     </div>
@@ -199,21 +215,21 @@ export default function LandingPage() {
             <div>
               <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter mb-6 leading-tight font-headline">Your practice is leaking revenue. We fix the plumbing.</h2>
               <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0" />
+                <li className="flex gap-3 group">
+                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-medium">Recover $2k - $8k per month in uncollected insurance claims.</span>
                 </li>
-                <li className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0" />
+                <li className="flex gap-3 group">
+                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-medium">Reduce no-shows by 25% using behavioral nudges.</span>
                 </li>
-                <li className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0" />
+                <li className="flex gap-3 group">
+                  <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-medium">Clean up historical arrears going back 12 months.</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10">
+            <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors cursor-default">
               <div className="mb-6">
                 <div className="text-[9px] font-bold text-teal-400 uppercase tracking-[0.2em] mb-1.5">Live Recovery Pulse</div>
                 <div className="flex items-center gap-2.5">
@@ -222,15 +238,15 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs">
+                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors">
                   <span className="opacity-70 font-medium">Uncollected Balance Detected</span>
                   <span className="font-bold text-teal-400">+$420.00</span>
                 </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs">
+                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors">
                   <span className="opacity-70 font-medium">Patient "John D." No-Show Risk</span>
                   <span className="font-bold text-teal-400">78% (High)</span>
                 </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs">
+                <div className="flex justify-between items-center py-2.5 border-b border-white/5 text-xs hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors">
                   <span className="opacity-70 font-medium">Auto-Recovery Sequence Sent</span>
                   <span className="font-bold text-teal-400">Confirmed</span>
                 </div>
@@ -246,7 +262,7 @@ export default function LandingPage() {
               <h2 className="text-2xl md:text-4xl font-extrabold tracking-tighter mb-4 font-headline text-slate-900">Ready to reclaim your <span className="text-teal-600">full potential?</span></h2>
               <p className="text-sm md:text-base text-slate-600 mb-8 max-w-2xl mx-auto font-medium">Join over 450 clinics using RevRecover AI to stabilize their cash flow. 14-day free trial. No credit card required.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/auth">
+                <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-700 hover:scale-[1.02] active:scale-[0.98]">
                     Start Free Trial
                   </button>
@@ -265,6 +281,50 @@ export default function LandingPage() {
         </section>
       </main>
       <Footer />
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+
+      {/* Demo Modal */}
+      {isDemoModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-4xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 border border-white/10">
+            <button 
+              onClick={() => setIsDemoModalOpen(false)}
+              className="absolute top-6 right-6 z-10 p-2 bg-black/50 text-white/80 hover:text-white rounded-full backdrop-blur-md transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            
+            <div className="w-full h-full flex flex-col items-center justify-center text-white p-12 text-center">
+              <div className="w-20 h-20 bg-teal-600 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                <PlayCircle className="w-10 h-10" />
+              </div>
+              <h3 className="text-3xl font-bold mb-4 font-headline">RevRecover AI Demo</h3>
+              <p className="text-slate-400 max-w-md mb-8">Experience clinical-grade revenue recovery in action. Our AI engine is currently processing real-time data for this demonstration.</p>
+              
+              <div className="flex items-center gap-3 text-teal-400 font-bold text-sm bg-teal-400/10 px-6 py-3 rounded-full border border-teal-400/20">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>INITIALIZING SECURE STREAM...</span>
+              </div>
+            </div>
+
+            {/* Mock Video UI Overlay */}
+            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden mb-4">
+                <div className="h-full w-1/3 bg-teal-500" />
+              </div>
+              <div className="flex justify-between items-center text-[10px] font-bold text-white/60 uppercase tracking-widest">
+                <span>0:24 / 1:00</span>
+                <span>HD 1080P</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

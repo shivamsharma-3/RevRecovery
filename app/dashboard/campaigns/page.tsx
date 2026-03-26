@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Plus, Search, Filter, MoreHorizontal, ArrowRight, Bell, Info, Pause, Play, Trash2 } from 'lucide-react';
+import { ChevronRight, Plus, Search, Filter, MoreHorizontal, ArrowRight, Bell, Info, Pause, Play, Trash2, X, BarChart } from 'lucide-react';
 
 const INITIAL_CAMPAIGNS = [
   { id: 1, name: 'High-Complexity Denials', status: 'Running', rate: '54.2%', roi: '18.4x', volume: '$242,500' },
@@ -16,6 +16,9 @@ export default function CampaignList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
 
+  const [selectedCampaign, setSelectedCampaign] = useState<typeof INITIAL_CAMPAIGNS[0] | null>(null);
+  const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
+
   const filteredCampaigns = useMemo(() => {
     return campaigns.filter(c => {
       const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -24,7 +27,8 @@ export default function CampaignList() {
     });
   }, [campaigns, searchQuery, statusFilter]);
 
-  const toggleStatus = (id: number) => {
+  const toggleStatus = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
     setCampaigns(prev => prev.map(c => {
       if (c.id === id) {
         if (c.status === 'Running') return { ...c, status: 'Paused' as const };
@@ -34,9 +38,15 @@ export default function CampaignList() {
     }));
   };
 
-  const deleteCampaign = (id: number) => {
-    if (confirm('Are you sure you want to delete this campaign?')) {
-      setCampaigns(prev => prev.filter(c => c.id !== id));
+  const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setCampaignToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (campaignToDelete) {
+      setCampaigns(prev => prev.filter(c => c.id !== campaignToDelete));
+      setCampaignToDelete(null);
     }
   };
 
@@ -134,10 +144,14 @@ export default function CampaignList() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredCampaigns.map((campaign) => (
-                <tr key={campaign.id} className="group hover:bg-slate-50/50 transition-colors">
+                <tr 
+                  key={campaign.id} 
+                  className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  onClick={() => setSelectedCampaign(campaign)}
+                >
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-xs font-bold text-slate-900">{campaign.name}</span>
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors">{campaign.name}</span>
                       <span className="text-[10px] text-slate-400 mt-0.5">AI-Authored Appeals v2.4</span>
                     </div>
                   </td>
@@ -167,7 +181,7 @@ export default function CampaignList() {
                     <div className="flex items-center justify-end gap-2">
                       {campaign.status !== 'Completed' && (
                         <button 
-                          onClick={() => toggleStatus(campaign.id)}
+                          onClick={(e) => toggleStatus(e, campaign.id)}
                           className="p-1.5 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
                           title={campaign.status === 'Running' ? 'Pause' : 'Resume'}
                         >
@@ -175,7 +189,7 @@ export default function CampaignList() {
                         </button>
                       )}
                       <button 
-                        onClick={() => deleteCampaign(campaign.id)}
+                        onClick={(e) => handleDeleteClick(e, campaign.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
                         title="Delete"
                       >
@@ -206,6 +220,107 @@ export default function CampaignList() {
           </div>
         </div>
       </section>
+
+      {/* Campaign Detail Modal */}
+      {selectedCampaign && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-teal-500/10">
+            <button 
+              onClick={() => setSelectedCampaign(null)}
+              className="absolute top-8 right-8 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-start gap-6 mb-8">
+              <div className="p-4 bg-teal-50 rounded-2xl text-teal-600">
+                <BarChart className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 font-headline">{selectedCampaign.name}</h3>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                    selectedCampaign.status === 'Running' ? 'bg-green-50 text-green-700' : 
+                    selectedCampaign.status === 'Completed' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {selectedCampaign.status}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: #RC-{selectedCampaign.id}0024</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 mb-10">
+              <div className="p-5 bg-slate-50 rounded-2xl">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recovery Rate</p>
+                <p className="text-xl font-extrabold text-teal-600">{selectedCampaign.rate}</p>
+              </div>
+              <div className="p-5 bg-slate-50 rounded-2xl">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Volume</p>
+                <p className="text-xl font-extrabold text-slate-900">{selectedCampaign.volume}</p>
+              </div>
+              <div className="p-5 bg-slate-50 rounded-2xl">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ROI Multiplier</p>
+                <p className="text-xl font-extrabold text-teal-600">{selectedCampaign.roi}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-10">
+              <h4 className="text-sm font-bold text-slate-900">Protocol Insights</h4>
+              <div className="p-4 bg-teal-50/50 rounded-xl border border-teal-100">
+                <p className="text-xs text-teal-800 leading-relaxed">
+                  AI has identified <span className="font-bold">42 high-probability appeals</span> in this campaign. Current outreach strategy is focused on <span className="font-bold">Clinical Empathy</span> via WhatsApp and Secure Email.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setSelectedCampaign(null)}
+                className="flex-1 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 active:scale-[0.98]"
+              >
+                Download Full Report
+              </button>
+              <button 
+                onClick={() => setSelectedCampaign(null)}
+                className="px-8 py-3.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-[0.98]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {campaignToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-sm bg-white rounded-3xl p-8 text-center shadow-2xl animate-in zoom-in-95 duration-300 border border-red-500/10">
+            <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-600">
+              <Trash2 className="w-7 h-7" />
+            </div>
+            
+            <h3 className="text-xl font-bold mb-2 text-slate-900 font-headline">Delete Protocol?</h3>
+            <p className="text-slate-500 text-sm leading-relaxed mb-8">This action cannot be undone. All recovery data associated with this protocol will be permanently removed.</p>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 active:scale-[0.98]"
+              >
+                Delete
+              </button>
+              <button 
+                onClick={() => setCampaignToDelete(null)}
+                className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-[0.98]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Insights Footer Section (Editorial) */}
       <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
