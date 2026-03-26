@@ -48,8 +48,6 @@ export default function DashboardHome() {
   });
 
   useEffect(() => {
-    setIsMounted(true);
-    
     // Simulate data loading if hasData is true
     if (hasData) {
       const interval = setInterval(() => {

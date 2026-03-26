@@ -21,7 +21,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
     /* Redirect to auth commented out for testing
     if (!loading && !user) {
       router.push('/auth');
