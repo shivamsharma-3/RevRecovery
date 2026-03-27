@@ -13,6 +13,11 @@ export default function HelpCenterPage() {
     { q: "Can I customize the automated SMS messages?", a: "Absolutely. Go to Campaigns > Templates to modify the tone, timing, and content of all automated outreach." }
   ];
 
+  const filteredFaqs = faqs.filter(faq => 
+    faq.q.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    faq.a.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="text-center mb-12">
@@ -70,12 +75,18 @@ export default function HelpCenterPage() {
           <h2 className="text-xl font-bold text-slate-900 font-headline">Frequently Asked Questions</h2>
         </div>
         <div className="divide-y divide-slate-100">
-          {faqs.map((faq, i) => (
-            <div key={i} className="p-8 hover:bg-slate-50 transition-colors">
-              <h4 className="text-base font-bold text-slate-900 mb-2">{faq.q}</h4>
-              <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+          {filteredFaqs.length > 0 ? (
+            filteredFaqs.map((faq, i) => (
+              <div key={i} className="p-8 hover:bg-slate-50 transition-colors">
+                <h4 className="text-base font-bold text-slate-900 mb-2">{faq.q}</h4>
+                <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center text-slate-500">
+              No FAQs found matching "{searchQuery}".
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

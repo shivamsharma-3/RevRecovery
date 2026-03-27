@@ -91,6 +91,70 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+
+        {/* Team Section */}
+        <div className="mb-24">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Meet the Leadership Team</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">Experts in healthcare administration, artificial intelligence, and revenue cycle management.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {/* Team Member 1 */}
+            <div className="text-center group">
+              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
+                <Image 
+                  src="https://picsum.photos/seed/ceo/400/400" 
+                  alt="Dr. Sarah Chen, CEO" 
+                  fill 
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">Dr. Sarah Chen</h3>
+              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Founder & CEO</p>
+              <p className="text-slate-600 leading-relaxed text-sm">
+                Former Chief Medical Officer with 15 years of experience managing multi-specialty clinics. Sarah founded RevRecover AI after seeing firsthand the devastating impact of inefficient billing on patient care.
+              </p>
+            </div>
+
+            {/* Team Member 2 */}
+            <div className="text-center group">
+              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
+                <Image 
+                  src="https://picsum.photos/seed/cto/400/400" 
+                  alt="Marcus Johnson, CTO" 
+                  fill 
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">Marcus Johnson</h3>
+              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Co-Founder & CTO</p>
+              <p className="text-slate-600 leading-relaxed text-sm">
+                Ex-Google AI researcher specializing in natural language processing and predictive modeling. Marcus leads the development of our proprietary denial prediction algorithms.
+              </p>
+            </div>
+
+            {/* Team Member 3 */}
+            <div className="text-center group">
+              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
+                <Image 
+                  src="https://picsum.photos/seed/coo/400/400" 
+                  alt="Elena Rodriguez, COO" 
+                  fill 
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">Elena Rodriguez</h3>
+              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Chief Operating Officer</p>
+              <p className="text-slate-600 leading-relaxed text-sm">
+                Veteran Revenue Cycle Director who has managed billing operations for over 200 healthcare facilities. Elena ensures our AI solutions align perfectly with real-world clinical workflows.
+              </p>
+            </div>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>

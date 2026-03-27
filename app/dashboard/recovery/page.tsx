@@ -11,10 +11,11 @@ import {
 export default function RecoveryPage() {
   const [activeTab, setActiveTab] = useState('all');
 
-  const pipelines = [
+  const [pipelines, setPipelines] = useState([
     {
+      id: 'identified',
       title: 'Identified',
-      count: 12,
+      count: 3,
       amount: '$14,200',
       color: 'bg-slate-400',
       cards: [
@@ -24,8 +25,9 @@ export default function RecoveryPage() {
       ]
     },
     {
+      id: 'contacted',
       title: 'Contacted (AI)',
-      count: 8,
+      count: 2,
       amount: '$8,450',
       color: 'bg-blue-500',
       cards: [
@@ -34,8 +36,9 @@ export default function RecoveryPage() {
       ]
     },
     {
+      id: 'payment-plan',
       title: 'Payment Plan',
-      count: 24,
+      count: 3,
       amount: '$42,500',
       color: 'bg-amber-500',
       cards: [
@@ -45,8 +48,9 @@ export default function RecoveryPage() {
       ]
     },
     {
+      id: 'recovered',
       title: 'Recovered',
-      count: 142,
+      count: 2,
       amount: '$128,400',
       color: 'bg-teal-500',
       cards: [
@@ -54,7 +58,50 @@ export default function RecoveryPage() {
         { id: 'RC-110', patient: 'Mason Jackson', amount: '$2,100.00', days: 0, type: 'Procedure', priority: 'Done' },
       ]
     }
-  ];
+  ]);
+
+  const handleDragStart = (e: React.DragEvent, cardId: string, sourcePipelineId: string) => {
+    e.dataTransfer.setData('cardId', cardId);
+    e.dataTransfer.setData('sourcePipelineId', sourcePipelineId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Necessary to allow dropping
+  };
+
+  const handleDrop = (e: React.DragEvent, targetPipelineId: string) => {
+    e.preventDefault();
+    const cardId = e.dataTransfer.getData('cardId');
+    const sourcePipelineId = e.dataTransfer.getData('sourcePipelineId');
+
+    if (sourcePipelineId === targetPipelineId) return;
+
+    setPipelines(prevPipelines => {
+      const newPipelines = [...prevPipelines];
+      
+      const sourcePipelineIndex = newPipelines.findIndex(p => p.id === sourcePipelineId);
+      const targetPipelineIndex = newPipelines.findIndex(p => p.id === targetPipelineId);
+
+      const sourcePipeline = { ...newPipelines[sourcePipelineIndex] };
+      const targetPipeline = { ...newPipelines[targetPipelineIndex] };
+
+      const cardIndex = sourcePipeline.cards.findIndex(c => c.id === cardId);
+      if (cardIndex === -1) return prevPipelines; // Safety check
+
+      const [cardToMove] = sourcePipeline.cards.splice(cardIndex, 1);
+
+      targetPipeline.cards.push(cardToMove);
+
+      // Update counts
+      sourcePipeline.count = sourcePipeline.cards.length;
+      targetPipeline.count = targetPipeline.cards.length;
+
+      newPipelines[sourcePipelineIndex] = sourcePipeline;
+      newPipelines[targetPipelineIndex] = targetPipeline;
+
+      return newPipelines;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col">
@@ -120,7 +167,12 @@ export default function RecoveryPage() {
       <main className="flex-1 p-8 overflow-x-auto">
         <div className="max-w-[1600px] mx-auto flex gap-8 min-w-max h-full">
           {pipelines.map((column, i) => (
-            <div key={i} className="w-[340px] flex flex-col">
+            <div 
+              key={i} 
+              className="w-[340px] flex flex-col"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, column.id)}
+            >
               {/* Column Header */}
               <div className="flex items-center justify-between mb-6 px-2">
                 <div className="flex items-center gap-3">
@@ -142,7 +194,9 @@ export default function RecoveryPage() {
                 {column.cards.map((card, j) => (
                   <div 
                     key={j} 
-                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-teal-200 transition-all group relative overflow-hidden"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, card.id, column.id)}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-teal-200 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing"
                   >
                     {/* Priority Indicator */}
                     <div className={`absolute top-0 left-0 w-1 h-full ${

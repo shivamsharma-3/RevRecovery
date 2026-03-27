@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
+import OnboardingTour from '@/components/OnboardingTour';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   Activity, ChevronLeft, ChevronRight, LayoutDashboard, 
@@ -219,8 +220,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
+        
+        {/* Breadcrumbs */}
+        {pathname !== '/dashboard' && (
+          <div className="px-6 md:px-10 pt-6 pb-2 flex items-center gap-2 text-sm font-medium text-slate-500">
+            <Link href="/dashboard" className="hover:text-teal-600 transition-colors">Dashboard</Link>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+            <span className="text-slate-900 capitalize">
+              {pathname.split('/').pop()?.replace(/-/g, ' ')}
+            </span>
+          </div>
+        )}
+
         {children}
       </div>
+
+      <OnboardingTour />
 
       {/* Floating Action Button (Mobile) */}
       <Link 

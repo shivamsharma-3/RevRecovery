@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
+import { FileDown, ArrowRight, Stethoscope, Activity, Microscope, HeartPulse, CheckCircle2 } from 'lucide-react';
 
 export default function CaseStudiesPage() {
   return (
@@ -27,6 +28,9 @@ export default function CaseStudiesPage() {
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 referrerPolicy="no-referrer"
               />
+              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur p-3 rounded-2xl shadow-lg">
+                <Stethoscope className="w-8 h-8 text-teal-600" />
+              </div>
             </div>
             <div className="md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
               <div className="flex items-center gap-4 mb-6">
@@ -37,17 +41,30 @@ export default function CaseStudiesPage() {
               <p className="text-slate-600 mb-8 leading-relaxed">
                 Struggling with a growing backlog of patient balances and understaffed front desks across 5 locations, Premier Dental implemented RevRecover AI's automated SMS and email outreach.
               </p>
+              
               <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">+18%</div>
                   <div className="text-sm text-slate-500 font-medium">Increase in patient collections</div>
                 </div>
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">90 Days</div>
                   <div className="text-sm text-slate-500 font-medium">Time to achieve ROI</div>
                 </div>
               </div>
-              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6">
+
+              <div className="flex flex-wrap items-center gap-4 mb-8">
+                <Link href="/contact?solution=dental">
+                  <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all flex items-center gap-2 shadow-lg shadow-teal-600/20">
+                    Get Your Free Dental Assessment <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+                <button className="flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-900 transition-colors px-4 py-2">
+                  <FileDown className="w-5 h-5" /> Download PDF
+                </button>
+              </div>
+
+              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6 bg-slate-50/50 py-4 pr-4 rounded-r-xl">
                 "The AI handles the awkward financial conversations we used to dread. Patients appreciate the easy payment links, and our staff can focus on care."
               </blockquote>
               <div className="text-sm font-bold text-slate-900">— Dr. Sarah Jenkins, Clinical Director</div>
@@ -64,6 +81,9 @@ export default function CaseStudiesPage() {
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 referrerPolicy="no-referrer"
               />
+              <div className="absolute top-6 right-6 bg-white/90 backdrop-blur p-3 rounded-2xl shadow-lg">
+                <Activity className="w-8 h-8 text-teal-600" />
+              </div>
             </div>
             <div className="md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
               <div className="flex items-center gap-4 mb-6">
@@ -74,17 +94,30 @@ export default function CaseStudiesPage() {
               <p className="text-slate-600 mb-8 leading-relaxed">
                 Facing high denial rates on complex orthopedic procedures, Valley Surgical deployed our Denial Prediction AI to catch coding errors before submission and automate appeals for rejected claims.
               </p>
+
               <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">28 Days</div>
                   <div className="text-sm text-slate-500 font-medium">Average days in A/R (Down from 45)</div>
                 </div>
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">-42%</div>
                   <div className="text-sm text-slate-500 font-medium">Reduction in initial denials</div>
                 </div>
               </div>
-              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6">
+
+              <div className="flex flex-wrap items-center gap-4 mb-8">
+                <Link href="/contact?solution=asc">
+                  <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all flex items-center gap-2 shadow-lg shadow-teal-600/20">
+                    Get Your Free ASC Assessment <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+                <button className="flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-900 transition-colors px-4 py-2">
+                  <FileDown className="w-5 h-5" /> Download PDF
+                </button>
+              </div>
+
+              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6 bg-slate-50/50 py-4 pr-4 rounded-r-xl">
                 "The automated appeal letters are incredibly detailed, citing specific medical necessity guidelines that our billing team simply didn't have time to research."
               </blockquote>
               <div className="text-sm font-bold text-slate-900">— Michael Chen, CFO</div>
@@ -101,6 +134,9 @@ export default function CaseStudiesPage() {
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 referrerPolicy="no-referrer"
               />
+              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur p-3 rounded-2xl shadow-lg">
+                <Microscope className="w-8 h-8 text-teal-600" />
+              </div>
             </div>
             <div className="md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
               <div className="flex items-center gap-4 mb-6">
@@ -111,35 +147,127 @@ export default function CaseStudiesPage() {
               <p className="text-slate-600 mb-8 leading-relaxed">
                 Metro Orthopedics had accumulated significant "uncollectible" debt. We ran our historical recovery engine on their past 12 months of written-off claims, identifying missed modifier opportunities.
               </p>
+
               <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">$120k</div>
                   <div className="text-sm text-slate-500 font-medium">Recovered from written-off claims</div>
                 </div>
-                <div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
                   <div className="text-4xl font-black text-teal-600 mb-1">3.5x</div>
                   <div className="text-sm text-slate-500 font-medium">Return on investment</div>
                 </div>
               </div>
-              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6">
+
+              <div className="flex flex-wrap items-center gap-4 mb-8">
+                <Link href="/contact?solution=specialty">
+                  <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all flex items-center gap-2 shadow-lg shadow-teal-600/20">
+                    Get Your Free Specialty Assessment <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+                <button className="flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-900 transition-colors px-4 py-2">
+                  <FileDown className="w-5 h-5" /> Download PDF
+                </button>
+              </div>
+
+              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6 bg-slate-50/50 py-4 pr-4 rounded-r-xl">
                 "Finding $120,000 in revenue we had already written off was a game-changer for our quarterly financials. It's like finding money in the couch cushions, but at an enterprise scale."
               </blockquote>
               <div className="text-sm font-bold text-slate-900">— Elena Rodriguez, Director of Revenue Cycle</div>
             </div>
           </div>
+
+          {/* Case Study 4 */}
+          <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden flex flex-col md:flex-row-reverse group hover:shadow-md transition-all">
+            <div className="md:w-2/5 relative h-64 md:h-auto">
+              <Image 
+                src="https://picsum.photos/seed/pediatric-clinic/800/800" 
+                alt="Pediatric clinic reception" 
+                fill 
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute top-6 right-6 bg-white/90 backdrop-blur p-3 rounded-2xl shadow-lg">
+                <HeartPulse className="w-8 h-8 text-teal-600" />
+              </div>
+            </div>
+            <div className="md:w-3/5 p-8 md:p-12 flex flex-col justify-center">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="bg-teal-50 text-teal-800 px-3 py-1 rounded-full text-sm font-bold tracking-wide uppercase">Pediatrics</div>
+                <div className="text-slate-400 text-sm">Community Health Center</div>
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Bright Futures Pediatrics</h2>
+              <p className="text-slate-600 mb-8 leading-relaxed">
+                Struggling with high volumes of low-dollar claims and frequent Medicaid billing changes, Bright Futures implemented our automated claim scrubbing and patient engagement tools.
+              </p>
+
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
+                  <div className="text-4xl font-black text-teal-600 mb-1">98%</div>
+                  <div className="text-sm text-slate-500 font-medium">Clean claim rate</div>
+                </div>
+                <div className="bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
+                  <div className="text-4xl font-black text-teal-600 mb-1">2.5x</div>
+                  <div className="text-sm text-slate-500 font-medium">Increase in patient portal payments</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 mb-8">
+                <Link href="/contact?solution=pediatrics">
+                  <button className="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all flex items-center gap-2 shadow-lg shadow-teal-600/20">
+                    Get Your Free Pediatric Assessment <ArrowRight className="w-4 h-4" />
+                  </button>
+                </Link>
+                <button className="flex items-center gap-2 text-teal-700 font-semibold hover:text-teal-900 transition-colors px-4 py-2">
+                  <FileDown className="w-5 h-5" /> Download PDF
+                </button>
+              </div>
+
+              <blockquote className="border-l-4 border-teal-500 pl-4 italic text-slate-700 mb-6 bg-slate-50/50 py-4 pr-4 rounded-r-xl">
+                "The automated payment reminders are gentle but effective. Our families appreciate the convenience, and our staff spends less time on the phone."
+              </blockquote>
+              <div className="text-sm font-bold text-slate-900">— Maria Gonzalez, Clinic Administrator</div>
+            </div>
+          </div>
         </div>
 
         {/* CTA Section */}
-        <div className="bg-slate-50 rounded-[2rem] p-12 text-center border border-slate-200">
-          <h2 className="text-3xl font-bold text-slate-900 mb-6">Ready to write your own success story?</h2>
-          <p className="text-slate-600 mb-8 max-w-2xl mx-auto text-lg">
-            Join hundreds of healthcare providers who have transformed their revenue cycle with our AI-driven platform.
-          </p>
-          <Link href="/auth">
-            <button className="bg-teal-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20">
-              Start Your Free Trial
-            </button>
-          </Link>
+        <div className="bg-teal-900 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-teal-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+          </div>
+          
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8 font-headline">Ready to write your own success story?</h2>
+            <p className="text-teal-100 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
+              Join hundreds of healthcare providers who have transformed their revenue cycle with our AI-driven platform.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link href="/contact">
+                <button className="bg-white text-teal-900 px-10 py-5 rounded-2xl font-black text-lg hover:bg-teal-50 transition-all shadow-2xl shadow-white/10 flex items-center gap-3">
+                  See How This Applies to Your Practice <ArrowRight className="w-6 h-6" />
+                </button>
+              </Link>
+              <Link href="/pricing">
+                <button className="bg-teal-800/50 backdrop-blur text-white border-2 border-teal-700 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-teal-800 transition-all">
+                  View Pricing Tiers
+                </button>
+              </Link>
+            </div>
+            
+            <div className="mt-12 flex flex-wrap justify-center items-center gap-8 opacity-60">
+              <div className="flex items-center gap-2 text-white font-medium">
+                <CheckCircle2 className="w-5 h-5" /> HIPAA Compliant
+              </div>
+              <div className="flex items-center gap-2 text-white font-medium">
+                <CheckCircle2 className="w-5 h-5" /> SOC2 Type II
+              </div>
+              <div className="flex items-center gap-2 text-white font-medium">
+                <CheckCircle2 className="w-5 h-5" /> 256-bit Encryption
+              </div>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />

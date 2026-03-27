@@ -16,7 +16,24 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell 
 } from 'recharts';
 
-const recoveryData = [
+const recoveryDataWeek = [
+  { name: 'Mon', amount: 4500, projected: 4800 },
+  { name: 'Tue', amount: 5200, projected: 5500 },
+  { name: 'Wed', amount: 4800, projected: 6000 },
+  { name: 'Thu', amount: 6100, projected: 6500 },
+  { name: 'Fri', amount: 5500, projected: 7000 },
+  { name: 'Sat', amount: 6700, projected: 7500 },
+  { name: 'Sun', amount: 7200, projected: 8000 },
+];
+
+const recoveryDataMonth = [
+  { name: 'Week 1', amount: 14500, projected: 14800 },
+  { name: 'Week 2', amount: 15200, projected: 15500 },
+  { name: 'Week 3', amount: 14800, projected: 16000 },
+  { name: 'Week 4', amount: 16100, projected: 16500 },
+];
+
+const recoveryDataYear = [
   { name: 'Jan', amount: 45000, projected: 48000 },
   { name: 'Feb', amount: 52000, projected: 55000 },
   { name: 'Mar', amount: 48000, projected: 60000 },
@@ -24,6 +41,11 @@ const recoveryData = [
   { name: 'May', amount: 55000, projected: 70000 },
   { name: 'Jun', amount: 67000, projected: 75000 },
   { name: 'Jul', amount: 72000, projected: 80000 },
+  { name: 'Aug', amount: 68000, projected: 78000 },
+  { name: 'Sep', amount: 75000, projected: 82000 },
+  { name: 'Oct', amount: 81000, projected: 85000 },
+  { name: 'Nov', amount: 79000, projected: 88000 },
+  { name: 'Dec', amount: 84200, projected: 90000 },
 ];
 
 const denialPatterns = [
@@ -48,6 +70,7 @@ export default function DashboardHome() {
   });
 
   const [selectedInsight, setSelectedInsight] = useState<{title: string, desc: string, time: string, color: string} | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('Year');
 
   useEffect(() => {
     // Simulate data loading if hasData is true
@@ -248,8 +271,9 @@ export default function DashboardHome() {
                 {['Week', 'Month', 'Year'].map((period) => (
                   <button 
                     key={period}
+                    onClick={() => setSelectedPeriod(period)}
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      period === 'Month' ? 'bg-teal-800 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'
+                      selectedPeriod === period ? 'bg-teal-800 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
                     {period}
@@ -260,10 +284,12 @@ export default function DashboardHome() {
             <div className="h-[350px] w-full relative">
               <div className="absolute top-0 right-0 bg-white p-4 rounded-2xl shadow-lg border border-slate-100 z-10">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Current Peak</p>
-                <p className="text-xl font-extrabold text-teal-800 font-headline">$84,200</p>
+                <p className="text-xl font-extrabold text-teal-800 font-headline">
+                  {selectedPeriod === 'Week' ? '$7,200' : selectedPeriod === 'Month' ? '$16,100' : '$84,200'}
+                </p>
               </div>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={recoveryData}>
+                <AreaChart data={selectedPeriod === 'Week' ? recoveryDataWeek : selectedPeriod === 'Month' ? recoveryDataMonth : recoveryDataYear}>
                   <defs>
                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0d9488" stopOpacity={0.15}/>

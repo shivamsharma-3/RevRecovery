@@ -1,64 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Activity, Users, Calendar, Clock, 
   MapPin, Phone, Mail, Globe,
   Star, ShieldCheck, TrendingUp, ArrowUpRight,
-  Building2, Stethoscope, FileText, CheckCircle2, AlertCircle, MoreHorizontal, Database
+  Building2, Stethoscope, FileText, CheckCircle2, AlertCircle, MoreHorizontal, Database, Search, X
 } from 'lucide-react';
 
+const INITIAL_CLINICS = [
+  { 
+    id: 'CL-001',
+    name: 'Downtown Medical Center', 
+    location: 'New York, NY', 
+    patients: 1240, 
+    rating: 4.8, 
+    status: 'Active',
+    recoveryRate: '82%',
+    aiAdoption: 'High',
+    lastSync: '10 mins ago',
+    type: 'Multi-Specialty'
+  },
+  { 
+    id: 'CL-002',
+    name: 'Westside Health Clinic', 
+    location: 'Los Angeles, CA', 
+    patients: 850, 
+    rating: 4.6, 
+    status: 'Active',
+    recoveryRate: '76%',
+    aiAdoption: 'Medium',
+    lastSync: '1 hour ago',
+    type: 'Primary Care'
+  },
+  { 
+    id: 'CL-003',
+    name: 'Northshore Dental', 
+    location: 'Chicago, IL', 
+    patients: 2100, 
+    rating: 4.9, 
+    status: 'Active',
+    recoveryRate: '89%',
+    aiAdoption: 'High',
+    lastSync: '5 mins ago',
+    type: 'Dental'
+  },
+  { 
+    id: 'CL-004',
+    name: 'Eastview Family Practice', 
+    location: 'Houston, TX', 
+    patients: 450, 
+    rating: 4.5, 
+    status: 'Warning',
+    recoveryRate: '62%',
+    aiAdoption: 'Low',
+    lastSync: '2 days ago',
+    type: 'Family Medicine'
+  },
+];
+
 export default function ClinicInsightsPage() {
-  const clinics = [
-    { 
-      id: 'CL-001',
-      name: 'Downtown Medical Center', 
-      location: 'New York, NY', 
-      patients: 1240, 
-      rating: 4.8, 
-      status: 'Active',
-      recoveryRate: '82%',
-      aiAdoption: 'High',
-      lastSync: '10 mins ago',
-      type: 'Multi-Specialty'
-    },
-    { 
-      id: 'CL-002',
-      name: 'Westside Health Clinic', 
-      location: 'Los Angeles, CA', 
-      patients: 850, 
-      rating: 4.6, 
-      status: 'Active',
-      recoveryRate: '76%',
-      aiAdoption: 'Medium',
-      lastSync: '1 hour ago',
-      type: 'Primary Care'
-    },
-    { 
-      id: 'CL-003',
-      name: 'Northshore Dental', 
-      location: 'Chicago, IL', 
-      patients: 2100, 
-      rating: 4.9, 
-      status: 'Active',
-      recoveryRate: '89%',
-      aiAdoption: 'High',
-      lastSync: '5 mins ago',
-      type: 'Dental'
-    },
-    { 
-      id: 'CL-004',
-      name: 'Eastview Family Practice', 
-      location: 'Houston, TX', 
-      patients: 450, 
-      rating: 4.5, 
-      status: 'Warning',
-      recoveryRate: '62%',
-      aiAdoption: 'Low',
-      lastSync: '2 days ago',
-      type: 'Family Medicine'
-    },
-  ];
+  const [clinics, setClinics] = useState(INITIAL_CLINICS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClinic, setSelectedClinic] = useState<typeof INITIAL_CLINICS[0] | null>(null);
+
+  const filteredClinics = useMemo(() => {
+    return clinics.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [clinics, searchQuery]);
 
   return (
     <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
@@ -112,14 +124,24 @@ export default function ClinicInsightsPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-bold text-slate-900 font-headline">Network Directory</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Sorted by Performance</span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="text" 
+                  placeholder="Search clinics..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 w-full sm:w-64 transition-all"
+                />
+              </div>
+              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2 rounded-xl hidden sm:inline-block">Sorted by Performance</span>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {clinics.map((clinic, i) => (
-              <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+            {filteredClinics.map((clinic, i) => (
+              <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => setSelectedClinic(clinic)}>
                 {clinic.status === 'Warning' && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-amber-400" />
                 )}
@@ -138,7 +160,10 @@ export default function ClinicInsightsPage() {
                       </p>
                     </div>
                   </div>
-                  <button className="text-slate-300 hover:text-slate-600 transition-colors">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setSelectedClinic(clinic); }}
+                    className="text-slate-300 hover:text-slate-600 transition-colors"
+                  >
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </div>
@@ -254,6 +279,83 @@ export default function ClinicInsightsPage() {
           </div>
         </div>
       </div>
+
+      {/* Clinic Details Modal */}
+      {selectedClinic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-900">{selectedClinic.name}</h2>
+                  <p className="text-sm text-slate-500 font-medium flex items-center gap-2">
+                    {selectedClinic.id} • <MapPin className="w-3 h-3" /> {selectedClinic.location}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedClinic(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                  <p className={`text-sm font-bold ${selectedClinic.status === 'Active' ? 'text-teal-600' : 'text-amber-600'}`}>
+                    {selectedClinic.status}
+                  </p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Patients</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedClinic.patients.toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recovery Rate</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedClinic.recoveryRate}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">AI Adoption</p>
+                  <p className="text-sm font-bold text-slate-900">{selectedClinic.aiAdoption}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">Integration Status</h3>
+                  <div className="flex items-center justify-between p-4 bg-teal-50/50 border border-teal-100 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Database className="w-5 h-5 text-teal-600" />
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">EHR Sync Active</p>
+                        <p className="text-xs text-slate-500">Last synced: {selectedClinic.lastSync}</p>
+                      </div>
+                    </div>
+                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-teal-700 bg-teal-100 px-2 py-1 rounded-md">
+                      <CheckCircle2 className="w-3 h-3" /> Connected
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                  <button className="flex-1 bg-teal-600 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-teal-700 transition-all shadow-md shadow-teal-500/20">
+                    View Full Analytics
+                  </button>
+                  <button className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all">
+                    Manage Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,35 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Profile State
+  const [profileData, setProfileData] = useState({
+    firstName: user?.email?.split('@')[0].split('.')[0] || 'Admin',
+    lastName: user?.email?.split('@')[0].split('.')[1] || 'User',
+    phone: '+1 (415) 555-0198',
+    jobTitle: 'Revenue Cycle Director'
+  });
+
+  // Integrations State
+  const [integrations, setIntegrations] = useState([
+    { name: 'Epic Systems', status: 'Connected', lastSync: '2 mins ago', icon: Database, desc: 'Full bi-directional sync enabled.' },
+    { name: 'Cerner', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'Requires API key configuration.' },
+    { name: 'Athenahealth', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'OAuth 2.0 connection supported.' },
+  ]);
+
+  // Notifications State
+  const [emailNotifs, setEmailNotifs] = useState([
+    { title: 'High-Yield Opportunities', desc: 'Get notified when AI detects recovery cases over $10k.', enabled: true },
+    { title: 'Compliance Alerts', desc: 'Immediate alerts for potential HIPAA or billing gaps.', enabled: true },
+    { title: 'Weekly Performance Reports', desc: 'Summary of network-wide recovery yield.', enabled: false },
+    { title: 'System Updates', desc: 'New AI model deployments and feature releases.', enabled: true },
+  ]);
+
+  const [inAppNotifs, setInAppNotifs] = useState([
+    { title: 'New Claim Denials', desc: 'Alert when a high-value claim is denied.', enabled: true },
+    { title: 'Patient Payment Received', desc: 'Notification for successful patient payments.', enabled: true },
+    { title: 'AI Negotiation Complete', desc: 'When the AI finishes a negotiation sequence.', enabled: true },
+  ]);
+
   useEffect(() => {
     const timer = setTimeout(() => setIsMounted(true), 0);
     return () => clearTimeout(timer);
@@ -30,7 +59,8 @@ export default function SettingsPage() {
     }, 1000);
   };
 
-  if (!isMounted || !user) return null;
+  if (!isMounted) return <div className="p-10">Loading settings...</div>;
+  if (!user) return <div className="p-10">Please log in to view settings.</div>;
 
   return (
     <div className="flex-1 p-6 md:p-10 bg-[#F8FAFB] overflow-y-auto">
@@ -109,7 +139,8 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">First Name</label>
                     <input 
                       type="text" 
-                      defaultValue={user.email?.split('@')[0].split('.')[0] || 'Admin'} 
+                      value={profileData.firstName}
+                      onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                     />
                   </div>
@@ -117,7 +148,8 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last Name</label>
                     <input 
                       type="text" 
-                      defaultValue={user.email?.split('@')[0].split('.')[1] || 'User'} 
+                      value={profileData.lastName}
+                      onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                     />
                   </div>
@@ -140,7 +172,8 @@ export default function SettingsPage() {
                       <input 
                         type="tel" 
                         placeholder="+1 (555) 000-0000" 
-                        defaultValue="+1 (415) 555-0198"
+                        value={profileData.phone}
+                        onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                       />
                     </div>
@@ -149,7 +182,8 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Job Title</label>
                     <input 
                       type="text" 
-                      defaultValue="Revenue Cycle Director" 
+                      value={profileData.jobTitle}
+                      onChange={(e) => setProfileData({...profileData, jobTitle: e.target.value})}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                     />
                   </div>
@@ -262,11 +296,7 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-4">
-                {[
-                  { name: 'Epic Systems', status: 'Connected', lastSync: '2 mins ago', icon: Database, desc: 'Full bi-directional sync enabled.' },
-                  { name: 'Cerner', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'Requires API key configuration.' },
-                  { name: 'Athenahealth', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'OAuth 2.0 connection supported.' },
-                ].map((pms, i) => (
+                {integrations.map((pms, i) => (
                   <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 hover:bg-white hover:shadow-md transition-all group gap-4">
                     <div className="flex items-start gap-4">
                       <div className={`p-3 rounded-2xl shrink-0 ${pms.status === 'Connected' ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
@@ -293,7 +323,14 @@ export default function SettingsPage() {
                           Settings
                         </button>
                       )}
-                      <button className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all ${
+                      <button 
+                        onClick={() => {
+                          const newIntegrations = [...integrations];
+                          newIntegrations[i].status = newIntegrations[i].status === 'Connected' ? 'Available' : 'Connected';
+                          newIntegrations[i].lastSync = newIntegrations[i].status === 'Connected' ? 'Just now' : 'N/A';
+                          setIntegrations(newIntegrations);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all ${
                         pms.status === 'Connected' 
                           ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' 
                           : 'bg-teal-600 text-white hover:bg-teal-700 shadow-md shadow-teal-900/10'
@@ -323,19 +360,23 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">Email Notifications</h4>
                   <div className="space-y-2">
-                    {[
-                      { title: 'High-Yield Opportunities', desc: 'Get notified when AI detects recovery cases over $10k.', default: true },
-                      { title: 'Compliance Alerts', desc: 'Immediate alerts for potential HIPAA or billing gaps.', default: true },
-                      { title: 'Weekly Performance Reports', desc: 'Summary of network-wide recovery yield.', default: false },
-                      { title: 'System Updates', desc: 'New AI model deployments and feature releases.', default: true },
-                    ].map((pref, i) => (
+                    {emailNotifs.map((pref, i) => (
                       <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-white transition-colors gap-4">
                         <div>
                           <h4 className="text-sm font-bold text-slate-900">{pref.title}</h4>
                           <p className="text-xs text-slate-500 mt-1">{pref.desc}</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer sm:ml-4 shrink-0 self-start sm:self-center">
-                          <input type="checkbox" className="sr-only peer" defaultChecked={pref.default} />
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={pref.enabled}
+                            onChange={() => {
+                              const newNotifs = [...emailNotifs];
+                              newNotifs[i].enabled = !newNotifs[i].enabled;
+                              setEmailNotifs(newNotifs);
+                            }}
+                          />
                           <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
                         </label>
                       </div>
@@ -346,18 +387,23 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">In-App Notifications</h4>
                   <div className="space-y-2">
-                    {[
-                      { title: 'New Claim Denials', desc: 'Alert when a high-value claim is denied.', default: true },
-                      { title: 'Patient Payment Received', desc: 'Notification for successful patient payments.', default: true },
-                      { title: 'AI Negotiation Complete', desc: 'When the AI finishes a negotiation sequence.', default: true },
-                    ].map((pref, i) => (
+                    {inAppNotifs.map((pref, i) => (
                       <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-white transition-colors gap-4">
                         <div>
                           <h4 className="text-sm font-bold text-slate-900">{pref.title}</h4>
                           <p className="text-xs text-slate-500 mt-1">{pref.desc}</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer sm:ml-4 shrink-0 self-start sm:self-center">
-                          <input type="checkbox" className="sr-only peer" defaultChecked={pref.default} />
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={pref.enabled}
+                            onChange={() => {
+                              const newNotifs = [...inAppNotifs];
+                              newNotifs[i].enabled = !newNotifs[i].enabled;
+                              setInAppNotifs(newNotifs);
+                            }}
+                          />
                           <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
                         </label>
                       </div>

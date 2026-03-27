@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
-import { CheckCircle2, ShieldCheck, Shield, Lock, FileText, ChevronDown, X, CheckCircle, Mail } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Shield, Lock, FileText, ChevronDown, X, CheckCircle, Mail, Zap, TrendingUp, Info } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function PricingPage() {
@@ -42,10 +42,13 @@ export default function PricingPage() {
           </p>
         </section>
         {/* Pricing Grid */}
-        <section className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
+        <section className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {/* Tier 1: Starter */}
           <div className="bg-surface-container-low rounded-xl p-8 flex flex-col h-full border border-transparent hover:border-outline-variant/20 transition-all duration-300">
             <div className="mb-8">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6 text-primary">
+                <CheckCircle className="w-6 h-6" />
+              </div>
               <h3 className="text-lg font-bold text-on-surface-variant font-headline mb-2">Starter</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-extrabold text-on-surface">$29</span>
@@ -54,9 +57,15 @@ export default function PricingPage() {
               <p className="mt-4 text-sm text-on-secondary-container leading-relaxed">Essential recovery tools for smaller clinics and independent practices.</p>
             </div>
             <div className="space-y-4 mb-10 flex-grow">
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 group relative">
                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                <span className="text-sm font-medium text-on-surface-variant">Up to 50 Monthly Claims</span>
+                <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
+                  Up to 50 Monthly Claims
+                  <Info className="w-3.5 h-3.5 text-on-surface-variant/40 cursor-help" />
+                  <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                    e.g., one patient no-show = 1 claim
+                  </div>
+                </span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
@@ -73,15 +82,57 @@ export default function PricingPage() {
               </button>
             </Link>
           </div>
-          {/* Tier 2: Pro (Highlighted) */}
-          <div className="relative bg-surface-container-lowest rounded-xl p-10 flex flex-col h-full shadow-2xl shadow-primary/5 border-2 border-primary/10 transform md:scale-105 z-10">
+
+          {/* Tier 2: Growth */}
+          <div className="bg-surface-container-low rounded-xl p-8 flex flex-col h-full border border-transparent hover:border-outline-variant/20 transition-all duration-300">
+            <div className="mb-8">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6 text-primary">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-on-surface-variant font-headline mb-2">Growth</h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold text-on-surface">$99</span>
+                <span className="text-on-surface-variant font-medium">/month</span>
+              </div>
+              <p className="mt-4 text-sm text-on-secondary-container leading-relaxed">Perfect for expanding practices needing higher volume recovery.</p>
+            </div>
+            <div className="space-y-4 mb-10 flex-grow">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-medium text-on-surface-variant">Up to 200 Monthly Claims</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-medium text-on-surface-variant">Advanced Reporting</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-medium text-on-surface-variant">Priority Email Support</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                <span className="text-sm font-medium text-on-surface-variant">Custom SMS Templates</span>
+              </div>
+            </div>
+            <Link href="/dashboard" onClick={handleStartTrial} className="block w-full">
+              <button className="w-full py-3 bg-surface-container-high text-on-surface font-bold rounded-xl hover:bg-surface-dim transition-colors active:scale-[0.98]">
+                Start Trial
+              </button>
+            </Link>
+          </div>
+
+          {/* Tier 3: Pro (Highlighted) */}
+          <div className="relative bg-surface-container-lowest rounded-xl p-10 flex flex-col h-full shadow-2xl shadow-primary/5 border-2 border-primary/10 transform lg:scale-105 z-10">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-[10px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full">
               Recommended
             </div>
             <div className="mb-8">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6 text-primary">
+                <Zap className="w-6 h-6" />
+              </div>
               <h3 className="text-xl font-bold text-primary font-headline mb-2">Pro</h3>
               <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-on-surface">$79</span>
+                <span className="text-5xl font-extrabold text-on-surface">$199</span>
                 <span className="text-on-surface-variant font-medium">/month</span>
               </div>
               <p className="mt-4 text-sm text-on-secondary-container leading-relaxed">The standard for growing healthcare groups requiring full AI automation.</p>
@@ -97,7 +148,7 @@ export default function PricingPage() {
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-primary-container shrink-0" />
-                <span className="text-sm font-semibold text-on-surface">Priority Support</span>
+                <span className="text-sm font-semibold text-on-surface">24/7 Priority Support</span>
               </div>
               <div className="flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-primary-container shrink-0" />
@@ -110,9 +161,13 @@ export default function PricingPage() {
               </button>
             </Link>
           </div>
-          {/* Tier 3: Enterprise */}
+
+          {/* Tier 4: Enterprise */}
           <div className="bg-surface-container-low rounded-xl p-8 flex flex-col h-full border border-transparent hover:border-outline-variant/20 transition-all duration-300">
             <div className="mb-8">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6 text-primary">
+                <Shield className="w-6 h-6" />
+              </div>
               <h3 className="text-lg font-bold text-on-surface-variant font-headline mb-2">Enterprise</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-extrabold text-on-surface">Custom</span>
@@ -137,12 +192,11 @@ export default function PricingPage() {
                 <span className="text-sm font-medium text-on-surface-variant">Custom Contract Terms</span>
               </div>
             </div>
-            <button 
-              onClick={() => setIsSalesModalOpen(true)}
-              className="w-full py-3 border-2 border-outline-variant/30 text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors active:scale-[0.98]"
-            >
-              Contact Sales
-            </button>
+            <Link href="/contact" className="block w-full">
+              <button className="w-full py-3 border-2 border-outline-variant/30 text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+                Contact Sales for Enterprise
+              </button>
+            </Link>
           </div>
         </section>
         {/* Compliance & Trust Section */}
@@ -185,7 +239,7 @@ export default function PricingPage() {
           </div>
         </section>
         {/* FAQ Micro-section */}
-        <section className="max-w-3xl mx-auto mt-32">
+        <section className="max-w-3xl mx-auto mt-32 mb-24">
           <h2 className="text-2xl font-bold font-headline text-center mb-12">Frequently Asked Questions</h2>
           <div className="space-y-8">
             <div className="group">
@@ -203,7 +257,25 @@ export default function PricingPage() {
                 <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
               </button>
               <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
-                A claim is any individual no-show or overdue balance entry that the AI begins working to recover. We do not count successful follow-ups or multiple touches on the same claim as new claims.
+                A claim is any individual no-show or overdue balance entry that the AI begins working to recover (e.g., one patient no-show = 1 claim). We do not count successful follow-ups or multiple touches on the same claim as new claims.
+              </div>
+            </div>
+            <div className="group">
+              <button className="flex justify-between items-center w-full text-left">
+                <span className="text-lg font-semibold text-on-surface">Can I cancel or change my plan anytime?</span>
+                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+              </button>
+              <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
+                Yes, our Starter and Pro plans are billed month-to-month with no long-term commitment. You can upgrade, downgrade, or cancel your subscription at any time from your dashboard.
+              </div>
+            </div>
+            <div className="group">
+              <button className="flex justify-between items-center w-full text-left">
+                <span className="text-lg font-semibold text-on-surface">Is my patient data secure?</span>
+                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+              </button>
+              <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
+                Absolutely. RevRecover AI is fully HIPAA compliant and SOC2 certified. We use end-to-end encryption for all data in transit and at rest, ensuring your patients' information is always protected.
               </div>
             </div>
           </div>
@@ -244,71 +316,6 @@ export default function PricingPage() {
           </div>
         </div>
       )}
-
-      {/* Compliance & Trust Section */}
-      <section className="max-w-7xl mx-auto mt-32 bg-white rounded-[2rem] p-12 overflow-hidden relative">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-3xl font-extrabold font-headline tracking-tight mb-6">Built for Medical Standards</h2>
-            <p className="text-on-surface-variant text-lg leading-relaxed mb-8">
-              Our recovery engine is designed with the same rigor as clinical software. We ensure every touchpoint maintains patient trust while securing your practice's financial health.
-            </p>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-primary" />
-                <span className="text-sm font-bold tracking-tight">HIPAA Compliant</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                <span className="text-sm font-bold tracking-tight">SOC2 Certified</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-primary" />
-                <span className="text-sm font-bold tracking-tight">End-to-End Encryption</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-primary" />
-                <span className="text-sm font-bold tracking-tight">Audit-Ready Logs</span>
-              </div>
-            </div>
-          </div>
-          <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100">
-            <Image 
-              src="https://picsum.photos/seed/dashboard/800/600" 
-              alt="Modern clinical data dashboard showing revenue recovery metrics" 
-              fill
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Micro-section */}
-      <section className="max-w-3xl mx-auto mt-32 px-6 mb-24">
-        <h2 className="text-2xl font-bold font-headline text-center mb-12">Frequently Asked Questions</h2>
-        <div className="space-y-8">
-          <div className="group">
-            <button className="flex justify-between items-center w-full text-left">
-              <span className="text-lg font-semibold text-on-surface">How does the 30-day trial work?</span>
-              <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-            </button>
-            <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
-              Every plan starts with a full-featured 30-day trial. We'll help you integrate your existing patient management system and start recovering revenue immediately. No credit card required.
-            </div>
-          </div>
-          <div className="group">
-            <button className="flex justify-between items-center w-full text-left">
-              <span className="text-lg font-semibold text-on-surface">What counts as a 'Monthly Claim'?</span>
-              <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-            </button>
-            <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
-              A claim is any individual no-show or overdue balance entry that the AI begins working to recover. We do not count successful follow-ups or multiple touches on the same claim as new claims.
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

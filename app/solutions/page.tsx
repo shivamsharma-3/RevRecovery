@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Smile, Scissors, Stethoscope, Building2 } from 'lucide-react';
 
 export default function SolutionsPage() {
   return (
@@ -13,7 +13,7 @@ export default function SolutionsPage() {
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-extrabold text-teal-900 mb-6 font-headline tracking-tight">Revenue Recovery Solutions</h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Tailored, AI-driven revenue cycle management designed specifically for the complexities of modern medical practices.
+            Tailored, AI-driven revenue cycle management designed specifically for the complexities of modern medical practices. Choose your specialty below to see how we can help you recover lost revenue.
           </p>
         </div>
         
@@ -29,7 +29,12 @@ export default function SolutionsPage() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <h3 className="absolute bottom-6 left-8 text-3xl font-bold text-white">Dental Practices</h3>
+              <div className="absolute bottom-6 left-8 flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+                  <Smile className="w-6 h-6" />
+                </div>
+                <h3 className="text-3xl font-bold text-white">Dental Practices</h3>
+              </div>
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
@@ -49,8 +54,8 @@ export default function SolutionsPage() {
                   <span><strong>Pre-auth tracking:</strong> Prevent denials before procedures occur.</span>
                 </li>
               </ul>
-              <Link href="/contact" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
-                Explore Dental Solutions <ArrowRight className="w-4 h-4" />
+              <Link href="/solutions/dental" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
+                See Dental Recovery in Action <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -66,7 +71,12 @@ export default function SolutionsPage() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <h3 className="absolute bottom-6 left-8 text-3xl font-bold text-white">Surgical Centers</h3>
+              <div className="absolute bottom-6 left-8 flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+                  <Scissors className="w-6 h-6" />
+                </div>
+                <h3 className="text-3xl font-bold text-white">Surgical Centers</h3>
+              </div>
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
@@ -86,8 +96,8 @@ export default function SolutionsPage() {
                   <span><strong>Implant invoice tracking:</strong> Ensures high-cost items are properly billed and reimbursed.</span>
                 </li>
               </ul>
-              <Link href="/contact" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
-                Explore ASC Solutions <ArrowRight className="w-4 h-4" />
+              <Link href="/solutions/surgical" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
+                See ASC Recovery in Action <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -103,7 +113,12 @@ export default function SolutionsPage() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <h3 className="absolute bottom-6 left-8 text-3xl font-bold text-white">Specialty Clinics</h3>
+              <div className="absolute bottom-6 left-8 flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+                  <Stethoscope className="w-6 h-6" />
+                </div>
+                <h3 className="text-3xl font-bold text-white">Specialty Clinics</h3>
+              </div>
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
@@ -123,8 +138,8 @@ export default function SolutionsPage() {
                   <span><strong>Modifier optimization:</strong> Identifies missing or incorrect modifiers that lead to underpayments.</span>
                 </li>
               </ul>
-              <Link href="/contact" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
-                Explore Specialty Solutions <ArrowRight className="w-4 h-4" />
+              <Link href="/solutions/specialty" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
+                See Specialty Recovery in Action <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -140,7 +155,12 @@ export default function SolutionsPage() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <h3 className="absolute bottom-6 left-8 text-3xl font-bold text-white">Enterprise Systems</h3>
+              <div className="absolute bottom-6 left-8 flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-3xl font-bold text-white">Enterprise Systems</h3>
+              </div>
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
@@ -160,8 +180,8 @@ export default function SolutionsPage() {
                   <span><strong>Custom workflow routing:</strong> Route specific denial types to specialized internal teams automatically.</span>
                 </li>
               </ul>
-              <Link href="/contact" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
-                Explore Enterprise Solutions <ArrowRight className="w-4 h-4" />
+              <Link href="/solutions/enterprise" className="text-teal-700 font-bold hover:text-teal-800 flex items-center gap-2">
+                See Enterprise Recovery in Action <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -174,9 +194,9 @@ export default function SolutionsPage() {
             <p className="text-teal-100 mb-8 max-w-2xl mx-auto text-lg">
               Schedule a free revenue cycle assessment. Our experts will analyze a sample of your aged receivables and provide a realistic projection of recoverable revenue.
             </p>
-            <Link href="/contact">
+            <Link href="/book-demo">
               <button className="bg-white text-teal-900 px-8 py-4 rounded-xl font-bold hover:bg-teal-50 transition-colors shadow-lg">
-                Request Free Assessment
+                Get Your Free Assessment
               </button>
             </Link>
           </div>

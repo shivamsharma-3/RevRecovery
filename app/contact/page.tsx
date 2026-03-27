@@ -1,18 +1,91 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Mail, MapPin, Phone, Clock, CheckCircle2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
-export default function ContactPage() {
+function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
+  const searchParams = useSearchParams();
+  
+  const [message, setMessage] = useState(() => {
+    const solution = searchParams.get('solution');
+    if (solution) {
+      const solutionNames: Record<string, string> = {
+        dental: 'Dental Solutions',
+        surgical: 'ASC Solutions',
+        specialty: 'Specialty Solutions',
+        enterprise: 'Enterprise Solutions'
+      };
+      const name = solutionNames[solution] || solution;
+      return `I'm interested in learning more about your ${name}.`;
+    }
+    return '';
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
+  if (submitted) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-10 h-10 text-teal-600" />
+        </div>
+        <h3 className="text-3xl font-bold text-slate-900 mb-4">Message Sent!</h3>
+        <p className="text-slate-600 mb-8 text-lg">
+          Thank you for reaching out. A revenue recovery specialist will get back to you within 24 hours.
+        </p>
+        <button 
+          onClick={() => setSubmitted(false)}
+          className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-colors"
+        >
+          Send Another Message
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-2xl font-bold text-slate-900 mb-6">Send us a message</h3>
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">First Name *</label>
+          <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Jane" />
+        </div>
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">Last Name *</label>
+          <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Doe" />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">Work Email *</label>
+        <input required type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="jane@clinic.com" />
+      </div>
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">Organization Name</label>
+        <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Premier Medical Group" />
+      </div>
+      <div>
+        <label className="block text-sm font-bold text-slate-700 mb-2">How can we help? *</label>
+        <textarea required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors resize-none" placeholder="I'm interested in learning more about..."></textarea>
+      </div>
+      <button type="submit" className="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20">
+        Send Message
+      </button>
+      <p className="text-xs text-slate-500 text-center mt-4">
+        By submitting this form, you agree to our <a href="/legal/privacy" className="text-teal-600 hover:underline">Privacy Policy</a>.
+      </p>
+    </form>
+  );
+}
+
+export default function ContactPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">
       <Navbar />
@@ -62,55 +135,9 @@ export default function ContactPage() {
           </div>
 
           <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-xl border border-teal-500/10">
-            {submitted ? (
-              <div className="text-center py-16">
-                <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 className="w-10 h-10 text-teal-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-slate-900 mb-4">Message Sent!</h3>
-                <p className="text-slate-600 mb-8 text-lg">
-                  Thank you for reaching out. A revenue recovery specialist will get back to you within 24 hours.
-                </p>
-                <button 
-                  onClick={() => setSubmitted(false)}
-                  className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-colors"
-                >
-                  Send Another Message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <h3 className="text-2xl font-bold text-slate-900 mb-6">Send us a message</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">First Name *</label>
-                    <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Jane" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Last Name *</label>
-                    <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Doe" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Work Email *</label>
-                  <input required type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="jane@clinic.com" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Organization Name</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Premier Medical Group" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">How can we help? *</label>
-                  <textarea required rows={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors resize-none" placeholder="I'm interested in learning more about..."></textarea>
-                </div>
-                <button type="submit" className="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20">
-                  Send Message
-                </button>
-                <p className="text-xs text-slate-500 text-center mt-4">
-                  By submitting this form, you agree to our <a href="/legal/privacy" className="text-teal-600 hover:underline">Privacy Policy</a>.
-                </p>
-              </form>
-            )}
+            <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div></div>}>
+              <ContactForm />
+            </Suspense>
           </div>
         </div>
       </main>

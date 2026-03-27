@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   Users, Search, Filter, MoreHorizontal, 
   ChevronRight, ArrowUpRight, ArrowDownRight,
-  Clock, CheckCircle2, AlertCircle, Mail, Phone
+  Clock, CheckCircle2, AlertCircle, Mail, Phone, X, FileText, Activity
 } from 'lucide-react';
 
 const PATIENTS = [
@@ -67,6 +67,7 @@ const PATIENTS = [
 
 export default function PatientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
   const filteredPatients = PATIENTS.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -147,7 +148,7 @@ export default function PatientsPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={patient.id} onClick={() => setSelectedPatient(patient)} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <img src={patient.avatar} alt="" className="w-12 h-12 rounded-full border-2 border-slate-100 shadow-sm" />
@@ -213,6 +214,99 @@ export default function PatientsPage() {
           </div>
         </div>
       </div>
+
+      {/* Patient Details Modal */}
+      {selectedPatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <img src={selectedPatient.avatar} alt="" className="w-12 h-12 rounded-full border-2 border-white shadow-sm" />
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 font-headline">{selectedPatient.name}</h3>
+                  <p className="text-sm text-slate-500 font-medium">{selectedPatient.id} • {selectedPatient.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedPatient(null)}
+                className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mt-1 ${
+                    selectedPatient.status === 'Active' ? 'bg-teal-50 text-teal-700' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {selectedPatient.status}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recovery Status</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className={`w-2 h-2 rounded-full ${
+                      selectedPatient.recoveryStatus === 'Recovered' ? 'bg-teal-500' : 
+                      selectedPatient.recoveryStatus === 'In Progress' ? 'bg-amber-500' : 'bg-slate-300'
+                    }`} />
+                    <span className="text-sm font-bold text-slate-700">{selectedPatient.recoveryStatus}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Outstanding Balance</p>
+                  <p className="text-base font-extrabold text-slate-900">{selectedPatient.balance}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Risk Score</p>
+                  <span className={`inline-flex text-xs font-bold px-3 py-1 rounded-full mt-1 ${
+                    selectedPatient.riskScore === 'High' ? 'text-red-700 bg-red-50' : 
+                    selectedPatient.riskScore === 'Medium' ? 'text-amber-700 bg-amber-50' : 'text-teal-700 bg-teal-50'
+                  }`}>
+                    {selectedPatient.riskScore}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-100 pt-6">
+                <h4 className="text-sm font-bold text-slate-900 mb-4">Recent Activity</h4>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Recovery status updated to {selectedPatient.recoveryStatus}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Today at 09:15 AM</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Last visit recorded</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{selectedPatient.lastVisit}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setSelectedPatient(null)}
+                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm text-sm"
+              >
+                Close
+              </button>
+              <button className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">
+                View Full Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

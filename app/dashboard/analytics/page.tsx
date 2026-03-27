@@ -1,17 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, TrendingDown, DollarSign, Calendar, 
   ArrowUpRight, ArrowDownRight, BarChart3, PieChart,
-  Download, Filter
+  Download, Filter, ChevronDown
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, AreaChart, Area
 } from 'recharts';
 
-const data = [
+const data30Days = [
+  { name: 'Week 1', revenue: 4000, claims: 2400 },
+  { name: 'Week 2', revenue: 3000, claims: 1398 },
+  { name: 'Week 3', revenue: 2000, claims: 9800 },
+  { name: 'Week 4', revenue: 2780, claims: 3908 },
+];
+
+const data90Days = [
+  { name: 'Month 1', revenue: 14000, claims: 12400 },
+  { name: 'Month 2', revenue: 13000, claims: 11398 },
+  { name: 'Month 3', revenue: 12000, claims: 19800 },
+];
+
+const dataYear = [
   { name: 'Jan', revenue: 4000, claims: 2400 },
   { name: 'Feb', revenue: 3000, claims: 1398 },
   { name: 'Mar', revenue: 2000, claims: 9800 },
@@ -19,9 +32,19 @@ const data = [
   { name: 'May', revenue: 1890, claims: 4800 },
   { name: 'Jun', revenue: 2390, claims: 3800 },
   { name: 'Jul', revenue: 3490, claims: 4300 },
+  { name: 'Aug', revenue: 3100, claims: 4100 },
+  { name: 'Sep', revenue: 3800, claims: 4500 },
+  { name: 'Oct', revenue: 4200, claims: 4900 },
+  { name: 'Nov', revenue: 3900, claims: 4600 },
+  { name: 'Dec', revenue: 4500, claims: 5100 },
 ];
 
 export default function RevenueAnalyticsPage() {
+  const [dateRange, setDateRange] = useState('Last 30 Days');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const currentData = dateRange === 'Last 30 Days' ? data30Days : dateRange === 'Last 90 Days' ? data90Days : dataYear;
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -30,9 +53,31 @@ export default function RevenueAnalyticsPage() {
           <p className="text-slate-500">Deep dive into your revenue performance and recovery trends.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600">
-            <Calendar className="w-4 h-4" />
-            Last 30 Days
+          <div className="relative">
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              {dateRange}
+              <ChevronDown className="w-4 h-4 ml-1" />
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-20">
+                {['Last 30 Days', 'Last 90 Days', 'This Year'].map(range => (
+                  <button
+                    key={range}
+                    onClick={() => {
+                      setDateRange(range);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition-colors"
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all font-medium text-sm shadow-sm">
             <Download className="w-4 h-4" />
@@ -103,7 +148,7 @@ export default function RevenueAnalyticsPage() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
+              <AreaChart data={currentData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0d9488" stopOpacity={0.15}/>
@@ -134,7 +179,7 @@ export default function RevenueAnalyticsPage() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <BarChart data={currentData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#94a3b8', fontWeight: 600}} dy={15} />
                 <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#94a3b8', fontWeight: 600}} />

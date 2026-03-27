@@ -260,7 +260,7 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto bg-teal-50 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden border border-teal-100">
             <div className="z-10 relative">
               <h2 className="text-2xl md:text-4xl font-extrabold tracking-tighter mb-4 font-headline text-slate-900">Ready to reclaim your <span className="text-teal-600">full potential?</span></h2>
-              <p className="text-sm md:text-base text-slate-600 mb-8 max-w-2xl mx-auto font-medium">Join over 450 clinics using RevRecover AI to stabilize their cash flow. 14-day free trial. No credit card required.</p>
+              <p className="text-sm md:text-base text-slate-600 mb-8 max-w-2xl mx-auto font-medium">Join over 450 clinics using RevRecover AI to stabilize their cash flow. 30-day free trial. No credit card required.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-700 hover:scale-[1.02] active:scale-[0.98]">
@@ -299,29 +299,16 @@ export default function LandingPage() {
               <X className="w-6 h-6" />
             </button>
             
-            <div className="w-full h-full flex flex-col items-center justify-center text-white p-12 text-center">
-              <div className="w-20 h-20 bg-teal-600 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                <PlayCircle className="w-10 h-10" />
-              </div>
-              <h3 className="text-3xl font-bold mb-4 font-headline">RevRecover AI Demo</h3>
-              <p className="text-slate-400 max-w-md mb-8">Experience clinical-grade revenue recovery in action. Our AI engine is currently processing real-time data for this demonstration.</p>
-              
-              <div className="flex items-center gap-3 text-teal-400 font-bold text-sm bg-teal-400/10 px-6 py-3 rounded-full border border-teal-400/20">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>INITIALIZING SECURE STREAM...</span>
-              </div>
-            </div>
-
-            {/* Mock Video UI Overlay */}
-            <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent">
-              <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden mb-4">
-                <div className="h-full w-1/3 bg-teal-500" />
-              </div>
-              <div className="flex justify-between items-center text-[10px] font-bold text-white/60 uppercase tracking-widest">
-                <span>0:24 / 1:00</span>
-                <span>HD 1080P</span>
-              </div>
-            </div>
+            <iframe 
+              width="100%" 
+              height="100%" 
+              src="https://www.youtube.com/embed/aqz-KE-bpKQ?autoplay=1" 
+              title="RevRecover AI Demo" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+              className="w-full h-full"
+            ></iframe>
           </div>
         </div>
       )}

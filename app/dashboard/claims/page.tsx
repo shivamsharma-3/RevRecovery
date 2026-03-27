@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, Download, Plus, 
   CheckCircle2, AlertCircle, Clock, ArrowUpRight,
-  MoreHorizontal, FileText, Activity, Users, Database, ArrowRight
+  MoreHorizontal, FileText, Activity, Users, Database, ArrowRight, X
 } from 'lucide-react';
 
 export default function ClaimsRecoveryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
+  const [selectedClaim, setSelectedClaim] = useState<any>(null);
 
   const claims = [
     { id: 'CLM-7829', patient: 'Sarah Johnson', date: '2024-03-20', amount: '$1,240.00', status: 'Recovered', insurance: 'Blue Cross', type: 'Outpatient' },
@@ -123,7 +124,7 @@ export default function ClaimsRecoveryPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredClaims.map((claim) => (
-                <tr key={claim.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                <tr key={claim.id} onClick={() => setSelectedClaim(claim)} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
                   <td className="p-4 pl-6">
                     <p className="text-sm font-bold text-teal-600 font-mono">{claim.id}</p>
                     <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
@@ -194,6 +195,97 @@ export default function ClaimsRecoveryPage() {
           </div>
         </div>
       </div>
+
+      {/* Claim Details Modal */}
+      {selectedClaim && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 font-headline">Claim {selectedClaim.id}</h3>
+                  <p className="text-sm text-slate-500 font-medium">Submitted on {selectedClaim.date}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedClaim(null)}
+                className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Patient Name</p>
+                  <p className="text-base font-bold text-slate-900">{selectedClaim.patient}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Claim Amount</p>
+                  <p className="text-base font-extrabold text-teal-700">{selectedClaim.amount}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Insurance Provider</p>
+                  <p className="text-base font-bold text-slate-900">{selectedClaim.insurance}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Claim Type</p>
+                  <p className="text-base font-bold text-slate-900">{selectedClaim.type}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current Status</p>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold mt-1 ${
+                    selectedClaim.status === 'Recovered' ? 'bg-teal-50 text-teal-700' :
+                    selectedClaim.status === 'Pending' ? 'bg-amber-50 text-amber-700' :
+                    selectedClaim.status === 'In Review' ? 'bg-blue-50 text-blue-700' :
+                    'bg-red-50 text-red-700'
+                  }`}>
+                    {selectedClaim.status}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-100 pt-6">
+                <h4 className="text-sm font-bold text-slate-900 mb-4">Activity Log</h4>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Status updated to {selectedClaim.status}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Today at 10:42 AM</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">Claim submitted to {selectedClaim.insurance}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{selectedClaim.date}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setSelectedClaim(null)}
+                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm text-sm"
+              >
+                Close
+              </button>
+              <button className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">
+                View Full Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
