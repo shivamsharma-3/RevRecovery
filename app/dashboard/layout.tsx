@@ -43,7 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const navItems = [
-    { name: 'Recovery Engine', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Campaigns', href: '/dashboard/campaigns', icon: Megaphone },
     { name: 'Patients', href: '/dashboard/patients', icon: Users },
     { name: 'Recovery Queue', href: '/dashboard/recovery', icon: CreditCard },
@@ -61,9 +61,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const showSecondarySidebar = navItems.some(item => pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)));
 
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen flex flex-col md:flex-row overflow-hidden">
-      {/* Primary Rail (Thin) */}
-      <aside className="hidden md:flex flex-col w-20 bg-[#050b18] text-slate-400 border-r border-slate-800 z-50">
+    <div className="min-h-screen flex flex-col">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Primary Rail (Thin) */}
+        <aside className="hidden md:flex flex-col w-20 bg-[#050b18] text-slate-400 border-r border-slate-800 z-50">
         <div className="p-6 flex items-center justify-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
             <Activity className="w-6 h-6 text-teal-400" />
@@ -264,6 +265,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="font-inter text-[9px] font-bold uppercase tracking-wider mt-0.5">Settings</span>
         </Link>
       </nav>
+    </div>
     </div>
   );
 }

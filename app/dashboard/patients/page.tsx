@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { 
   Users, Search, Filter, MoreHorizontal, 
   ChevronRight, ArrowUpRight, ArrowDownRight,
-  Clock, CheckCircle2, AlertCircle, Mail, Phone, X, FileText, Activity
+  Clock, CheckCircle2, AlertCircle, Mail, Phone, X, FileText, Activity,
+  Plus, User, Calendar, CreditCard
 } from 'lucide-react';
 
 const PATIENTS = [
@@ -68,27 +69,52 @@ const PATIENTS = [
 export default function PatientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('All');
 
-  const filteredPatients = PATIENTS.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPatients = PATIENTS.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTab = activeTab === 'All' || p.status === activeTab;
+    return matchesSearch && matchesTab;
+  });
+
+  const handleMarkRecovered = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    // In a real app, we'd update the state/backend here
+    alert(`Patient ${id} marked as fully recovered.`);
+  };
+
+  const handleMessage = (e: React.MouseEvent, patient: any) => {
+    e.stopPropagation();
+    setSelectedPatient(patient);
+    setIsMessageModalOpen(true);
+  };
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       <header className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
+            <nav className="flex items-center gap-2 text-[10px] font-bold text-slate-400 mb-1.5 tracking-wide uppercase">
+              <span>Executive</span>
+              <ChevronRight className="w-2.5 h-2.5" />
+              <span className="text-teal-600">Patient Directory</span>
+            </nav>
             <h1 className="text-2xl font-bold text-slate-900 font-headline">Patient Directory</h1>
             <p className="text-slate-500 text-sm font-medium">Manage patient records and recovery status.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
               <Filter className="w-4 h-4" />
               Filters
             </button>
-            <button className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all">
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all active:scale-95"
+            >
               Add Patient
             </button>
           </div>
@@ -187,12 +213,27 @@ export default function PatientsPage() {
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedPatient(patient); }}
+                        className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                        title="View Profile"
+                      >
+                        <Activity className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => handleMessage(e, patient)}
+                        className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                        title="Send Message"
+                      >
                         <Mail className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all">
-                        <Phone className="w-4 h-4" />
+                      <button 
+                        onClick={(e) => handleMarkRecovered(e, patient.id)}
+                        className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-all"
+                        title="Mark Recovered"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
                       </button>
                       <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
                         <MoreHorizontal className="w-4 h-4" />
@@ -303,6 +344,78 @@ export default function PatientsPage() {
               <button className="px-6 py-2.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">
                 View Full Profile
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Add Patient Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-xl font-bold text-slate-900 font-headline">Add New Patient</h3>
+              <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">First Name</label>
+                  <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="John" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last Name</label>
+                  <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="Doe" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                <input type="email" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="john.doe@example.com" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phone Number</label>
+                <input type="tel" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="+1 (555) 000-0000" />
+              </div>
+            </div>
+            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Cancel</button>
+              <button onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Create Record</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {isMessageModalOpen && selectedPatient && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-teal-600" />
+                <h3 className="text-xl font-bold text-slate-900 font-headline">Message {selectedPatient.name}</h3>
+              </div>
+              <button onClick={() => setIsMessageModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Message Type</label>
+                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-700">
+                  <option>Payment Reminder</option>
+                  <option>Recovery Update</option>
+                  <option>General Inquiry</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Message Body</label>
+                <textarea rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none text-sm" placeholder="Type your message here..." defaultValue={`Hi ${selectedPatient.name.split(' ')[0]}, we noticed an outstanding balance of ${selectedPatient.balance} on your account...`} />
+              </div>
+            </div>
+            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button onClick={() => setIsMessageModalOpen(false)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Cancel</button>
+              <button onClick={() => setIsMessageModalOpen(false)} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Send Message</button>
             </div>
           </div>
         </div>

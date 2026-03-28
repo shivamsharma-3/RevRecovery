@@ -9,7 +9,7 @@ import {
   Activity, Megaphone, CreditCard, Settings, Bell, Search, 
   LayoutDashboard, PlusCircle, Zap, ShieldCheck, Users, 
   TrendingUp, MessageSquare, ChevronRight, MoreHorizontal,
-  Plus, X
+  Plus, X, RefreshCw, LogOut, List
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -59,9 +59,11 @@ const denialPatterns = [
 const COLORS = ['#0d9488', '#0f766e', '#115e59', '#134e4a', '#14b8a6'];
 
 export default function DashboardHome() {
-  const { user, loading } = useAuth();
-  const [isMounted, setIsMounted] = useState(true);
-  const [hasData, setHasData] = useState(true); // Default to true to match screenshot
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+  const [hasData, setHasData] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [metrics, setMetrics] = useState({
     totalRecovered: 412890,
     recoveryRate: 94.2,
@@ -71,6 +73,11 @@ export default function DashboardHome() {
 
   const [selectedInsight, setSelectedInsight] = useState<{title: string, desc: string, time: string, color: string} | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('Year');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Simulate data loading if hasData is true
@@ -86,6 +93,23 @@ export default function DashboardHome() {
       return () => clearInterval(interval);
     }
   }, [hasData]);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setMetrics(prev => ({
+        ...prev,
+        totalRecovered: prev.totalRecovered + Math.random() * 1000,
+        messagesSent: prev.messagesSent + Math.floor(Math.random() * 50)
+      }));
+    }, 1000);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
 
   const insights = [
     { title: 'High-Yield Opportunity', desc: 'AI detected 14 unfiled claims in Cardiology ($24k total). Our engine suggests immediate batch processing to avoid timely filing denials.', time: '2 mins ago', color: 'bg-teal-500' },
@@ -167,7 +191,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="flex h-full bg-[#F8FAFB]">
+    <div className="flex flex-col min-h-full bg-[#F8FAFB]">
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
         {/* Top Navigation / Header */}
@@ -176,7 +200,15 @@ export default function DashboardHome() {
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight font-headline">Executive Dashboard</h2>
             <p className="text-slate-500 font-medium text-sm mt-1">Monitoring clinical revenue health and active recovery cycles.</p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleRefresh}
+              className={`p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all ${isRefreshing ? 'animate-spin' : ''}`}
+              title="Refresh Data"
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+            
             <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#F0F9F9] rounded-full border border-teal-100">
               <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
               <span className="text-[11px] font-bold text-teal-700 uppercase tracking-wider">Live Recovery Active</span>
@@ -330,10 +362,12 @@ export default function DashboardHome() {
                 <p className="text-teal-50/80 text-sm mb-8 leading-relaxed">
                   Launch a new targeted AI campaign to recover outstanding patient balances from Q3.
                 </p>
-                <button className="w-full py-4 bg-white text-teal-900 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-teal-50 transition-all shadow-lg shadow-black/10 text-sm">
-                  <PlusCircle className="w-5 h-5" />
-                  <span>Create New Campaign</span>
-                </button>
+                <Link href="/dashboard/campaigns/new" className="block">
+                  <button className="w-full py-4 bg-white text-teal-900 font-bold rounded-2xl flex items-center justify-center gap-2 hover:bg-teal-50 transition-all shadow-lg shadow-black/10 text-sm">
+                    <PlusCircle className="w-5 h-5" />
+                    <span>Create New Campaign</span>
+                  </button>
+                </Link>
               </div>
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal-800 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity" />
             </div>
@@ -341,7 +375,9 @@ export default function DashboardHome() {
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
               <div className="flex justify-between items-center mb-8">
                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent Insights</h4>
-                <MoreHorizontal className="w-5 h-5 text-slate-300 cursor-pointer" />
+                <Link href="/dashboard/analytics" className="p-1 hover:bg-slate-50 rounded-lg transition-colors">
+                  <List className="w-5 h-5 text-slate-300 hover:text-teal-600" />
+                </Link>
               </div>
               <div className="space-y-8">
                 {insights.map((insight, i) => (
@@ -403,7 +439,7 @@ export default function DashboardHome() {
             </div>
           </div>
         )}
-      </main>
+        </main>
     </div>
   );
 }

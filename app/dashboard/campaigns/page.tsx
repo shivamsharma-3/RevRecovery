@@ -2,30 +2,60 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Plus, Search, Filter, MoreHorizontal, ArrowRight, Bell, Info, Pause, Play, Trash2, X, BarChart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { 
+  ChevronRight, Plus, Search, Filter, MoreHorizontal, 
+  ArrowRight, Bell, Info, Pause, Play, Trash2, X, 
+  BarChart, Edit2, Eye, ArrowUpDown, Calendar
+} from 'lucide-react';
 
 const INITIAL_CAMPAIGNS = [
-  { id: 1, name: 'High-Complexity Denials', status: 'Running', rate: '54.2%', roi: '18.4x', volume: '$242,500' },
-  { id: 2, name: 'Legacy Revenue Sweep', status: 'Paused', rate: '22.1%', roi: '4.2x', volume: '$89,200' },
-  { id: 3, name: 'Medicare Re-processing', status: 'Completed', rate: '91.8%', roi: '22.5x', volume: '$1,240,000' },
-  { id: 4, name: 'Payer Underpayment Audit', status: 'Running', rate: '38.9%', roi: '9.1x', volume: '$415,800' },
+  { id: 1, name: 'High-Complexity Denials', status: 'Running', rate: '54.2%', roi: '18.4x', volume: '$242,500', date: '2024-03-15' },
+  { id: 2, name: 'Legacy Revenue Sweep', status: 'Paused', rate: '22.1%', roi: '4.2x', volume: '$89,200', date: '2024-03-10' },
+  { id: 3, name: 'Medicare Re-processing', status: 'Completed', rate: '91.8%', roi: '22.5x', volume: '$1,240,000', date: '2024-02-28' },
+  { id: 4, name: 'Payer Underpayment Audit', status: 'Running', rate: '38.9%', roi: '9.1x', volume: '$415,800', date: '2024-03-20' },
 ];
 
 export default function CampaignList() {
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState(INITIAL_CAMPAIGNS);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+  const [dateFilter, setDateFilter] = useState('All Time');
 
   const [selectedCampaign, setSelectedCampaign] = useState<typeof INITIAL_CAMPAIGNS[0] | null>(null);
   const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
 
   const filteredCampaigns = useMemo(() => {
-    return campaigns.filter(c => {
+    let result = campaigns.filter(c => {
       const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [campaigns, searchQuery, statusFilter]);
+
+    if (sortConfig) {
+      result.sort((a: any, b: any) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [campaigns, searchQuery, statusFilter, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   const toggleStatus = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -56,9 +86,9 @@ export default function CampaignList() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <nav className="flex items-center gap-2 text-[10px] font-bold text-slate-400 mb-1.5 tracking-wide uppercase">
-            <span>Recovery Engine</span>
+            <Link href="/dashboard" className="hover:text-teal-600 transition-colors">Dashboard</Link>
             <ChevronRight className="w-2.5 h-2.5" />
-            <span className="text-teal-600">Active Campaigns</span>
+            <span className="text-teal-600">Campaigns</span>
           </nav>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none mb-2 font-headline">Campaign Analytics</h2>
           <p className="text-slate-500 max-w-xl text-sm font-medium leading-relaxed">
@@ -105,40 +135,66 @@ export default function CampaignList() {
       </section>
       {/* Campaign Table / List */}
       <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-8 border-b border-slate-50 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <h3 className="text-xl font-bold text-slate-900 font-headline">Active Protocols</h3>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="relative flex-grow sm:flex-grow-0">
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <div className="relative flex-grow lg:flex-grow-0 min-w-[200px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input 
-                className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 w-full sm:w-64 transition-all outline-none" 
-                placeholder="Filter campaigns..." 
+                className="pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 w-full transition-all outline-none" 
+                placeholder="Search protocols..." 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <select 
-              className="bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 py-2 px-4 font-bold text-slate-600 transition-all outline-none"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="All">All Status</option>
-              <option value="Running">Running</option>
-              <option value="Paused">Paused</option>
-              <option value="Completed">Completed</option>
-            </select>
+            <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
+              <Filter className="w-4 h-4 text-slate-400" />
+              <select 
+                className="bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 py-2 px-4 font-bold text-slate-600 transition-all outline-none"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="All">All Status</option>
+                <option value="Running">Running</option>
+                <option value="Paused">Paused</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <select 
+                className="bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 py-2 px-4 font-bold text-slate-600 transition-all outline-none"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+              >
+                <option value="All Time">All Time</option>
+                <option value="Last 7 Days">Last 7 Days</option>
+                <option value="Last 30 Days">Last 30 Days</option>
+                <option value="Last 90 Days">Last 90 Days</option>
+              </select>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[9px] uppercase tracking-widest text-slate-400 font-bold border-b border-slate-50">
-                <th className="px-6 py-4">Protocol Name</th>
-                <th className="px-4 py-4">Status</th>
-                <th className="px-4 py-4">Success Rate</th>
-                <th className="px-4 py-4">Recovery ROI</th>
-                <th className="px-4 py-4">Volume</th>
+                <th className="px-6 py-4 cursor-pointer hover:text-teal-600 transition-colors" onClick={() => requestSort('name')}>
+                  <div className="flex items-center gap-1">Protocol Name <ArrowUpDown className="w-2.5 h-2.5" /></div>
+                </th>
+                <th className="px-4 py-4 cursor-pointer hover:text-teal-600 transition-colors" onClick={() => requestSort('status')}>
+                  <div className="flex items-center gap-1">Status <ArrowUpDown className="w-2.5 h-2.5" /></div>
+                </th>
+                <th className="px-4 py-4 cursor-pointer hover:text-teal-600 transition-colors" onClick={() => requestSort('rate')}>
+                  <div className="flex items-center gap-1">Success Rate <ArrowUpDown className="w-2.5 h-2.5" /></div>
+                </th>
+                <th className="px-4 py-4 cursor-pointer hover:text-teal-600 transition-colors" onClick={() => requestSort('roi')}>
+                  <div className="flex items-center gap-1">Recovery ROI <ArrowUpDown className="w-2.5 h-2.5" /></div>
+                </th>
+                <th className="px-4 py-4 cursor-pointer hover:text-teal-600 transition-colors" onClick={() => requestSort('volume')}>
+                  <div className="flex items-center gap-1">Volume <ArrowUpDown className="w-2.5 h-2.5" /></div>
+                </th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -178,11 +234,25 @@ export default function CampaignList() {
                   <td className="px-4 py-4 text-xs font-bold text-slate-900">{campaign.roi}</td>
                   <td className="px-4 py-4 text-xs text-slate-500 font-medium">{campaign.volume}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedCampaign(campaign); }}
+                        className="p-2 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/campaigns/edit/${campaign.id}`); }}
+                        className="p-2 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                       {campaign.status !== 'Completed' && (
                         <button 
                           onClick={(e) => toggleStatus(e, campaign.id)}
-                          className="p-1.5 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
+                          className="p-2 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
                           title={campaign.status === 'Running' ? 'Pause' : 'Resume'}
                         >
                           {campaign.status === 'Running' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -190,7 +260,7 @@ export default function CampaignList() {
                       )}
                       <button 
                         onClick={(e) => handleDeleteClick(e, campaign.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
+                        className="p-2 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -215,8 +285,7 @@ export default function CampaignList() {
           <div className="flex gap-1.5">
             <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 hover:bg-white disabled:opacity-30 transition-all" disabled>Previous</button>
             <button className="px-3 py-1.5 rounded-lg border border-teal-200 text-[10px] font-bold text-teal-700 bg-teal-50 shadow-sm">1</button>
-            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 hover:bg-white transition-all">2</button>
-            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 hover:bg-white transition-all">Next</button>
+            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 hover:bg-white disabled:opacity-30 transition-all" disabled>Next</button>
           </div>
         </div>
       </section>
@@ -330,9 +399,9 @@ export default function CampaignList() {
               <p className="text-slate-500 font-medium mb-4 text-xs leading-relaxed max-w-lg">
                 We've detected a significant increase in "Coordination of Benefits" denials from top-tier payers. Activate the <span className="text-teal-600 font-bold underline decoration-teal-200 underline-offset-4">COB-Automate</span> protocol to mitigate up to 85% of these losses.
               </p>
-              <button className="text-teal-600 font-bold text-xs inline-flex items-center gap-2 group/btn hover:gap-3 transition-all">
+              <Link href="/dashboard/diagnostics" className="text-teal-600 font-bold text-xs inline-flex items-center gap-2 group/btn hover:gap-3 transition-all">
                 View Diagnostic Details <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </Link>
             </div>
             {/* Decorative Background Gradient */}
             <div className="absolute -right-20 -bottom-20 w-48 h-48 bg-teal-50 rounded-full blur-3xl opacity-50" />
@@ -342,7 +411,7 @@ export default function CampaignList() {
           <Bell className="w-6 h-6 text-teal-400 mb-4" />
           <h5 className="text-base font-bold tracking-tight font-headline">System Alert</h5>
           <p className="text-teal-100/70 text-xs font-medium mt-2 leading-relaxed">3 campaigns require manual <br />contract verification.</p>
-          <button className="mt-6 text-[10px] font-extrabold uppercase tracking-widest text-white border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">Review Alerts</button>
+          <Link href="/dashboard/alerts" className="mt-6 text-[10px] font-extrabold uppercase tracking-widest text-white border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">Review Alerts</Link>
         </div>
       </section>
     </main>

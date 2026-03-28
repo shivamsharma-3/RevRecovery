@@ -5,11 +5,14 @@ import {
   Plus, ArrowRight, DollarSign, Clock, CheckCircle2, 
   AlertCircle, MoreHorizontal, Search, Filter,
   ArrowUpRight, Download, Share2, Trash2, Edit3,
-  Calendar, User, Tag, ShieldCheck
+  Calendar, User, Tag, ShieldCheck, X
 } from 'lucide-react';
 
 export default function RecoveryPage() {
   const [activeTab, setActiveTab] = useState('all');
+  const [selectedCase, setSelectedCase] = useState<any>(null);
+  const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [pipelines, setPipelines] = useState([
     {
@@ -104,13 +107,13 @@ export default function RecoveryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col">
+    <div className="bg-[#f8fafc] flex flex-col">
       {/* Header Section */}
       <header className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-30">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold text-teal-600 uppercase tracking-[0.2em]">Financial Operations</span>
+              <span className="text-[10px] font-bold text-teal-600 uppercase tracking-[0.2em]">Recovery Engine</span>
               <span className="text-slate-300">/</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Queue</span>
             </div>
@@ -132,7 +135,10 @@ export default function RecoveryPage() {
             <button className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all shadow-sm">
               <Filter className="w-5 h-5" />
             </button>
-            <button className="flex items-center gap-2 px-5 py-2.5 bg-[#0f172a] text-white rounded-xl hover:bg-slate-800 transition-all font-bold text-sm shadow-xl shadow-slate-900/10">
+            <button 
+              onClick={() => setIsNewCaseModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0f172a] text-white rounded-xl hover:bg-slate-800 transition-all font-bold text-sm shadow-xl shadow-slate-900/10 active:scale-95"
+            >
               <Plus className="w-4 h-4" />
               New Case
             </button>
@@ -156,7 +162,10 @@ export default function RecoveryPage() {
             </button>
           ))}
           <div className="ml-auto flex items-center gap-4">
-            <button className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-slate-600">
+            <button 
+              onClick={() => alert('Exporting queue to CSV...')}
+              className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-slate-600 transition-colors"
+            >
               <Download className="w-3.5 h-3.5" /> Export CSV
             </button>
           </div>
@@ -192,86 +201,91 @@ export default function RecoveryPage() {
               {/* Cards Container */}
               <div className="flex-1 space-y-4">
                 {column.cards.map((card, j) => (
-                  <div 
-                    key={j} 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, card.id, column.id)}
-                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-teal-200 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing"
-                  >
-                    {/* Priority Indicator */}
-                    <div className={`absolute top-0 left-0 w-1 h-full ${
-                      card.priority === 'High' ? 'bg-red-500' : 
-                      card.priority === 'Medium' ? 'bg-amber-500' : 
-                      card.priority === 'Low' ? 'bg-blue-500' : 'bg-teal-500'
-                    }`} />
+                    <div 
+                      key={card.id}
+                      onClick={() => setSelectedCase(card)}
+                      className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-teal-200 transition-all group relative overflow-hidden cursor-pointer active:scale-[0.99]"
+                    >
+                      {/* Priority Indicator */}
+                      <div className={`absolute top-0 left-0 w-1 h-full ${
+                        card.priority === 'High' ? 'bg-red-500' : 
+                        card.priority === 'Medium' ? 'bg-amber-500' : 
+                        card.priority === 'Low' ? 'bg-blue-500' : 'bg-teal-500'
+                      }`} />
 
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase mb-1">{card.id}</span>
-                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
-                          {card.patient}
-                        </h4>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-mono text-slate-400 uppercase mb-1">{card.id}</span>
+                          <h4 className="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+                            {card.patient}
+                          </h4>
+                        </div>
+                        <button className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-5">
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" /> Amount
+                      <div className="grid grid-cols-2 gap-4 mb-5">
+                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" /> Amount
+                          </div>
+                          <div className="text-sm font-mono font-black text-slate-900">{card.amount}</div>
                         </div>
-                        <div className="text-sm font-mono font-black text-slate-900">{card.amount}</div>
-                      </div>
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Aging
-                        </div>
-                        <div className="text-sm font-mono font-black text-slate-900">{card.days}d</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest ${
-                          card.type === 'Co-pay' ? 'bg-blue-50 text-blue-600' :
-                          card.type === 'Deductible' ? 'bg-purple-50 text-purple-600' :
-                          'bg-slate-50 text-slate-600'
-                        }`}>
-                          {card.type}
-                        </span>
-                      </div>
-                      <div className="flex -space-x-2">
-                        <div className="w-6 h-6 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-teal-700">
-                          AI
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-slate-500">
-                          {card.patient[0]}
+                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Aging
+                          </div>
+                          <div className="text-sm font-mono font-black text-slate-900">{card.days}d</div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Hover Actions */}
-                    <div className="absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-sm p-3 flex items-center justify-center gap-4 translate-y-full group-hover:translate-y-0 transition-transform border-t border-slate-100">
-                      <button className="p-2 text-slate-400 hover:text-teal-600 transition-all" title="Edit Case">
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-slate-400 hover:text-blue-600 transition-all" title="Share Case">
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-slate-400 hover:text-red-600 transition-all" title="Delete Case">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <div className="h-4 w-px bg-slate-200 mx-1" />
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-teal-700 transition-all">
-                        Process <ArrowRight className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest ${
+                            card.type === 'Co-pay' ? 'bg-blue-50 text-blue-600' :
+                            card.type === 'Deductible' ? 'bg-purple-50 text-purple-600' :
+                            'bg-slate-50 text-slate-600'
+                          }`}>
+                            {card.type}
+                          </span>
+                        </div>
+                        <div className="flex -space-x-2">
+                          <div className="w-6 h-6 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-teal-700">
+                            AI
+                          </div>
+                          <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-slate-500">
+                            {card.patient[0]}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hover Actions */}
+                      <div className="absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-sm p-3 flex items-center justify-center gap-4 translate-y-full group-hover:translate-y-0 transition-transform border-t border-slate-100">
+                        <button className="p-2 text-slate-400 hover:text-teal-600 transition-all" title="Edit Case">
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-400 hover:text-blue-600 transition-all" title="Share Case">
+                          <Share2 className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-slate-400 hover:text-red-600 transition-all" title="Delete Case">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <div className="h-4 w-px bg-slate-200 mx-1" />
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setIsProcessing(true); setTimeout(() => setIsProcessing(false), 2000); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-teal-700 transition-all"
+                        >
+                          {isProcessing ? 'Processing...' : 'Process'} <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
                 ))}
                 
-                <button className="w-full py-6 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 hover:border-teal-200 hover:bg-white transition-all flex flex-col items-center justify-center gap-2">
+                <button 
+                  onClick={() => setIsNewCaseModalOpen(true)}
+                  className="w-full py-6 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 hover:border-teal-200 hover:bg-white transition-all flex flex-col items-center justify-center gap-2"
+                >
                   <Plus className="w-5 h-5" />
                   Initialize Case
                 </button>
@@ -299,6 +313,127 @@ export default function RecoveryPage() {
           <span>System Load: 12%</span>
         </div>
       </footer>
+      {/* Case Details Modal */}
+      {selectedCase && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+                  <User className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 font-headline">{selectedCase.patient}</h3>
+                  <p className="text-sm text-slate-500 font-medium">Case ID: {selectedCase.id} • {selectedCase.type}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedCase(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8">
+              <div className="grid grid-cols-3 gap-6 mb-8">
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Amount Due</p>
+                  <p className="text-xl font-black text-slate-900">{selectedCase.amount}</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Aging Days</p>
+                  <p className="text-xl font-black text-slate-900">{selectedCase.days} Days</p>
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Priority</p>
+                  <span className={`inline-flex text-xs font-bold px-3 py-1 rounded-full mt-1 ${
+                    selectedCase.priority === 'High' ? 'text-red-700 bg-red-50' : 
+                    selectedCase.priority === 'Medium' ? 'text-amber-700 bg-amber-50' : 'text-teal-700 bg-teal-50'
+                  }`}>
+                    {selectedCase.priority}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-teal-600" /> AI Recovery Strategy
+                  </h4>
+                  <p className="text-sm text-slate-600 leading-relaxed bg-teal-50/30 p-4 rounded-2xl border border-teal-100/50">
+                    The AI engine has identified a high probability of recovery via a <span className="font-bold text-teal-700">Soft-Touch Empathy Protocol</span>. 
+                    Recommended outreach: WhatsApp message followed by a secure payment link.
+                  </p>
+                </div>
+                
+                <div className="border-t border-slate-100 pt-6">
+                  <h4 className="text-sm font-bold text-slate-900 mb-3">Case History</h4>
+                  <div className="space-y-4">
+                    <div className="flex gap-3">
+                      <div className="w-2 h-2 rounded-full bg-teal-500 mt-1.5" />
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">Case identified by AI Sweep</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">2 days ago</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="w-2 h-2 rounded-full bg-slate-300 mt-1.5" />
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">Initial eligibility check passed</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">1 day ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button onClick={() => setSelectedCase(null)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Close</button>
+              <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Execute Protocol</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Case Modal */}
+      {isNewCaseModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-xl font-bold text-slate-900 font-headline">Initialize New Case</h3>
+              <button onClick={() => setIsNewCaseModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Patient</label>
+                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-700">
+                  <option>Search for a patient...</option>
+                  <option>Sarah Jenkins</option>
+                  <option>Michael Chen</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Claim Amount</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="number" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="0.00" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recovery Protocol</label>
+                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-700">
+                  <option>Standard Recovery</option>
+                  <option>High-Priority Sweep</option>
+                  <option>Legacy Debt Protocol</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button onClick={() => setIsNewCaseModalOpen(false)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Cancel</button>
+              <button onClick={() => setIsNewCaseModalOpen(false)} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Initialize</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
