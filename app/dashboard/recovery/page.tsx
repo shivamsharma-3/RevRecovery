@@ -1,67 +1,57 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { 
   Plus, ArrowRight, DollarSign, Clock, CheckCircle2, 
   AlertCircle, MoreHorizontal, Search, Filter,
   ArrowUpRight, Download, Share2, Trash2, Edit3,
   Calendar, User, Tag, ShieldCheck, X
 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
+import { db } from '@/firebase';
+import { collection, getDocs, addDoc, updateDoc, doc, query, deleteDoc } from 'firebase/firestore';
+import { logAuditAction } from '@/lib/audit';
+
+const INITIAL_PIPELINES = [
+  { id: 'identified', title: 'Identified', color: 'bg-slate-400' },
+  { id: 'contacted', title: 'Contacted (AI)', color: 'bg-blue-500' },
+  { id: 'payment-plan', title: 'Payment Plan', color: 'bg-amber-500' },
+  { id: 'recovered', title: 'Recovered', color: 'bg-teal-500' }
+];
 
 export default function RecoveryPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCase, setSelectedCase] = useState<any>(null);
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cases, setCases] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [pipelines, setPipelines] = useState([
-    {
-      id: 'identified',
-      title: 'Identified',
-      count: 3,
-      amount: '$14,200',
-      color: 'bg-slate-400',
-      cards: [
-        { id: 'RC-101', patient: 'Sarah Jenkins', amount: '$450.00', days: 12, type: 'Co-pay', priority: 'High' },
-        { id: 'RC-102', patient: 'Michael Chen', amount: '$1,240.00', days: 45, type: 'Deductible', priority: 'Medium' },
-        { id: 'RC-103', patient: 'Emma Wilson', amount: '$85.00', days: 5, type: 'Co-pay', priority: 'Low' },
-      ]
-    },
-    {
-      id: 'contacted',
-      title: 'Contacted (AI)',
-      count: 2,
-      amount: '$8,450',
-      color: 'bg-blue-500',
-      cards: [
-        { id: 'RC-104', patient: 'James Miller', amount: '$3,200.00', days: 60, type: 'Out of Network', priority: 'High' },
-        { id: 'RC-105', patient: 'Olivia Davis', amount: '$210.00', days: 18, type: 'Co-pay', priority: 'Medium' },
-      ]
-    },
-    {
-      id: 'payment-plan',
-      title: 'Payment Plan',
-      count: 3,
-      amount: '$42,500',
-      color: 'bg-amber-500',
-      cards: [
-        { id: 'RC-106', patient: 'William Taylor', amount: '$890.00', days: 30, type: 'Deductible', priority: 'High' },
-        { id: 'RC-107', patient: 'Sophia Martinez', amount: '$1,500.00', days: 90, type: 'Procedure', priority: 'Medium' },
-        { id: 'RC-108', patient: 'Lucas Anderson', amount: '$450.00', days: 15, type: 'Co-pay', priority: 'Low' },
-      ]
-    },
-    {
-      id: 'recovered',
-      title: 'Recovered',
-      count: 2,
-      amount: '$128,400',
-      color: 'bg-teal-500',
-      cards: [
-        { id: 'RC-109', patient: 'Isabella Thomas', amount: '$320.00', days: 0, type: 'Co-pay', priority: 'Done' },
-        { id: 'RC-110', patient: 'Mason Jackson', amount: '$2,100.00', days: 0, type: 'Procedure', priority: 'Done' },
-      ]
-    }
-  ]);
+  useEffect(() => {
+    const fetchCases = async () => {
+      if (!user?.uid) return;
+      setIsLoading(true);
+      try {
+        const q = query(collection(db, 'users', user.uid, 'recovery_cases'));
+        const snapshot = await getDocs(q);
+        const fetchedCases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCases(fetchedCases);
+      } catch (error) {
+        console.error("Error fetching recovery cases:", error);
+        if (error instanceof Error) {
+          toast.error(`Failed to fetch recovery cases: ${error.message}`);
+        } else {
+          toast.error('Failed to fetch recovery cases');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCases();
+  }, [user]);
 
   const handleDragStart = (e: React.DragEvent, cardId: string, sourcePipelineId: string) => {
     e.dataTransfer.setData('cardId', cardId);
@@ -72,42 +62,149 @@ export default function RecoveryPage() {
     e.preventDefault(); // Necessary to allow dropping
   };
 
-  const handleDrop = (e: React.DragEvent, targetPipelineId: string) => {
+  const handleDrop = async (e: React.DragEvent, targetPipelineId: string) => {
     e.preventDefault();
+    if (!user?.uid) return;
+
     const cardId = e.dataTransfer.getData('cardId');
     const sourcePipelineId = e.dataTransfer.getData('sourcePipelineId');
 
     if (sourcePipelineId === targetPipelineId) return;
 
-    setPipelines(prevPipelines => {
-      const newPipelines = [...prevPipelines];
+    const recoveryCase = cases.find(c => c.id === cardId);
+    const patientName = recoveryCase?.patient || 'Unknown';
+
+    try {
+      const caseRef = doc(db, 'users', user.uid, 'recovery_cases', cardId);
+      await updateDoc(caseRef, { pipelineId: targetPipelineId });
       
-      const sourcePipelineIndex = newPipelines.findIndex(p => p.id === sourcePipelineId);
-      const targetPipelineIndex = newPipelines.findIndex(p => p.id === targetPipelineId);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Updated Case Pipeline',
+        target: `Case for ${patientName} moved to ${targetPipelineId}`,
+        status: 'Success',
+        severity: 'Low',
+        type: 'recovery'
+      });
 
-      const sourcePipeline = { ...newPipelines[sourcePipelineIndex] };
-      const targetPipeline = { ...newPipelines[targetPipelineIndex] };
-
-      const cardIndex = sourcePipeline.cards.findIndex(c => c.id === cardId);
-      if (cardIndex === -1) return prevPipelines; // Safety check
-
-      const [cardToMove] = sourcePipeline.cards.splice(cardIndex, 1);
-
-      targetPipeline.cards.push(cardToMove);
-
-      // Update counts
-      sourcePipeline.count = sourcePipeline.cards.length;
-      targetPipeline.count = targetPipeline.cards.length;
-
-      newPipelines[sourcePipelineIndex] = sourcePipeline;
-      newPipelines[targetPipelineIndex] = targetPipeline;
-
-      return newPipelines;
-    });
+      setCases(prevCases => prevCases.map(c => 
+        c.id === cardId ? { ...c, pipelineId: targetPipelineId } : c
+      ));
+      toast.success(`Case moved to ${targetPipelineId}`);
+    } catch (error) {
+      console.error("Error updating case pipeline:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Case Pipeline Update Failed',
+        target: `Case for ${patientName}`,
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'recovery'
+      });
+      toast.error('Failed to update case pipeline');
+    }
   };
 
+  const handleCreateCase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.uid) return;
+    
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const newCaseData = {
+      patient: formData.get('patient') as string,
+      amount: parseFloat(formData.get('amount') as string),
+      days: parseInt(formData.get('days') as string, 10),
+      type: formData.get('type') as string,
+      priority: formData.get('priority') as string,
+      pipelineId: 'identified'
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, 'users', user.uid, 'recovery_cases'), newCaseData);
+      
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Created Recovery Case',
+        target: `Case for ${newCaseData.patient}`,
+        status: 'Success',
+        severity: 'Low',
+        type: 'recovery'
+      });
+
+      setCases([{ id: docRef.id, ...newCaseData }, ...cases]);
+      setIsNewCaseModalOpen(false);
+      toast.success('Recovery case created successfully');
+    } catch (error) {
+      console.error("Error creating case:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Recovery Case Creation Failed',
+        target: `Case for ${formData.get('patient')}`,
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'recovery'
+      });
+      toast.error('Failed to create recovery case');
+    }
+  };
+
+  const handleDeleteCase = async (id: string) => {
+    if (!user?.uid) return;
+    if (!confirm('Are you sure you want to delete this case?')) return;
+    
+    const recoveryCase = cases.find(c => c.id === id);
+    const patientName = recoveryCase?.patient || 'Unknown';
+
+    try {
+      await deleteDoc(doc(db, 'users', user.uid, 'recovery_cases', id));
+      
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Deleted Recovery Case',
+        target: `Case for ${patientName}`,
+        status: 'Success',
+        severity: 'Medium',
+        type: 'recovery'
+      });
+
+      setCases(cases.filter(c => c.id !== id));
+      setSelectedCase(null);
+      toast.success('Recovery case deleted successfully');
+    } catch (error) {
+      console.error("Error deleting case:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Recovery Case Deletion Failed',
+        target: `Case for ${patientName}`,
+        status: 'Failed',
+        severity: 'High',
+        type: 'recovery'
+      });
+      toast.error('Failed to delete recovery case');
+    }
+  };
+
+  const filteredCases = cases.filter(c => {
+    const matchesSearch = c.patient?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.id?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
+
+  const pipelines = INITIAL_PIPELINES.map(pipeline => {
+    const pipelineCases = filteredCases.filter(c => c.pipelineId === pipeline.id);
+    const amount = pipelineCases.reduce((sum, c) => sum + (c.amount || 0), 0);
+    return {
+      ...pipeline,
+      count: pipelineCases.length,
+      amount: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount),
+      cards: pipelineCases
+    };
+  });
+
   return (
-    <div className="bg-[#f8fafc] flex flex-col">
+    <div className="bg-[#f8fafc] flex flex-col h-full">
       {/* Header Section */}
       <header className="bg-white border-b border-slate-200 px-8 py-6 sticky top-0 z-30">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -129,6 +226,8 @@ export default function RecoveryPage() {
               <input 
                 type="text" 
                 placeholder="Search by ID, Patient, or Type..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500/10 transition-all w-full md:w-72 outline-none"
               />
             </div>
@@ -163,7 +262,7 @@ export default function RecoveryPage() {
           ))}
           <div className="ml-auto flex items-center gap-4">
             <button 
-              onClick={() => alert('Exporting queue to CSV...')}
+              onClick={() => toast.info('Exporting queue to CSV...')}
               className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-slate-600 transition-colors"
             >
               <Download className="w-3.5 h-3.5" /> Export CSV
@@ -175,7 +274,9 @@ export default function RecoveryPage() {
       {/* Main Pipeline View */}
       <main className="flex-1 p-8 overflow-x-auto">
         <div className="max-w-[1600px] mx-auto flex gap-8 min-w-max h-full">
-          {pipelines.map((column, i) => (
+          {isLoading ? (
+            <div className="w-full flex items-center justify-center p-12 text-slate-500">Loading cases...</div>
+          ) : pipelines.map((column, i) => (
             <div 
               key={i} 
               className="w-[340px] flex flex-col"
@@ -199,194 +300,165 @@ export default function RecoveryPage() {
               </div>
               
               {/* Cards Container */}
-              <div className="flex-1 space-y-4">
-                {column.cards.map((card, j) => (
-                    <div 
-                      key={card.id}
-                      onClick={() => setSelectedCase(card)}
-                      className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-teal-200 transition-all group relative overflow-hidden cursor-pointer active:scale-[0.99]"
-                    >
-                      {/* Priority Indicator */}
-                      <div className={`absolute top-0 left-0 w-1 h-full ${
-                        card.priority === 'High' ? 'bg-red-500' : 
-                        card.priority === 'Medium' ? 'bg-amber-500' : 
-                        card.priority === 'Low' ? 'bg-blue-500' : 'bg-teal-500'
-                      }`} />
+              <div className="flex-1 flex flex-col gap-4 bg-slate-100/50 rounded-[2rem] p-4 border border-slate-200/50 min-h-[500px]">
+                {column.cards.map((card: any) => (
+                  <div 
+                    key={card.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, card.id, column.id)}
+                    onClick={() => setSelectedCase(card)}
+                    className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing group relative overflow-hidden"
+                  >
+                    {/* Priority Indicator Line */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                      card.priority === 'High' ? 'bg-red-500' :
+                      card.priority === 'Medium' ? 'bg-amber-500' :
+                      card.priority === 'Low' ? 'bg-blue-500' : 'bg-teal-500'
+                    }`} />
 
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-mono text-slate-400 uppercase mb-1">{card.id}</span>
-                          <h4 className="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
-                            {card.patient}
-                          </h4>
-                        </div>
-                        <button className="p-1.5 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 mb-5">
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <DollarSign className="w-3 h-3" /> Amount
-                          </div>
-                          <div className="text-sm font-mono font-black text-slate-900">{card.amount}</div>
-                        </div>
-                        <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Aging
-                          </div>
-                          <div className="text-sm font-mono font-black text-slate-900">{card.days}d</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div className="pl-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
+                          {card.id.substring(0, 8)}
+                        </span>
                         <div className="flex items-center gap-2">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest ${
-                            card.type === 'Co-pay' ? 'bg-blue-50 text-blue-600' :
-                            card.type === 'Deductible' ? 'bg-purple-50 text-purple-600' :
-                            'bg-slate-50 text-slate-600'
+                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${
+                            card.priority === 'High' ? 'bg-red-50 text-red-600' :
+                            card.priority === 'Medium' ? 'bg-amber-50 text-amber-600' :
+                            card.priority === 'Low' ? 'bg-blue-50 text-blue-600' : 'bg-teal-50 text-teal-600'
                           }`}>
-                            {card.type}
+                            {card.priority}
                           </span>
                         </div>
-                        <div className="flex -space-x-2">
-                          <div className="w-6 h-6 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-teal-700">
-                            AI
-                          </div>
-                          <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-slate-500">
-                            {card.patient[0]}
-                          </div>
-                        </div>
+                      </div>
+                      
+                      <h4 className="text-base font-bold text-slate-900 mb-1 font-headline">{card.patient}</h4>
+                      
+                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mb-4">
+                        <span className="flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5" />
+                          {card.type}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
+                          {card.days} days
+                        </span>
                       </div>
 
-                      {/* Hover Actions */}
-                      <div className="absolute inset-x-0 bottom-0 bg-white/95 backdrop-blur-sm p-3 flex items-center justify-center gap-4 translate-y-full group-hover:translate-y-0 transition-transform border-t border-slate-100">
-                        <button className="p-2 text-slate-400 hover:text-teal-600 transition-all" title="Edit Case">
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:text-blue-600 transition-all" title="Share Case">
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:text-red-600 transition-all" title="Delete Case">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <div className="h-4 w-px bg-slate-200 mx-1" />
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setIsProcessing(true); setTimeout(() => setIsProcessing(false), 2000); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-teal-700 transition-all"
-                        >
-                          {isProcessing ? 'Processing...' : 'Process'} <ArrowRight className="w-3 h-3" />
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                        <div className="text-lg font-black text-slate-900 tracking-tight">
+                          ${typeof card.amount === 'number' ? card.amount.toFixed(2) : card.amount}
+                        </div>
+                        <button className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-colors opacity-0 group-hover:opacity-100">
+                          <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
+                  </div>
                 ))}
                 
-                <button 
-                  onClick={() => setIsNewCaseModalOpen(true)}
-                  className="w-full py-6 border-2 border-dashed border-slate-200 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 hover:border-teal-200 hover:bg-white transition-all flex flex-col items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Initialize Case
-                </button>
+                {/* Empty State for Column */}
+                {column.cards.length === 0 && (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-200 rounded-3xl">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm">
+                      <Plus className="w-5 h-5 text-slate-300" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Drop cases here</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       </main>
 
-      {/* Footer / Status Bar */}
-      <footer className="bg-white border-t border-slate-200 px-8 py-3 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-teal-500 rounded-full" />
-            Live Sync Active
-          </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            HIPAA Compliant Session
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span>Last Updated: 08:59:49 UTC</span>
-          <span className="text-slate-200">|</span>
-          <span>System Load: 12%</span>
-        </div>
-      </footer>
       {/* Case Details Modal */}
       {selectedCase && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between z-10">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
-                  <User className="w-6 h-6" />
+                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center">
+                  <User className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 font-headline">{selectedCase.patient}</h3>
-                  <p className="text-sm text-slate-500 font-medium">Case ID: {selectedCase.id} • {selectedCase.type}</p>
+                  <h2 className="text-2xl font-bold text-slate-900 font-headline">{selectedCase.patient}</h2>
+                  <div className="text-sm font-medium text-slate-500">{selectedCase.id}</div>
                 </div>
               </div>
-              <button onClick={() => setSelectedCase(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleDeleteCase(selectedCase.id)}
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="Delete Case"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => setSelectedCase(null)}
+                  className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
+            
             <div className="p-8">
-              <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Amount Due</p>
-                  <p className="text-xl font-black text-slate-900">{selectedCase.amount}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Amount Due</div>
+                  <div className="text-3xl font-extrabold text-slate-900">${typeof selectedCase.amount === 'number' ? selectedCase.amount.toFixed(2) : selectedCase.amount}</div>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Aging Days</p>
-                  <p className="text-xl font-black text-slate-900">{selectedCase.days} Days</p>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Days Aging</div>
+                  <div className="text-xl font-bold text-slate-700">{selectedCase.days} Days</div>
                 </div>
-                <div className="p-4 bg-slate-50 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Priority</p>
-                  <span className={`inline-flex text-xs font-bold px-3 py-1 rounded-full mt-1 ${
-                    selectedCase.priority === 'High' ? 'text-red-700 bg-red-50' : 
-                    selectedCase.priority === 'Medium' ? 'text-amber-700 bg-amber-50' : 'text-teal-700 bg-teal-50'
-                  }`}>
-                    {selectedCase.priority}
-                  </span>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Priority</div>
+                  <div className={`text-xl font-bold ${
+                    selectedCase.priority === 'High' ? 'text-red-600' :
+                    selectedCase.priority === 'Medium' ? 'text-amber-600' : 'text-teal-600'
+                  }`}>{selectedCase.priority}</div>
                 </div>
               </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-teal-600" /> AI Recovery Strategy
-                  </h4>
-                  <p className="text-sm text-slate-600 leading-relaxed bg-teal-50/30 p-4 rounded-2xl border border-teal-100/50">
-                    The AI engine has identified a high probability of recovery via a <span className="font-bold text-teal-700">Soft-Touch Empathy Protocol</span>. 
-                    Recommended outreach: WhatsApp message followed by a secure payment link.
-                  </p>
+
+              <h3 className="text-lg font-bold text-slate-900 mb-4 font-headline">Case Details</h3>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100">
+                  <span className="text-sm font-bold text-slate-500">Type</span>
+                  <span className="text-sm font-bold text-slate-900">{selectedCase.type}</span>
                 </div>
-                
-                <div className="border-t border-slate-100 pt-6">
-                  <h4 className="text-sm font-bold text-slate-900 mb-3">Case History</h4>
-                  <div className="space-y-4">
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 rounded-full bg-teal-500 mt-1.5" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">Case identified by AI Sweep</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">2 days ago</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="w-2 h-2 rounded-full bg-slate-300 mt-1.5" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">Initial eligibility check passed</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">1 day ago</p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-100">
+                  <span className="text-sm font-bold text-slate-500">Current Stage</span>
+                  <span className="text-sm font-bold text-slate-900 capitalize">{selectedCase.pipelineId.replace('-', ' ')}</span>
                 </div>
               </div>
-            </div>
-            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button onClick={() => setSelectedCase(null)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Close</button>
-              <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Execute Protocol</button>
+
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    setIsProcessing(true);
+                    setTimeout(() => {
+                      setIsProcessing(false);
+                      toast.success('AI Agent sequence initiated.');
+                    }, 1500);
+                  }}
+                  disabled={isProcessing}
+                  className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-5 h-5" />
+                      Trigger AI Agent
+                    </>
+                  )}
+                </button>
+                <button className="px-6 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-colors">
+                  Manual Action
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -394,47 +466,98 @@ export default function RecoveryPage() {
 
       {/* New Case Modal */}
       {isNewCaseModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="text-xl font-bold text-slate-900 font-headline">Initialize New Case</h3>
-              <button onClick={() => setIsNewCaseModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-slate-900 font-headline">New Recovery Case</h2>
+              <button 
+                onClick={() => setIsNewCaseModalOpen(false)}
+                className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-8 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Patient</label>
-                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-700">
-                  <option>Search for a patient...</option>
-                  <option>Sarah Jenkins</option>
-                  <option>Michael Chen</option>
-                </select>
+            
+            <form onSubmit={handleCreateCase} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Patient Name</label>
+                <input 
+                  type="text" 
+                  name="patient"
+                  required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
+                  placeholder="e.g. John Doe"
+                />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Claim Amount</label>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input type="number" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none" placeholder="0.00" />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Amount ($)</label>
+                  <input 
+                    type="number" 
+                    name="amount"
+                    step="0.01"
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Days Aging</label>
+                  <input 
+                    type="number" 
+                    name="days"
+                    required
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
+                    placeholder="e.g. 30"
+                  />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recovery Protocol</label>
-                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500/20 outline-none font-bold text-slate-700">
-                  <option>Standard Recovery</option>
-                  <option>High-Priority Sweep</option>
-                  <option>Legacy Debt Protocol</option>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Type</label>
+                <select 
+                  name="type"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
+                >
+                  <option value="Co-pay">Co-pay</option>
+                  <option value="Deductible">Deductible</option>
+                  <option value="Out of Network">Out of Network</option>
+                  <option value="Procedure">Procedure</option>
                 </select>
               </div>
-            </div>
-            <div className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-              <button onClick={() => setIsNewCaseModalOpen(false)} className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">Cancel</button>
-              <button onClick={() => setIsNewCaseModalOpen(false)} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/20 text-sm">Initialize</button>
-            </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Priority</label>
+                <select 
+                  name="priority"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setIsNewCaseModalOpen(false)}
+                  className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-3 bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all"
+                >
+                  Create Case
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
     </div>
   );
 }
-

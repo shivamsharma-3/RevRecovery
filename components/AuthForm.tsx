@@ -5,61 +5,34 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 
 export const AuthForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setMessage({ text: 'Please enter both email and password.', type: 'error' });
-      return;
-    }
-    setLoading(true);
-    setMessage(null);
-    
-    // Mock signup
-    setTimeout(() => {
-      login(email);
-      router.push('/dashboard');
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setMessage({ text: 'Please enter both email and password.', type: 'error' });
-      return;
-    }
-    setLoading(true);
-    setMessage(null);
-    
-    // Mock login
-    setTimeout(() => {
-      login(email);
-      router.push('/dashboard');
-      setLoading(false);
-    }, 1000);
-  };
-
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    // Mock Google login
-    setTimeout(() => {
-      login('test@revrecover.ai');
+    setMessage(null);
+    try {
+      await login();
       router.push('/dashboard');
+    } catch (error: any) {
+      setMessage({ text: error.message || 'Failed to sign in with Google.', type: 'error' });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <div className="max-w-md mx-auto p-8 bg-white rounded-3xl shadow-2xl border border-teal-500/10">
       <h2 className="text-2xl font-bold mb-6 text-teal-800 font-headline">Welcome to RevRecover AI</h2>
       
+      {message && (
+        <div className={`p-4 rounded-xl mb-6 text-sm font-medium ${message.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-teal-50 text-teal-700 border border-teal-100'}`}>
+          {message.text}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={handleGoogleSignIn}
@@ -72,72 +45,12 @@ export const AuthForm = () => {
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Continue with Google
+        {loading ? 'Signing in...' : 'Continue with Google'}
       </button>
 
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-slate-500 font-medium uppercase tracking-wider text-[10px]">or use email</span>
-        </div>
+      <div className="text-center text-sm text-slate-500 mt-6">
+        By continuing, you agree to our <a href="#" className="text-teal-600 hover:underline">Terms of Service</a> and <a href="#" className="text-teal-600 hover:underline">Privacy Policy</a>.
       </div>
-
-      <form className="space-y-4" onSubmit={handleSignIn}>
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Email Address</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-sm"
-            placeholder="dr.chen@clinic.com"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-sm"
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 active:scale-[0.98]"
-          >
-            {loading ? 'Processing...' : 'Sign In'}
-          </button>
-          <button
-            type="button"
-            onClick={handleSignUp}
-            disabled={loading}
-            className="w-full bg-slate-50 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-100 transition-all disabled:opacity-50"
-          >
-            Create Account
-          </button>
-        </div>
-      </form>
-
-      {message && (
-        <div className={`mt-6 p-4 rounded-xl text-sm font-medium text-center ${
-          message.type === 'success' ? 'bg-teal-50 text-teal-700 border border-teal-100' : 'bg-red-50 text-red-700 border border-red-100'
-        }`}>
-          {message.text}
-        </div>
-      )}
-
-      <p className="mt-6 text-[10px] text-center text-slate-400 font-medium leading-relaxed">
-        By continuing, you agree to RevRecover AI's <br />
-        <span className="text-teal-600 cursor-pointer hover:underline">Terms of Service</span> and <span className="text-teal-600 cursor-pointer hover:underline">Privacy Policy</span>.
-      </p>
     </div>
   );
 };

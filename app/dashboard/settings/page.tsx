@@ -1,20 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { 
   Settings, User, Bell, Shield, Database, 
   Globe, Moon, Sun, Save, ChevronRight,
-  CreditCard, Key, Mail, Phone, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Plus, MoreHorizontal
+  CreditCard, Key, Mail, Phone, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Plus, MoreHorizontal, X
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { auth, db } from '@/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { updatePassword, updateProfile, signOut } from 'firebase/auth';
+import { logAuditAction } from '@/lib/audit';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const [isMounted, setIsMounted] = useState(false);
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [modalData, setModalData] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
 
   // Profile State
   const [profileData, setProfileData] = useState({
@@ -46,21 +55,171 @@ export default function SettingsPage() {
   ]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsMounted(true), 0);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchSettings = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.firstName || data.lastName || data.phone || data.jobTitle) {
+            setProfileData({
+              firstName: data.firstName || '',
+              lastName: data.lastName || '',
+              phone: data.phone || '',
+              jobTitle: data.jobTitle || ''
+            });
+          }
+          if (data.emailNotifs) setEmailNotifs(data.emailNotifs);
+          if (data.inAppNotifs) setInAppNotifs(data.inAppNotifs);
+          if (data.integrations) setIntegrations(data.integrations);
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
 
-  const handleSave = () => {
+    fetchSettings();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user?.uid) return;
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        phone: profileData.phone,
+        jobTitle: profileData.jobTitle,
+        emailNotifs,
+        inAppNotifs,
+        integrations
+      });
+
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: `${profileData.firstName} ${profileData.lastName}`.trim()
+        });
+      }
+
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Updated Settings',
+        target: 'User Profile & Preferences',
+        status: 'Success',
+        severity: 'Low',
+        type: 'system'
+      });
+
       setSaveSuccess(true);
+      toast.success('Settings saved successfully');
       setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Settings Update Failed',
+        target: 'User Profile & Preferences',
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'system'
+      });
+      toast.error('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  if (!isMounted) return <div className="p-10">Loading settings...</div>;
-  if (!user) return <div className="p-10">Please log in to view settings.</div>;
+  const handleUpdatePassword = async () => {
+    if (!user?.uid) return;
+    if (!newPassword) {
+      toast.error('Please enter a new password.');
+      return;
+    }
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, newPassword);
+        
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'Changed Password',
+          target: 'Security Settings',
+          status: 'Success',
+          severity: 'High',
+          type: 'security'
+        });
+
+        toast.success('Password updated successfully.');
+        setNewPassword('');
+        setCurrentPassword('');
+      }
+    } catch (error: any) {
+      console.error("Error updating password:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Password Change Failed',
+        target: 'Security Settings',
+        status: 'Failed',
+        severity: 'High',
+        type: 'security'
+      });
+      if (error.code === 'auth/requires-recent-login') {
+        toast.error('Please sign out and sign in again to update your password.');
+      } else {
+        toast.error(error.message || 'Failed to update password.');
+      }
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (user?.uid) {
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'User Signed Out',
+        target: 'Session Management',
+        status: 'Success',
+        severity: 'Low',
+        type: 'system'
+      });
+    }
+    try {
+      await signOut(auth);
+      window.location.href = '/';
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error('Failed to sign out.');
+    }
+  };
+
+  // Simulate a random error to show the fallback state if needed, or just provide it as a fallback
+  if (hasError) {
+    return (
+      <div className="flex-1 p-10 flex flex-col items-center justify-center text-slate-500 h-full min-h-[400px]">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h3 className="text-xl font-bold text-slate-900 mb-2">Unable to load settings</h3>
+        <p className="mb-6">There was a problem retrieving your account preferences.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all"
+        >
+          Please refresh
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-10 flex flex-col items-center justify-center text-slate-500 h-full min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-4" />
+        <p className="font-medium">Loading settings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 md:p-10 bg-[#F8FAFB] overflow-y-auto">
@@ -123,11 +282,18 @@ export default function SettingsPage() {
               <h3 className="text-xl font-bold text-slate-900 font-headline mb-8">Profile Information</h3>
               <div className="space-y-6">
                 <div className="flex items-center gap-6 mb-8">
-                  <div className="w-24 h-24 rounded-full bg-teal-100 flex items-center justify-center text-teal-800 text-3xl font-bold border-4 border-white shadow-lg">
-                    {user.email?.charAt(0).toUpperCase() || 'A'}
+                  <div className="w-24 h-24 rounded-full bg-teal-100 flex items-center justify-center text-teal-800 text-3xl font-bold border-4 border-white shadow-lg overflow-hidden">
+                    {user?.photoURL ? (
+                      <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      user?.email?.charAt(0).toUpperCase() || 'A'
+                    )}
                   </div>
                   <div>
-                    <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm">
+                    <button 
+                      onClick={() => setActiveModal('upload-photo')}
+                      className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
+                    >
                       Upload Photo
                     </button>
                     <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">JPG, GIF or PNG. Max size of 800K</p>
@@ -159,7 +325,7 @@ export default function SettingsPage() {
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input 
                         type="email" 
-                        defaultValue={user.email || ''} 
+                        defaultValue={user?.email || ''} 
                         disabled
                         className="w-full pl-12 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-2xl text-sm font-medium text-slate-500 cursor-not-allowed"
                       />
@@ -208,6 +374,8 @@ export default function SettingsPage() {
                       <div className="relative">
                         <input 
                           type={showPassword ? "text" : "password"} 
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                         />
                         <button 
@@ -223,10 +391,15 @@ export default function SettingsPage() {
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Password</label>
                       <input 
                         type={showPassword ? "text" : "password"} 
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
                       />
                     </div>
-                    <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
+                    <button 
+                      onClick={handleUpdatePassword}
+                      className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all"
+                    >
                       Update Password
                     </button>
                   </div>
@@ -242,7 +415,10 @@ export default function SettingsPage() {
                       <p className="text-sm font-bold text-slate-900">Authenticator App</p>
                       <p className="text-xs text-slate-500 mt-1">Use an app like Google Authenticator or Authy to generate codes.</p>
                     </div>
-                    <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm">
+                    <button 
+                      onClick={() => setActiveModal('enable-2fa')}
+                      className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm"
+                    >
                       Enable
                     </button>
                   </div>
@@ -275,7 +451,12 @@ export default function SettingsPage() {
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Last active 2 hours ago • San Francisco, CA</p>
                         </div>
                       </div>
-                      <button className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:underline">Revoke</button>
+                      <button 
+                        onClick={() => setActiveModal('revoke-session')}
+                        className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:underline"
+                      >
+                        Revoke
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -290,7 +471,10 @@ export default function SettingsPage() {
                   <h3 className="text-xl font-bold text-slate-900 font-headline">PMS Integrations</h3>
                   <p className="text-sm text-slate-500 mt-1">Connect RevRecover AI to your Practice Management System.</p>
                 </div>
-                <button className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">
+                <button 
+                  onClick={() => setActiveModal('add-integration')}
+                  className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all"
+                >
                   Add Integration
                 </button>
               </div>
@@ -319,16 +503,17 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center gap-2 sm:self-center self-start ml-14 sm:ml-0">
                       {pms.status === 'Connected' && (
-                        <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-[10px] uppercase tracking-widest font-bold hover:bg-slate-50 transition-all">
+                        <button 
+                          onClick={() => { setActiveModal('integration-settings'); setModalData(pms); }}
+                          className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-[10px] uppercase tracking-widest font-bold hover:bg-slate-50 transition-all"
+                        >
                           Settings
                         </button>
                       )}
                       <button 
                         onClick={() => {
-                          const newIntegrations = [...integrations];
-                          newIntegrations[i].status = newIntegrations[i].status === 'Connected' ? 'Available' : 'Connected';
-                          newIntegrations[i].lastSync = newIntegrations[i].status === 'Connected' ? 'Just now' : 'N/A';
-                          setIntegrations(newIntegrations);
+                          setActiveModal(pms.status === 'Connected' ? 'disconnect-integration' : 'connect-integration');
+                          setModalData({ index: i, pms });
                         }}
                         className={`px-4 py-2 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all ${
                         pms.status === 'Connected' 
@@ -433,12 +618,24 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-sm text-slate-300 mb-6 max-w-md">Includes unlimited AI recovery campaigns, full PMS integration, and dedicated account management.</p>
                   
-                  <div className="flex gap-3">
-                    <button className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setActiveModal('manage-plan')}
+                      className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
+                    >
                       Manage Plan
                     </button>
-                    <button className="px-5 py-2.5 bg-white/10 text-white rounded-xl text-sm font-bold hover:bg-white/20 transition-all">
+                    <button 
+                      onClick={() => setActiveModal('view-invoices')}
+                      className="px-5 py-2.5 bg-white/10 text-white rounded-xl text-sm font-bold hover:bg-white/20 transition-all"
+                    >
                       View Invoices
+                    </button>
+                    <button 
+                      onClick={() => setActiveModal('switch-plan')}
+                      className="ml-2 text-sm font-bold text-teal-400 hover:text-teal-300 transition-colors underline underline-offset-4"
+                    >
+                      Switch Plan
                     </button>
                   </div>
                 </div>
@@ -458,12 +655,18 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-1 rounded-md uppercase tracking-widest">Default</span>
-                    <button className="text-slate-400 hover:text-slate-600">
+                    <button 
+                      onClick={() => setActiveModal('payment-options')}
+                      className="text-slate-400 hover:text-slate-600"
+                    >
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
-                <button className="text-[10px] uppercase tracking-widest font-bold text-teal-600 hover:underline flex items-center gap-2">
+                <button 
+                  onClick={() => setActiveModal('add-payment')}
+                  className="text-[10px] uppercase tracking-widest font-bold text-teal-600 hover:underline flex items-center gap-2"
+                >
                   <Plus className="w-4 h-4" /> Add Payment Method
                 </button>
               </div>
@@ -471,6 +674,264 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900 font-headline">
+                {activeModal === 'upload-photo' && 'Upload Profile Photo'}
+                {activeModal === 'enable-2fa' && 'Enable Two-Factor Authentication'}
+                {activeModal === 'revoke-session' && 'Revoke Session'}
+                {activeModal === 'add-integration' && 'Integration Catalog'}
+                {activeModal === 'connect-integration' && `Connect ${modalData?.pms?.name}`}
+                {activeModal === 'disconnect-integration' && `Disconnect ${modalData?.pms?.name}`}
+                {activeModal === 'integration-settings' && `${modalData?.pms?.name} Settings`}
+                {activeModal === 'manage-plan' && 'Manage Enterprise Plan'}
+                {activeModal === 'view-invoices' && 'Billing History'}
+                {activeModal === 'switch-plan' && 'Compare Plans'}
+                {activeModal === 'payment-options' && 'Payment Options'}
+                {activeModal === 'add-payment' && 'Add Payment Method'}
+              </h3>
+              <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              {/* Modal Content based on activeModal */}
+              {activeModal === 'upload-photo' && (
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer">
+                    <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
+                    <p className="text-xs text-slate-500 mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                  </div>
+                  <input type="text" id="photoUrlInput" placeholder="Or enter an image URL..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                  <button onClick={async () => { 
+                    const url = (document.getElementById('photoUrlInput') as HTMLInputElement)?.value;
+                    if (url && auth.currentUser) {
+                      try {
+                        await updateProfile(auth.currentUser, { photoURL: url });
+                        toast.success('Photo updated successfully.');
+                      } catch (e) {
+                        toast.error('Failed to update photo.');
+                      }
+                    } else {
+                      toast.error('Please enter a valid URL.');
+                    }
+                    setActiveModal(null); 
+                  }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all">Upload / Save</button>
+                </div>
+              )}
+              
+              {activeModal === 'enable-2fa' && (
+                <div className="space-y-4">
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
+                    <div className="w-32 h-32 bg-white border border-slate-200 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">QR Code</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-900">Scan this QR code with your authenticator app.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verification Code</label>
+                    <input type="text" placeholder="000 000" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-2xl tracking-widest font-mono focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                  </div>
+                  <button onClick={async () => { 
+                    if (user?.uid) {
+                      await updateDoc(doc(db, 'users', user.uid), { twoFactorEnabled: true });
+                    }
+                    setActiveModal(null); 
+                    toast.success('2FA enabled successfully.'); 
+                  }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all">Verify & Enable</button>
+                </div>
+              )}
+
+              {activeModal === 'revoke-session' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">Are you sure you want to revoke this session? The user will be logged out immediately.</p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setActiveModal(null)} className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all">Cancel</button>
+                    <button onClick={() => { setActiveModal(null); handleSignOut(); }} className="flex-1 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-all">Revoke Session</button>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'add-integration' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">Select a PMS to connect with RevRecover AI.</p>
+                  <div className="space-y-2">
+                    {['Epic Systems', 'Cerner', 'Athenahealth', 'Allscripts', 'eClinicalWorks'].map(sys => (
+                      <button key={sys} onClick={async () => { 
+                        const newIntegrations = [...integrations, { name: sys, status: 'Available', lastSync: 'N/A', icon: Database, desc: 'New integration added.' }];
+                        setIntegrations(newIntegrations);
+                        if (user?.uid) {
+                          await updateDoc(doc(db, 'users', user.uid), { integrations: newIntegrations });
+                        }
+                        setActiveModal(null); 
+                        toast.success(`Added ${sys} to integrations.`); 
+                      }} className="w-full flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-white hover:border-teal-500 transition-all text-left">
+                        <span className="text-sm font-bold text-slate-900">{sys}</span>
+                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'connect-integration' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">Enter your {modalData?.pms?.name} credentials to establish a secure connection.</p>
+                  <div className="space-y-3">
+                    <input type="text" placeholder="API Key / Client ID" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                    <input type="password" placeholder="Client Secret" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                  </div>
+                  <button onClick={async () => { 
+                    const newIntegrations = [...integrations];
+                    newIntegrations[modalData.index].status = 'Connected';
+                    newIntegrations[modalData.index].lastSync = 'Just now';
+                    setIntegrations(newIntegrations);
+                    
+                    if (user?.uid) {
+                      await updateDoc(doc(db, 'users', user.uid), { integrations: newIntegrations });
+                    }
+                    
+                    setActiveModal(null); 
+                    toast.success(`${modalData?.pms?.name} connected successfully.`); 
+                  }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all shadow-lg shadow-teal-900/20">Connect {modalData?.pms?.name}</button>
+                </div>
+              )}
+
+              {activeModal === 'disconnect-integration' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">Are you sure you want to disconnect {modalData?.pms?.name}? This will stop all data syncing.</p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setActiveModal(null)} className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all">Cancel</button>
+                    <button onClick={async () => { 
+                      const newIntegrations = [...integrations];
+                      newIntegrations[modalData.index].status = 'Available';
+                      newIntegrations[modalData.index].lastSync = 'N/A';
+                      setIntegrations(newIntegrations);
+                      
+                      if (user?.uid) {
+                        await updateDoc(doc(db, 'users', user.uid), { integrations: newIntegrations });
+                      }
+                      
+                      setActiveModal(null); 
+                      toast.success(`${modalData?.pms?.name} disconnected.`); 
+                    }} className="flex-1 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-all">Disconnect</button>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'integration-settings' && (
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
+                      <span className="text-sm font-bold text-slate-900">Auto-sync daily</span>
+                      <input type="checkbox" defaultChecked className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500" />
+                    </label>
+                    <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
+                      <span className="text-sm font-bold text-slate-900">Sync patient demographics</span>
+                      <input type="checkbox" defaultChecked className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500" />
+                    </label>
+                    <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
+                      <span className="text-sm font-bold text-slate-900">Sync billing codes</span>
+                      <input type="checkbox" defaultChecked className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500" />
+                    </label>
+                  </div>
+                  <button onClick={() => { setActiveModal(null); toast.success('Settings saved.'); }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all">Save Settings</button>
+                </div>
+              )}
+
+              {activeModal === 'manage-plan' && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600">Your current plan is Enterprise. You have access to all features.</p>
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Next billing date</span>
+                      <span className="font-bold text-slate-900">May 1, 2026</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Amount</span>
+                      <span className="font-bold text-slate-900">$2,499.00</span>
+                    </div>
+                  </div>
+                  <button onClick={() => { setActiveModal(null); toast.success('Subscription updated.'); }} className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">Update Subscription</button>
+                </div>
+              )}
+
+              {activeModal === 'view-invoices' && (
+                <div className="space-y-2">
+                  {[
+                    { date: 'Apr 1, 2026', amount: '$2,499.00', status: 'Paid' },
+                    { date: 'Mar 1, 2026', amount: '$2,499.00', status: 'Paid' },
+                    { date: 'Feb 1, 2026', amount: '$2,499.00', status: 'Paid' },
+                  ].map((inv, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{inv.date}</p>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-teal-600 mt-0.5">{inv.status}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-slate-900">{inv.amount}</span>
+                        <button onClick={() => toast.info('Downloading invoice...')} className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-slate-900 transition-colors">Download</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeModal === 'switch-plan' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div onClick={async () => {
+                      if (user?.uid) await updateDoc(doc(db, 'users', user.uid), { plan: 'Pro' });
+                      setActiveModal(null); toast.success('Switched to Pro plan.');
+                    }} className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center cursor-pointer hover:border-teal-500 transition-all">
+                      <h4 className="text-sm font-bold text-slate-900">Pro</h4>
+                      <p className="text-xl font-extrabold text-slate-900 mt-1">$999</p>
+                      <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">/month</p>
+                    </div>
+                    <div onClick={async () => {
+                      if (user?.uid) await updateDoc(doc(db, 'users', user.uid), { plan: 'Enterprise' });
+                      setActiveModal(null); toast.success('Switched to Enterprise plan.');
+                    }} className="p-4 bg-teal-50 rounded-xl border-2 border-teal-500 text-center cursor-pointer relative">
+                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">Current</div>
+                      <h4 className="text-sm font-bold text-teal-900">Enterprise</h4>
+                      <p className="text-xl font-extrabold text-teal-900 mt-1">$2,499</p>
+                      <p className="text-[10px] uppercase tracking-widest text-teal-700 mt-1">/month</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setActiveModal(null); toast.info('Please contact sales to downgrade further.'); }} className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all">Contact Sales</button>
+                </div>
+              )}
+
+              {activeModal === 'payment-options' && (
+                <div className="space-y-2">
+                  <button onClick={() => { setActiveModal(null); toast.success('Card set as default.'); }} className="w-full text-left p-3 hover:bg-slate-50 rounded-xl text-sm font-bold text-slate-900 transition-colors">Set as Default</button>
+                  <button onClick={() => { setActiveModal(null); toast.success('Card details updated.'); }} className="w-full text-left p-3 hover:bg-slate-50 rounded-xl text-sm font-bold text-slate-900 transition-colors">Edit Details</button>
+                  <button onClick={() => { setActiveModal(null); toast.success('Card removed.'); }} className="w-full text-left p-3 hover:bg-red-50 rounded-xl text-sm font-bold text-red-600 transition-colors">Remove Card</button>
+                </div>
+              )}
+
+              {activeModal === 'add-payment' && (
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <input type="text" placeholder="Cardholder Name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                    <input type="text" placeholder="Card Number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input type="text" placeholder="MM/YY" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                      <input type="text" placeholder="CVC" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                    </div>
+                  </div>
+                  <button onClick={() => { setActiveModal(null); toast.success('Payment method added.'); }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all">Add Card</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

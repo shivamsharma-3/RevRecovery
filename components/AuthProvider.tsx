@@ -1,60 +1,65 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-
-type MockUser = {
-  id: string;
-  email: string;
-};
+import { auth, db } from '@/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 type AuthContextType = {
-  user: MockUser | null;
+  user: User | null;
   loading: boolean;
-  login: (email: string) => void;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({ 
   user: null, 
   loading: true,
-  login: () => {},
-  logout: () => {}
+  login: async () => {},
+  logout: async () => {}
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // For testing: Always provide a mock user as initial state
-  const [user, setUser] = useState<MockUser | null>({ id: 'test-user-id', email: 'test@example.com' });
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    /* Original logic commented out for testing
-    const storedUser = localStorage.getItem('mock_user');
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setTimeout(() => {
-          setUser(parsed);
-          setLoading(false);
-        }, 0);
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
-        setTimeout(() => setLoading(false), 0);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Ensure user document exists
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            email: currentUser.email,
+            firstName: currentUser.displayName?.split(' ')[0] || '',
+            lastName: currentUser.displayName?.split(' ').slice(1).join(' ') || '',
+            createdAt: new Date().toISOString(),
+            role: 'user'
+          });
+        }
       }
-    } else {
-      setTimeout(() => setLoading(false), 0);
-    }
-    */
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const login = (email: string) => {
-    const mockUser = { id: 'mock-id-123', email };
-    setUser(mockUser);
-    localStorage.setItem('mock_user', JSON.stringify(mockUser));
+  const login = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Login failed", error);
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('mock_user');
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (

@@ -1,0 +1,152 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Integration": {
+      "title": "Integration",
+      "description": "PMS Integration details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["Connected", "Available"] },
+        "lastSync": { "type": "string" },
+        "desc": { "type": "string" }
+      },
+      "required": ["name", "status"]
+    },
+    "Claim": {
+      "title": "Claim",
+      "description": "Medical claim details",
+      "type": "object",
+      "properties": {
+        "patientName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Recovered", "Denied", "In Progress"] },
+        "denialReason": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "probability": { "type": "number" }
+      },
+      "required": ["patientName", "amount", "status", "date"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "Patient details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "recoveryStatus": { "type": "string", "enum": ["In Progress", "Recovered", "Pending"] },
+        "balance": { "type": "number" },
+        "lastVisit": { "type": "string", "format": "date" },
+        "riskScore": { "type": "string", "enum": ["Low", "Medium", "High", "Minimal"] },
+        "avatar": { "type": "string" }
+      },
+      "required": ["name", "email", "status", "recoveryStatus"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Recovery campaign details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["Running", "Paused", "Completed"] },
+        "rate": { "type": "string" },
+        "roi": { "type": "string" },
+        "volume": { "type": "string" },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "status"]
+    },
+    "Clinic": {
+      "title": "Clinic",
+      "description": "Clinic details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "patients": { "type": "number" },
+        "rating": { "type": "number" },
+        "status": { "type": "string", "enum": ["Active", "Warning", "Inactive"] },
+        "recoveryRate": { "type": "string" },
+        "aiAdoption": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "lastSync": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["name", "location", "status", "type"]
+    },
+    "RecoveryCase": {
+      "title": "RecoveryCase",
+      "description": "Recovery case details",
+      "type": "object",
+      "properties": {
+        "patient": { "type": "string" },
+        "amount": { "type": "number" },
+        "days": { "type": "number" },
+        "type": { "type": "string" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Done"] },
+        "pipelineId": { "type": "string", "enum": ["identified", "contacted", "payment-plan", "recovered"] }
+      },
+      "required": ["patient", "amount", "days", "type", "priority", "pipelineId"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and audit events",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "ipAddress": { "type": "string" }
+      },
+      "required": ["action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles"
+    },
+    "/users/{userId}/integrations/{integrationId}": {
+      "schema": { "$ref": "#/entities/Integration" },
+      "description": "Stores user's PMS integrations"
+    },
+    "/users/{userId}/claims/{claimId}": {
+      "schema": { "$ref": "#/entities/Claim" },
+      "description": "Stores user's claims"
+    },
+    "/users/{userId}/campaigns/{campaignId}": {
+      "schema": { "$ref": "#/entities/Campaign" },
+      "description": "Stores user's recovery campaigns"
+    },
+    "/users/{userId}/patients/{patientId}": {
+      "schema": { "$ref": "#/entities/Patient" },
+      "description": "Stores user's patients"
+    },
+    "/users/{userId}/recovery_cases/{caseId}": {
+      "schema": { "$ref": "#/entities/RecoveryCase" },
+      "description": "Stores user's recovery cases"
+    },
+    "/users/{userId}/clinics/{clinicId}": {
+      "schema": { "$ref": "#/entities/Clinic" },
+      "description": "Stores user's clinics"
+    },
+    "/users/{userId}/audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Stores user's security audit logs"
+    }
+  }
+}

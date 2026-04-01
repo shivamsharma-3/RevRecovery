@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Check, MessageSquare, Mail, MessageCircle, ArrowLeft, Send, BarChart, Zap, Shield, Sparkles, Upload, FileText, Loader2 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
+import { db } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { logAuditAction } from '@/lib/audit';
 
 export default function CreateCampaign() {
   const router = useRouter();
@@ -40,12 +45,49 @@ export default function CreateCampaign() {
     }
   };
 
-  const handleDeploy = () => {
+  const { user } = useAuth();
+
+  const handleDeploy = async () => {
+    if (!user) return;
     setIsDeploying(true);
-    setTimeout(() => {
+    try {
+      const campaignData = {
+        name: uploadedFile?.name ? `Campaign: ${uploadedFile.name.split('.')[0]}` : 'New AI Campaign',
+        status: 'Running',
+        rate: '0%',
+        roi: '0x',
+        volume: '$0',
+        date: new Date().toISOString().split('T')[0],
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'users', user.uid, 'campaigns'), campaignData);
+      
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Created Campaign',
+        target: campaignData.name,
+        status: 'Success',
+        severity: 'Medium',
+        type: 'campaign'
+      });
+
       setIsDeploying(false);
       setIsSuccess(true);
-    }, 3000);
+      toast.success('Campaign deployed successfully');
+    } catch (error) {
+      console.error('Error deploying campaign:', error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Campaign Creation Failed',
+        target: uploadedFile?.name || 'Unknown',
+        status: 'Failed',
+        severity: 'High',
+        type: 'campaign'
+      });
+      setIsDeploying(false);
+      toast.error('Failed to deploy campaign');
+    }
   };
 
   if (isSuccess) {

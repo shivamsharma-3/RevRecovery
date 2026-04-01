@@ -21,6 +21,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { CookieConsent } from '@/components/CookieConsent';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
+import { Toaster } from 'sonner';
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
@@ -28,6 +29,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="bg-surface text-on-surface font-body antialiased selection:bg-primary-fixed selection:text-on-primary-fixed" suppressHydrationWarning>
         <AuthProvider>
           {children}
+          <Toaster position="top-right" richColors />
           <CookieConsent />
           <SpeedInsights />
           <Analytics />

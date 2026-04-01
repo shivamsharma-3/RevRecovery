@@ -1,31 +1,52 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { 
   ChevronRight, Plus, Search, Filter, MoreHorizontal, 
   ArrowRight, Bell, Info, Pause, Play, Trash2, X, 
   BarChart, Edit2, Eye, ArrowUpDown, Calendar
 } from 'lucide-react';
-
-const INITIAL_CAMPAIGNS = [
-  { id: 1, name: 'High-Complexity Denials', status: 'Running', rate: '54.2%', roi: '18.4x', volume: '$242,500', date: '2024-03-15' },
-  { id: 2, name: 'Legacy Revenue Sweep', status: 'Paused', rate: '22.1%', roi: '4.2x', volume: '$89,200', date: '2024-03-10' },
-  { id: 3, name: 'Medicare Re-processing', status: 'Completed', rate: '91.8%', roi: '22.5x', volume: '$1,240,000', date: '2024-02-28' },
-  { id: 4, name: 'Payer Underpayment Audit', status: 'Running', rate: '38.9%', roi: '9.1x', volume: '$415,800', date: '2024-03-20' },
-];
+import { useAuth } from '@/components/AuthProvider';
+import { db } from '@/firebase';
+import { collection, getDocs, doc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { logAuditAction } from '@/lib/audit';
 
 export default function CampaignList() {
   const router = useRouter();
-  const [campaigns, setCampaigns] = useState(INITIAL_CAMPAIGNS);
+  const { user } = useAuth();
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
   const [dateFilter, setDateFilter] = useState('All Time');
 
-  const [selectedCampaign, setSelectedCampaign] = useState<typeof INITIAL_CAMPAIGNS[0] | null>(null);
-  const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
+  const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const unsubscribe = onSnapshot(collection(db, 'users', user.uid, 'campaigns'), (snapshot) => {
+      const fetchedCampaigns = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setCampaigns(fetchedCampaigns);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching campaigns:", error);
+      toast.error('Failed to fetch campaigns');
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const filteredCampaigns = useMemo(() => {
     let result = campaigns.filter(c => {
@@ -57,51 +78,93 @@ export default function CampaignList() {
     setSortConfig({ key, direction });
   };
 
-  const toggleStatus = (e: React.MouseEvent, id: number) => {
+  const toggleStatus = async (e: React.MouseEvent, id: string, currentStatus: string, campaignName: string) => {
     e.stopPropagation();
-    setCampaigns(prev => prev.map(c => {
-      if (c.id === id) {
-        if (c.status === 'Running') return { ...c, status: 'Paused' as const };
-        if (c.status === 'Paused') return { ...c, status: 'Running' as const };
-      }
-      return c;
-    }));
+    if (!user) return;
+    
+    const newStatus = currentStatus === 'Running' ? 'Paused' : 'Running';
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'campaigns', id), {
+        status: newStatus
+      });
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: `Campaign ${newStatus}`,
+        target: campaignName,
+        status: 'Success',
+        severity: 'Low',
+        type: 'campaign'
+      });
+      toast.success(`Campaign ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating campaign status:", error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: `Campaign Status Toggle Failed`,
+        target: campaignName,
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'campaign'
+      });
+      toast.error('Failed to update campaign status');
+    }
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, id: number) => {
+  const handleDeleteClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     setCampaignToDelete(id);
   };
 
-  const confirmDelete = () => {
-    if (campaignToDelete) {
-      setCampaigns(prev => prev.filter(c => c.id !== campaignToDelete));
-      setCampaignToDelete(null);
+  const confirmDelete = async () => {
+    if (campaignToDelete && user) {
+      const campaign = campaigns.find(c => c.id === campaignToDelete);
+      try {
+        await deleteDoc(doc(db, 'users', user.uid, 'campaigns', campaignToDelete));
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'Campaign Deleted',
+          target: campaign?.name || campaignToDelete,
+          status: 'Success',
+          severity: 'Medium',
+          type: 'campaign'
+        });
+        setCampaignToDelete(null);
+        toast.success('Campaign deleted successfully');
+      } catch (error) {
+        console.error("Error deleting campaign:", error);
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'Campaign Deletion Failed',
+          target: campaign?.name || campaignToDelete,
+          status: 'Failed',
+          severity: 'High',
+          type: 'campaign'
+        });
+        toast.error('Failed to delete campaign');
+      }
     }
   };
 
   return (
     <main className="p-4 md:p-6">
       {/* Top Bar / Header Section */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div>
-          <nav className="flex items-center gap-2 text-[10px] font-bold text-slate-400 mb-1.5 tracking-wide uppercase">
-            <Link href="/dashboard" className="hover:text-teal-600 transition-colors">Dashboard</Link>
-            <ChevronRight className="w-2.5 h-2.5" />
-            <span className="text-teal-600">Campaigns</span>
-          </nav>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none mb-2 font-headline">Campaign Analytics</h2>
-          <p className="text-slate-500 max-w-xl text-sm font-medium leading-relaxed">
-            Deploy AI-driven recovery protocols to identify and reclaim lost clinical revenue. 
-            <span className="text-teal-600 font-bold inline-flex items-center gap-1 ml-2">
-              <span className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse" />
-              Live Optimization Active
-            </span>
+      <header className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight font-headline">Campaign Analytics</h2>
+          <p className="text-slate-500 max-w-2xl text-base font-medium leading-relaxed">
+            Deploy AI-driven recovery protocols to identify and reclaim lost clinical revenue.
           </p>
+          <div className="flex items-center gap-2 text-teal-600 font-bold text-sm pt-1">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+            </span>
+            Live Optimization Active
+          </div>
         </div>
-        <div className="mt-4 md:mt-0">
+        <div className="shrink-0">
           <Link href="/dashboard/campaigns/new">
-            <button className="bg-teal-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all flex items-center gap-2 group">
+            <button className="bg-teal-600 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all flex items-center gap-2 group">
               <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
               Create New Campaign
             </button>
@@ -111,15 +174,15 @@ export default function CampaignList() {
       {/* Metrics Overview (Editorial Bento Grid) */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="col-span-1 sm:col-span-2 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all group">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start mb-4">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Aggregate Recovery Rate</span>
             <span className="text-teal-700 bg-teal-50 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest">+12.4% vs LY</span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
+          <div className="flex items-end justify-between gap-4">
             <h3 className="text-4xl font-extrabold text-teal-600 tracking-tighter">42.8<span className="text-xl opacity-60">%</span></h3>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-4">
-            <div className="bg-teal-600 h-full w-[42.8%]" />
+            <div className="w-1/2 bg-slate-100 h-1.5 rounded-full overflow-hidden mb-2">
+              <div className="bg-teal-600 h-full w-[42.8%]" />
+            </div>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all group">
@@ -251,7 +314,7 @@ export default function CampaignList() {
                       </button>
                       {campaign.status !== 'Completed' && (
                         <button 
-                          onClick={(e) => toggleStatus(e, campaign.id)}
+                          onClick={(e) => toggleStatus(e, campaign.id, campaign.status, campaign.name)}
                           className="p-2 text-slate-400 hover:text-teal-600 transition-colors rounded-lg hover:bg-teal-50"
                           title={campaign.status === 'Running' ? 'Pause' : 'Resume'}
                         >
@@ -345,7 +408,10 @@ export default function CampaignList() {
             
             <div className="flex gap-3">
               <button 
-                onClick={() => setSelectedCampaign(null)}
+                onClick={() => {
+                  setSelectedCampaign(null);
+                  toast.info('Downloading report...');
+                }}
                 className="flex-1 py-3.5 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 active:scale-[0.98]"
               >
                 Download Full Report
