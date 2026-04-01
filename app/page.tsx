@@ -45,7 +45,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-6 py-3 rounded-xl font-bold transition-all hover:bg-teal-700 shadow-lg shadow-teal-500/20 active:scale-[0.98]">
-                    Start Free Trial
+                    Get Started
                   </button>
                 </Link>
                 <button 
@@ -264,7 +264,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-700 hover:scale-[1.02] active:scale-[0.98]">
-                    Start Free Trial
+                    Get Started
                   </button>
                 </Link>
                 <Link href="/contact">
@@ -281,12 +281,6 @@ export default function LandingPage() {
         </section>
       </main>
       <Footer />
-
-      {/* Login Modal */}
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-      />
 
       {/* Demo Modal */}
       {isDemoModalOpen && (
@@ -312,6 +306,12 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </div>
   );
 }
