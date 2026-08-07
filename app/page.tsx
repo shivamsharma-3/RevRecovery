@@ -45,15 +45,15 @@ export default function LandingPage() {
                 that don&apos;t have a full-time billing team.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/dashboard" onClick={handleStartTrial}>
-                  <button className="bg-teal-600 text-white text-sm px-6 py-3 rounded-xl font-bold transition-all hover:bg-teal-700 shadow-lg shadow-teal-500/20 active:scale-[0.98]">
+                <Link href="/dashboard" onClick={handleStartTrial} className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto bg-teal-600 text-white text-sm px-6 py-3.5 rounded-xl font-bold transition-all hover:bg-teal-700 shadow-lg shadow-teal-500/20 active:scale-[0.98]">
                     Get Started
                   </button>
                 </Link>
-                <a href="#try-it">
-                  <button className="w-full sm:w-auto bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors">
+                <a href="#try-it" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto bg-white text-slate-700 text-sm px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors">
                     <PlayCircle className="w-4 h-4 text-teal-600" />
-                    Try it on a denial — no signup
+                    Try it on a denial
                   </button>
                 </a>
               </div>
@@ -73,7 +73,8 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-gradient-to-tr from-teal-600/10 to-transparent pointer-events-none" />
               </div>
               {/* Floating Stat Card */}
-              <div className="absolute -bottom-4 -left-4 bg-white/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-xl border border-teal-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+              {/* Kept inside the viewport on mobile — negative offsets clipped it off-screen. */}
+              <div className="absolute bottom-2 left-2 md:-bottom-4 md:-left-4 bg-white/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-xl border border-teal-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600">
                   <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
                 </div>

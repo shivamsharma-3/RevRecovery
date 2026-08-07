@@ -12,6 +12,7 @@ import { auth, db } from '@/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { updatePassword, updateProfile, signOut } from 'firebase/auth';
 import { logAuditAction } from '@/lib/audit';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export default function SettingsPage() {
   const { user, loading } = useAuth();
@@ -53,6 +54,8 @@ export default function SettingsPage() {
     { title: 'Patient Payment Received', desc: 'Notification for successful patient payments.', enabled: true },
     { title: 'AI Negotiation Complete', desc: 'When the AI finishes a negotiation sequence.', enabled: true },
   ]);
+
+  useScrollLock(Boolean(activeModal));
 
   useEffect(() => {
     const fetchSettings = async () => {

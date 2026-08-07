@@ -239,14 +239,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <OnboardingTour />
 
-      {/* Floating Action Button (Mobile) */}
-      <Link 
-        href="/dashboard/recovery" 
-        className="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center shadow-2xl z-[55] active:scale-95 transition-transform border border-white/10"
-      >
-        <PlusCircle className="w-6 h-6" />
-      </Link>
-
       {/* Bottom NavBar (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 pb-6 pt-2 bg-white/90 backdrop-blur-lg z-50 border-t border-slate-100">
         <Link href="/dashboard" className={`flex flex-col items-center justify-center rounded-xl px-2 py-1 ${pathname === '/dashboard' ? 'bg-teal-50 text-teal-700' : 'text-slate-400'}`}>

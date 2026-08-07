@@ -13,6 +13,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, doc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export default function CampaignList() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function CampaignList() {
 
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
+
+  useScrollLock(Boolean(selectedCampaign) || Boolean(campaignToDelete));
 
   useEffect(() => {
     if (!user) {

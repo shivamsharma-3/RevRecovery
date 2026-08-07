@@ -13,6 +13,7 @@ import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query, deleteDoc } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
 import { analyzeClaim, type ClaimAnalysis } from '@/lib/ai/api';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const INITIAL_PIPELINES = [
   { id: 'identified', title: 'Identified', color: 'bg-slate-400' },
@@ -30,6 +31,8 @@ export default function RecoveryPage() {
   const [caseAnalysis, setCaseAnalysis] = useState<ClaimAnalysis | null>(null);
   const [cases, setCases] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useScrollLock(Boolean(selectedCase) || isNewCaseModalOpen);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {

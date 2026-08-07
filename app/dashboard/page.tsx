@@ -8,6 +8,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 import { 
   Activity, Megaphone, CreditCard, Settings, Bell, Search, 
   LayoutDashboard, PlusCircle, Zap, ShieldCheck, Users, 
@@ -54,6 +55,8 @@ export default function DashboardHome() {
   const [dynamicRecoveryDataMonth, setDynamicRecoveryDataMonth] = useState<{name: string, amount: number, projected: number}[]>([]);
   const [dynamicRecoveryDataYear, setDynamicRecoveryDataYear] = useState<{name: string, amount: number, projected: number}[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState('Year');
+
+  useScrollLock(Boolean(selectedInsight));
 
   useEffect(() => {
     const timer = setTimeout(() => setIsMounted(true), 0);

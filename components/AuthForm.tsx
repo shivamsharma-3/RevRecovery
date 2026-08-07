@@ -111,14 +111,18 @@ export const AuthForm = () => {
         : 'Sign in to access your practice dashboard';
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 bg-white rounded-3xl shadow-2xl border border-slate-100">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-teal-600">
-          <TrendingUp className="w-8 h-8" />
+    <div className="relative w-full max-w-md mx-auto bg-white rounded-[1.75rem] border border-slate-200/70 overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-8px_rgba(15,23,42,0.12),0_40px_80px_-24px_rgba(15,23,42,0.18)]">
+      {/* Hairline accent — reads as considered rather than decorative */}
+      <div className="h-1 bg-gradient-to-r from-teal-500 via-teal-600 to-teal-500" />
+
+      <div className="p-8 sm:p-9">
+        <div className="text-center">
+          <div className="w-14 h-14 bg-gradient-to-br from-teal-50 to-teal-100/60 ring-1 ring-teal-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5 text-teal-600">
+            <TrendingUp className="w-7 h-7" />
+          </div>
+          <h2 className="text-[1.375rem] font-extrabold tracking-tight mb-1.5 text-slate-900 font-headline">{heading}</h2>
+          <p className="text-slate-500 text-sm mb-7 leading-relaxed">{subheading}</p>
         </div>
-        <h2 className="text-2xl font-bold mb-2 text-slate-900">{heading}</h2>
-        <p className="text-slate-500 text-sm mb-8">{subheading}</p>
-      </div>
 
       {message && (
         <div
@@ -146,7 +150,7 @@ export const AuthForm = () => {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Jane Doe"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+              className="w-full px-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all"
             />
           </div>
         )}
@@ -157,13 +161,14 @@ export const AuthForm = () => {
           </label>
           <input
             id="auth-email"
+            data-autofocus
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jane@clinic.com"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+            className="w-full px-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all"
           />
         </div>
 
@@ -193,7 +198,7 @@ export const AuthForm = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
-                className="w-full px-4 py-3 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                className="w-full px-4 py-3.5 pr-12 bg-slate-50/80 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all"
               />
               <button
                 type="button"
@@ -278,10 +283,12 @@ export const AuthForm = () => {
         )}
       </div>
 
-      <div className="text-center text-[11px] text-slate-400 mt-6">
-        By continuing, you agree to our <br />
-        <Link href="/legal/terms" className="text-teal-600 hover:underline">Terms of Service</Link> and{' '}
-        <Link href="/legal/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>.
+        <div className="text-center text-[11px] text-slate-400 mt-6 leading-relaxed">
+          By continuing, you agree to our{' '}
+          <Link href="/legal/terms" className="text-slate-500 hover:text-teal-600 underline underline-offset-2 transition-colors">Terms of Service</Link>{' '}
+          and{' '}
+          <Link href="/legal/privacy" className="text-slate-500 hover:text-teal-600 underline underline-offset-2 transition-colors">Privacy Policy</Link>.
+        </div>
       </div>
     </div>
   );

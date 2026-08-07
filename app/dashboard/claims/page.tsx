@@ -15,6 +15,7 @@ import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from 'fir
 import { logAuditAction } from '@/lib/audit';
 import { analyzeClaim, generateAppealLetter, type ClaimAnalysis } from '@/lib/ai/api';
 import { toCsv } from '@/lib/csv';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export default function ClaimsRecoveryPage() {
   const { user } = useAuth();
@@ -64,6 +65,8 @@ export default function ClaimsRecoveryPage() {
     insurance: '',
     type: 'Outpatient'
   });
+
+  useScrollLock(Boolean(selectedClaim) || isNewClaimModalOpen);
 
   const handleExportCSV = () => {
     const headers = ['Claim ID', 'Patient', 'Date', 'Amount', 'Status', 'Insurance', 'Type'];
@@ -438,38 +441,44 @@ export default function ClaimsRecoveryPage() {
           <h1 className="text-3xl font-extrabold text-slate-900 font-headline">Claims Recovery</h1>
           <p className="text-slate-500 font-medium mt-1">Monitor and manage your insurance claim recovery process.</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-          <Link href="/dashboard/claims/import">
-            <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              Import CSV
-            </button>
-          </Link>
+        {/* Primary action leads on mobile; secondary actions share a row beneath it. */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleTriageAll}
             disabled={bulkProgress !== null || unanalysedCount === 0}
-            className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 disabled:opacity-50"
+            className="order-1 sm:order-3 w-full sm:w-auto justify-center px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 disabled:opacity-50"
             title={unanalysedCount === 0 ? 'Every claim has already been triaged' : undefined}
           >
             {bulkProgress ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {bulkProgress
               ? `Triaging ${bulkProgress.done}/${bulkProgress.total}…`
-              : `Triage ${unanalysedCount || ''} with AI`.replace('  ', ' ')}
+              : unanalysedCount > 0
+                ? `Triage ${unanalysedCount} with AI`
+                : 'All claims triaged'}
           </button>
-          <button
-            onClick={() => setIsNewClaimModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all font-bold text-sm shadow-lg shadow-teal-900/20"
-          >
-            <Plus className="w-4 h-4" />
-            New Claim
-          </button>
+
+          <div className="order-2 sm:order-1 grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-3">
+            <Link href="/dashboard/claims/import" className="contents sm:block">
+              <button className="w-full justify-center px-3 sm:px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5 sm:gap-2">
+                <Upload className="w-4 h-4 shrink-0" />
+                Import
+              </button>
+            </Link>
+            <button
+              onClick={handleExportCSV}
+              className="w-full justify-center px-3 sm:px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5 sm:gap-2"
+            >
+              <Download className="w-4 h-4 shrink-0" />
+              Export
+            </button>
+            <button
+              onClick={() => setIsNewClaimModalOpen(true)}
+              className="w-full justify-center px-3 sm:px-4 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all font-bold text-xs sm:text-sm shadow-lg shadow-teal-900/20 flex items-center gap-1.5 sm:gap-2"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              New
+            </button>
+          </div>
         </div>
       </div>
 

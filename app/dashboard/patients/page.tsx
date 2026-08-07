@@ -12,6 +12,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query } from 'firebase/firestore';
 import { scoreNoShowRisk, type NoShowRisk } from '@/lib/ai/api';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const MOCK_PATIENTS = [
   { 
@@ -77,6 +78,8 @@ export default function PatientsPage() {
   const [activeTab, setActiveTab] = useState('All');
   const [patients, setPatients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useScrollLock(Boolean(selectedPatient) || isAddModalOpen || isMessageModalOpen);
 
   useEffect(() => {
     const fetchPatients = async () => {

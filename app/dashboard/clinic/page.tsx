@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const MOCK_CLINICS = [
   { 
@@ -73,6 +74,8 @@ export default function ClinicInsightsPage() {
   const [newClinicName, setNewClinicName] = useState('');
   const [newClinicLocation, setNewClinicLocation] = useState('');
   const [newClinicType, setNewClinicType] = useState('Primary Care');
+
+  useScrollLock(Boolean(selectedClinic) || isAddClinicModalOpen);
 
   useEffect(() => {
     const fetchClinics = async () => {
