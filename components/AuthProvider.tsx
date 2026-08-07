@@ -2,20 +2,30 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '@/firebase';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
+import {
+  onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendPasswordResetEmail, updateProfile,
+} from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: () => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, fullName?: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({ 
-  user: null, 
+const AuthContext = createContext<AuthContextType>({
+  user: null,
   loading: true,
   login: async () => {},
+  loginWithEmail: async () => {},
+  signUpWithEmail: async () => {},
+  resetPassword: async () => {},
   logout: async () => {}
 });
 
@@ -57,6 +67,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const loginWithEmail = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email.trim(), password);
+  };
+
+  const signUpWithEmail = async (email: string, password: string, fullName?: string) => {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    if (fullName?.trim()) {
+      const name = fullName.trim();
+      await updateProfile(credential.user, { displayName: name });
+      // onAuthStateChanged creates the profile doc before updateProfile lands,
+      // so the name would otherwise be written as empty. Merge it back in.
+      await setDoc(
+        doc(db, 'users', credential.user.uid),
+        {
+          firstName: name.split(' ')[0],
+          lastName: name.split(' ').slice(1).join(' '),
+        },
+        { merge: true }
+      );
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email.trim());
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -66,7 +102,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithEmail, signUpWithEmail, resetPassword, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
