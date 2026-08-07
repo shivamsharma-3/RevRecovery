@@ -12,7 +12,7 @@ import {
   Activity, Megaphone, CreditCard, Settings, Bell, Search, 
   LayoutDashboard, PlusCircle, Zap, ShieldCheck, Users, 
   TrendingUp, MessageSquare, ChevronRight, MoreHorizontal,
-  Plus, X, RefreshCw, LogOut, List
+  Plus, X, RefreshCw, LogOut, List, Upload
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -291,19 +291,21 @@ export default function DashboardHome() {
             <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 mb-6">
               <Megaphone className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">No active campaigns yet</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">Let&apos;s get your denials in</h3>
             <p className="text-slate-500 max-w-md mb-8 text-sm leading-relaxed">
-              Connect your billing data or upload claim denials to start recovering revenue with AI-powered appeals.
+              Export your denied or outstanding claims report from your practice management system
+              as CSV and import it. Then run the AI triage and you&apos;ll have a ranked worklist in
+              about a minute.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/dashboard/campaigns/new">
-                <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 flex items-center gap-2 text-sm">
-                  <PlusCircle className="w-4 h-4" />
-                  Create First Campaign
+              <Link href="/dashboard/claims/import">
+                <button className="w-full px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2 text-sm">
+                  <Upload className="w-4 h-4" />
+                  Import claims from CSV
                 </button>
               </Link>
               <Link href="/dashboard/help">
-                <button className="px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">
+                <button className="w-full px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">
                   Read the guide
                 </button>
               </Link>

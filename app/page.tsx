@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
+import { TryItDemo } from '@/components/TryItDemo';
 import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -49,12 +50,12 @@ export default function LandingPage() {
                     Get Started
                   </button>
                 </Link>
-                <Link href="/how-it-works">
+                <a href="#try-it">
                   <button className="w-full sm:w-auto bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors">
                     <PlayCircle className="w-4 h-4 text-teal-600" />
-                    See how it works
+                    Try it on a denial — no signup
                   </button>
-                </Link>
+                </a>
               </div>
             </div>
             <div className="flex-1 relative w-full mt-8 md:mt-0 flex justify-center md:justify-end">
@@ -98,6 +99,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <TryItDemo />
 
         {/* Bento Grid Features */}
         <section className="py-16 md:py-20 px-6">

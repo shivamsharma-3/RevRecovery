@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
-import { 
-  Search, Filter, Download, Plus, 
+import {
+  Search, Filter, Download, Plus,
   CheckCircle2, AlertCircle, Clock,
   FileText, Activity, Users, Megaphone, BarChart3, X, Eye, RefreshCw, Check,
-  Sparkles, Loader2, Copy, AlertTriangle
+  Sparkles, Loader2, Copy, AlertTriangle, Upload
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
 import { analyzeClaim, generateAppealLetter, type ClaimAnalysis } from '@/lib/ai/api';
+import { toCsv } from '@/lib/csv';
 
 export default function ClaimsRecoveryPage() {
   const { user } = useAuth();
@@ -24,6 +26,8 @@ export default function ClaimsRecoveryPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [appealLetter, setAppealLetter] = useState<string | null>(null);
   const [isDrafting, setIsDrafting] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
+  const [sortByValue, setSortByValue] = useState(true);
   const [claims, setClaims] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -175,9 +179,6 @@ export default function ClaimsRecoveryPage() {
     });
   }, [claims, searchTerm, statusFilter]);
 
-  const totalPages = Math.ceil(filteredClaims.length / itemsPerPage) || 1;
-  const paginatedClaims = filteredClaims.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   const getAmountValue = (claim: any) => {
     if (typeof claim.amount === 'number') return claim.amount;
     if (typeof claim.amount === 'string') return parseFloat(claim.amount.replace(/[^0-9.-]+/g, "")) || 0;
@@ -190,6 +191,151 @@ export default function ClaimsRecoveryPage() {
   const deniedAmount = claims.filter(c => c.status === 'Denied').reduce((sum, claim) => sum + getAmountValue(claim), 0);
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+
+  // Expected value, not raw probability — a 90%-likely $80 claim is not worth
+  // working before a 55%-likely $4,000 one.
+  const expectedValue = (claim: any) =>
+    typeof claim.aiRecoveryProbability === 'number'
+      ? claim.aiRecoveryProbability * getAmountValue(claim)
+      : -1;
+
+  const triagedCount = claims.filter((c) => typeof c.aiRecoveryProbability === 'number').length;
+  const unanalysedCount = claims.filter(
+    (c) => typeof c.aiRecoveryProbability !== 'number' && c.status !== 'Recovered'
+  ).length;
+
+  const worklist = claims.filter(
+    (c) => typeof c.aiRecoveryProbability === 'number' && !c.aiPatientResponsibility && c.aiRecoveryProbability >= 0.4
+  );
+  const worklistValue = worklist.reduce((sum, c) => sum + expectedValue(c), 0);
+
+  /**
+   * Triage every untriaged claim. Runs a small worker pool rather than firing
+   * every request at once — the route is rate-limited per user, and a 200-claim
+   * import would otherwise trip it immediately.
+   */
+  const handleTriageAll = async () => {
+    if (!user?.uid) return;
+    const pending = claims.filter(
+      (c) => typeof c.aiRecoveryProbability !== 'number' && c.status !== 'Recovered'
+    );
+    if (pending.length === 0) {
+      toast.info('Every claim has already been triaged.');
+      return;
+    }
+
+    setBulkProgress({ done: 0, total: pending.length });
+    let done = 0;
+    let failed = 0;
+    const results = new Map<string, any>();
+
+    const CONCURRENCY = 3;
+    const queue = [...pending];
+
+    const worker = async () => {
+      while (queue.length > 0) {
+        const claim = queue.shift();
+        if (!claim) break;
+        try {
+          const result = await analyzeClaim({
+            patientName: claim.patientName || claim.patient,
+            amount: getAmountValue(claim),
+            status: claim.status,
+            denialReason: claim.denialReason,
+            date: claim.date,
+            payer: claim.insurance,
+            procedureCode: claim.procedureCode,
+          });
+
+          const fields = {
+            aiRecoveryProbability: result.recoveryProbability,
+            aiPriority: result.priority,
+            aiDenialCategory: result.denialCategory,
+            aiRootCause: result.rootCause,
+            aiRecommendedAction: result.recommendedAction,
+            aiPatientResponsibility: result.isPatientResponsibility,
+            aiAnalysedAt: new Date().toISOString(),
+          };
+          results.set(claim.id, fields);
+          await updateDoc(doc(db, 'users', user.uid, 'claims', claim.id), fields);
+        } catch (error: any) {
+          failed++;
+          // A quota error will hit every remaining claim — stop rather than
+          // grinding through 200 guaranteed failures.
+          if (/quota|429/i.test(error?.message || '')) {
+            queue.length = 0;
+            toast.error('AI quota reached. Triage paused — try again shortly.');
+          }
+        } finally {
+          done++;
+          setBulkProgress({ done, total: pending.length });
+        }
+      }
+    };
+
+    try {
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, pending.length) }, worker));
+
+      setClaims((prev) => prev.map((c) => (results.has(c.id) ? { ...c, ...results.get(c.id) } : c)));
+
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Bulk AI Triage',
+        target: `${results.size} claims triaged`,
+        status: 'Success',
+        severity: 'Info',
+        type: 'claim',
+      });
+
+      if (results.size > 0) {
+        toast.success(
+          `Triaged ${results.size} claim${results.size === 1 ? '' : 's'}${failed ? ` — ${failed} failed` : ''}`
+        );
+      } else if (failed > 0) {
+        toast.error('Triage failed. Check your connection and try again.');
+      }
+    } finally {
+      setBulkProgress(null);
+    }
+  };
+
+  const handleExportWorklist = () => {
+    const ranked = [...worklist].sort((a, b) => expectedValue(b) - expectedValue(a));
+    const headers = [
+      'Patient', 'Date', 'Payer', 'Code', 'Amount', 'Recovery probability',
+      'Expected value', 'Priority', 'Denial category', 'Recommended action',
+    ];
+    const rows = ranked.map((c) => [
+      c.patientName || c.patient || 'Unknown',
+      c.date || '',
+      c.insurance || '',
+      c.procedureCode || '',
+      getAmountValue(c).toFixed(2),
+      `${Math.round((c.aiRecoveryProbability || 0) * 100)}%`,
+      expectedValue(c).toFixed(2),
+      c.aiPriority || '',
+      c.aiDenialCategory || '',
+      c.aiRecommendedAction || '',
+    ]);
+
+    const blob = new Blob([toCsv([headers, ...rows])], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `revrecover-worklist-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast.success('Worklist exported');
+  };
+
+  // Untriaged claims sort last so the ranked worklist stays at the top.
+  const displayClaims = useMemo(() => {
+    if (!sortByValue) return filteredClaims;
+    return [...filteredClaims].sort((a, b) => expectedValue(b) - expectedValue(a));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredClaims, sortByValue]);
+
+  const totalPages = Math.ceil(displayClaims.length / itemsPerPage) || 1;
+  const paginatedClaims = displayClaims.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const openClaim = (claim: any) => {
     setSelectedClaim(claim);
@@ -218,7 +364,22 @@ export default function ClaimsRecoveryPage() {
         procedureCode: selectedClaim.procedureCode,
       });
       setAiAnalysis(result);
+
+      // Persist so the claim joins the ranked worklist instead of the result
+      // vanishing when the modal closes.
       if (user?.uid) {
+        const fields = {
+          aiRecoveryProbability: result.recoveryProbability,
+          aiPriority: result.priority,
+          aiDenialCategory: result.denialCategory,
+          aiRootCause: result.rootCause,
+          aiRecommendedAction: result.recommendedAction,
+          aiPatientResponsibility: result.isPatientResponsibility,
+          aiAnalysedAt: new Date().toISOString(),
+        };
+        await updateDoc(doc(db, 'users', user.uid, 'claims', selectedClaim.id), fields);
+        setClaims((prev) => prev.map((c) => (c.id === selectedClaim.id ? { ...c, ...fields } : c)));
+
         await logAuditAction(user.uid, {
           user: user.displayName || user.email || 'User',
           action: 'AI Claim Analysis',
@@ -277,15 +438,32 @@ export default function ClaimsRecoveryPage() {
           <h1 className="text-3xl font-extrabold text-slate-900 font-headline">Claims Recovery</h1>
           <p className="text-slate-500 font-medium mt-1">Monitor and manage your insurance claim recovery process.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
             onClick={handleExportCSV}
             className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <button 
+          <Link href="/dashboard/claims/import">
+            <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Import CSV
+            </button>
+          </Link>
+          <button
+            onClick={handleTriageAll}
+            disabled={bulkProgress !== null || unanalysedCount === 0}
+            className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2 disabled:opacity-50"
+            title={unanalysedCount === 0 ? 'Every claim has already been triaged' : undefined}
+          >
+            {bulkProgress ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {bulkProgress
+              ? `Triaging ${bulkProgress.done}/${bulkProgress.total}…`
+              : `Triage ${unanalysedCount || ''} with AI`.replace('  ', ' ')}
+          </button>
+          <button
             onClick={() => setIsNewClaimModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all font-bold text-sm shadow-lg shadow-teal-900/20"
           >
@@ -294,6 +472,43 @@ export default function ClaimsRecoveryPage() {
           </button>
         </div>
       </div>
+
+      {/* Worklist summary — appears once anything has been triaged */}
+      {triagedCount > 0 && (
+        <div className="mb-8 p-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
+          <div className="flex items-start justify-between gap-6 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-teal-600" />
+                <h2 className="text-sm font-bold text-slate-900">Today&apos;s worklist</h2>
+              </div>
+              <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-xl">
+                {worklist.length} of {triagedCount} triaged claims are worth chasing, carrying{' '}
+                <strong className="text-slate-900">{formatCurrency(worklistValue)}</strong> in
+                weighted recoverable value. The rest are contractual or too old to appeal.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSortByValue((v) => !v)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  sortByValue
+                    ? 'bg-teal-50 border-teal-200 text-teal-700'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {sortByValue ? '✓ Sorted by expected value' : 'Sort by expected value'}
+              </button>
+              <button
+                onClick={handleExportWorklist}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all flex items-center gap-2"
+              >
+                <Download className="w-3.5 h-3.5" /> Export worklist
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content */}
@@ -364,6 +579,7 @@ export default function ClaimsRecoveryPage() {
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Insurance / Type</th>
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Amount</th>
                     <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI verdict</th>
                     <th className="p-4 pr-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
@@ -410,6 +626,30 @@ export default function ClaimsRecoveryPage() {
                           {claim.status}
                         </span>
                       </td>
+                      <td className="p-4 cursor-pointer" onClick={() => openClaim(claim)}>
+                        {typeof claim.aiRecoveryProbability === 'number' ? (
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-extrabold ${
+                                claim.aiRecoveryProbability >= 0.6 ? 'text-teal-700' :
+                                claim.aiRecoveryProbability >= 0.4 ? 'text-amber-600' : 'text-slate-400'
+                              }`}>
+                                {Math.round(claim.aiRecoveryProbability * 100)}%
+                              </span>
+                              {claim.aiPatientResponsibility && (
+                                <span className="px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] font-bold uppercase tracking-wider">
+                                  Patient
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5 max-w-[180px] truncate" title={claim.aiDenialCategory}>
+                              {claim.aiDenialCategory}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-xs font-medium text-slate-300">Not triaged</span>
+                        )}
+                      </td>
                       <td className="p-4 pr-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button 
@@ -443,25 +683,36 @@ export default function ClaimsRecoveryPage() {
                   )})}
                   {claims.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="p-12 text-center">
+                      <td colSpan={7} className="p-12 text-center">
                         <div className="flex flex-col items-center justify-center text-slate-500">
                           <FileText className="w-12 h-12 text-slate-300 mb-4" />
                           <p className="text-lg font-bold text-slate-900 mb-1">No claims yet</p>
-                          <p className="text-sm font-medium mb-4">Create your first claim to start recovering revenue.</p>
-                          <button 
-                            onClick={() => setIsNewClaimModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all font-bold text-sm shadow-lg shadow-teal-900/20"
-                          >
-                            <Plus className="w-4 h-4" />
-                            New Claim
-                          </button>
+                          <p className="text-sm font-medium mb-5 max-w-sm">
+                            Export your denied or outstanding claims report as CSV and import it —
+                            that is the fastest way to see what the engine does with real data.
+                          </p>
+                          <div className="flex items-center gap-3 flex-wrap justify-center">
+                            <Link href="/dashboard/claims/import">
+                              <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all font-bold text-sm shadow-lg shadow-teal-900/20">
+                                <Upload className="w-4 h-4" />
+                                Import CSV
+                              </button>
+                            </Link>
+                            <button
+                              onClick={() => setIsNewClaimModalOpen(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add one manually
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
                   )}
                   {claims.length > 0 && filteredClaims.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-500 font-medium">
+                      <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
                         No claims found matching your criteria.
                       </td>
                     </tr>
