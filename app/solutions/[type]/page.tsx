@@ -5,69 +5,90 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 const solutionsData = {
   'dental': {
     title: 'Dental Practices',
     image: 'https://picsum.photos/seed/dental-office/1200/600',
-    description: 'Dental billing involves high volumes of low-to-medium value claims. Our system integrates directly with Open Dental and Dentrix to automate follow-ups for outstanding claims and patient balances, recovering an average of $3,200/month in aged receivables.',
+    description: 'Dental billing is high-volume and low-value per claim, which is exactly why denials get abandoned rather than worked. RevRecover AI reads each denial, tells you whether it is genuinely appealable, and drafts the letter so the follow-up actually happens.',
     features: [
-      { title: 'Automated EOB parsing', desc: 'Instantly identify underpayments and missing attachments.' },
-      { title: 'Patient payment plans', desc: 'SMS-based links for easy installment setups.' },
-      { title: 'Pre-auth tracking', desc: 'Prevent denials before procedures occur.' }
+      { title: 'Denial triage', desc: 'Every denied claim gets a recovery probability and a root cause, not just a status.' },
+      { title: 'Drafted appeals', desc: 'Appeal letters written against the specific denial reason, with placeholders where clinical detail is needed.' },
+      { title: 'Honest write-off calls', desc: 'Frequency limits and alternate-benefit downgrades are flagged as patient billing, not appeals.' }
     ],
     stats: [
-      { value: '$3.2k', label: 'Avg. Monthly Recovery' },
-      { value: '45%', label: 'Reduction in AR Days' },
-      { value: '98%', label: 'Clean Claim Rate' }
+      { value: 'CDT', label: 'Dental coding aware' },
+      { value: '~10s', label: 'Per claim triage' },
+      { value: '0', label: 'Setup cost' }
     ]
   },
   'surgical': {
     title: 'Surgical Centers',
     image: 'https://picsum.photos/seed/surgery-center/1200/600',
-    description: 'Ambulatory Surgery Centers (ASCs) face complex coding and high-value claim denials. Our AI models are trained on millions of surgical claims to predict denials and generate clinical appeal letters, improving first-pass resolution by up to 18%.',
+    description: 'Ambulatory surgery centres carry fewer claims but far more dollars per denial, so a single abandoned appeal is expensive. The engine weighs each denial against known payer behaviour patterns and drafts a clinical appeal you can review and send.',
     features: [
-      { title: 'Denial prediction AI', desc: 'Flags claims likely to be denied based on historical payer behavior.' },
-      { title: 'Automated appeals', desc: 'Drafts customized appeal letters citing specific medical necessity guidelines.' },
-      { title: 'Implant invoice tracking', desc: 'Ensures high-cost items are properly billed and reimbursed.' }
+      { title: 'High-value prioritisation', desc: 'Priority reflects expected recovered dollars and filing deadlines, not probability alone.' },
+      { title: 'Medical necessity appeals', desc: 'Drafts the clinical argument and tells you exactly which documentation to attach.' },
+      { title: 'Bundling and modifier denials', desc: 'Explains why services may be separately billable and what supports it.' }
     ],
     stats: [
-      { value: '18%', label: 'First-pass Resolution Increase' },
-      { value: '3x', label: 'Faster Appeal Processing' },
-      { value: '95%', label: 'Implant Reimbursement Rate' }
+      { value: 'CPT', label: 'Medical coding aware' },
+      { value: 'Aging', label: 'Filing windows factored in' },
+      { value: 'Draft', label: 'Review before sending' }
     ]
   },
   'specialty': {
     title: 'Specialty Clinics',
     image: 'https://picsum.photos/seed/medical-clinic/1200/600',
-    description: 'Specialty practices deal with high-cost treatments and complex prior authorizations. Our platform streamlines the authorization process and ensures accurate coding for specialized procedures, minimizing delays and maximizing revenue.',
+    description: 'Specialty practices deal with high-cost treatments and complex prior authorisations, where a denial can sit unworked for months. The engine classifies the denial, estimates recoverability honestly, and gives the front office a concrete next step.',
     features: [
-      { title: 'Automated prior auths', desc: 'Submit and track authorizations directly from your EHR.' },
-      { title: 'Specialty coding rules', desc: 'Built-in edits for complex procedures to prevent coding errors.' },
-      { title: 'Patient financial counseling', desc: 'Clear cost estimates to improve upfront collections.' }
+      { title: 'Prior authorisation denials', desc: 'Flags where retro-authorisation is plausible and where it is not.' },
+      { title: 'Coding error detection', desc: 'Identifies likely coding causes so the claim can be corrected and resubmitted.' },
+      { title: 'Clear next actions', desc: 'Names the payer, document, or code involved instead of saying "follow up".' }
     ],
     stats: [
-      { value: '60%', label: 'Faster Prior Auths' },
-      { value: '25%', label: 'Increase in Upfront Collections' },
-      { value: '99%', label: 'Coding Accuracy' }
+      { value: 'Calibrated', label: 'Not blindly optimistic' },
+      { value: 'Per-claim', label: 'Reasoning you can audit' },
+      { value: 'Trial', label: '30 days, no card' }
     ]
   },
   'enterprise': {
     title: 'Enterprise Health Systems',
     image: 'https://picsum.photos/seed/hospital-building/1200/600',
-    description: 'Large health systems require scalable, enterprise-grade revenue cycle management. Our platform integrates seamlessly with Epic, Cerner, and other major EHRs to provide centralized visibility and automated workflows across multiple facilities.',
+    description: 'We are early, and we will be straight with you: we do not yet have EHR integrations with Epic or Cerner, and we have not completed a SOC 2 audit. If you are an enterprise system, talk to us about what you would need before this is viable for you.',
     features: [
-      { title: 'Centralized dashboard', desc: 'Real-time visibility into financial performance across all locations.' },
-      { title: 'Custom API integrations', desc: 'Seamless data flow between your existing systems.' },
-      { title: 'Advanced analytics', desc: 'Predictive modeling to identify revenue leakage and optimize workflows.' }
+      { title: 'Multi-location view', desc: 'Track claims and clinics across your account in one place.' },
+      { title: 'Audit logging', desc: 'Every data change is recorded against the user who made it.' },
+      { title: 'Integrations on request', desc: 'No EHR connectors yet. Tell us which one matters and we will discuss scope.' }
     ],
     stats: [
-      { value: '$2M+', label: 'Avg. Annual Revenue Found' },
-      { value: '30%', label: 'Reduction in Denial Rate' },
-      { value: '100%', label: 'System Integration' }
+      { value: 'Early', label: 'Access stage' },
+      { value: 'Manual', label: 'Import today' },
+      { value: 'Talk', label: 'To us first' }
     ]
   }
 };
+
+export function generateStaticParams() {
+  return Object.keys(solutionsData).map((type) => ({ type }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
+  const { type } = await params;
+  const solution = solutionsData[type as keyof typeof solutionsData];
+  if (!solution) return { title: 'Solution not found' };
+
+  return {
+    title: solution.title,
+    description: solution.description.slice(0, 155),
+    alternates: { canonical: `/solutions/${type}` },
+    openGraph: {
+      title: `${solution.title} | RevRecover AI`,
+      description: solution.description.slice(0, 155),
+    },
+  };
+}
 
 export default async function SolutionDetailPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;

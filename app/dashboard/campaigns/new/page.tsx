@@ -286,7 +286,7 @@ export default function CreateCampaign() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">Secure Email</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Formal Documentation • HIPAA Compliant</p>
+                      <p className="text-[10px] text-slate-500 font-medium">Formal documentation tone</p>
                     </div>
                   </div>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${channels.email ? 'bg-teal-600 text-white' : 'border-2 border-slate-200'}`}>

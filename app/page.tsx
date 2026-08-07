@@ -6,12 +6,11 @@ import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
-import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle, ArrowRight, X, Loader2 } from 'lucide-react';
+import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const { user } = useAuth();
 
   const handleStartTrial = (e: React.MouseEvent) => {
@@ -34,13 +33,15 @@ export default function LandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-600" />
                 </span>
-                NEW: AI PATIENT PREDICTION V2.0
+                EARLY ACCESS — NOW ONBOARDING PRACTICES
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-[1.1] tracking-tighter mb-5 font-headline">
-                Recover <span className="text-teal-600">14-22%</span> of lost revenue — automatically
+                Stop writing off <span className="text-teal-600">recoverable</span> revenue
               </h1>
               <p className="text-sm md:text-base text-slate-600 max-w-lg mb-8 leading-relaxed font-medium">
-                The clinical-grade engine that predicts patient no-shows and recovers overdue payments with sovereign precision. Built for modern dental and medical practices.
+                RevRecover AI reads your denied claims, tells you which ones are actually worth
+                chasing, and drafts the appeal letter for you. Built for dental and medical practices
+                that don&apos;t have a full-time billing team.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/dashboard" onClick={handleStartTrial}>
@@ -48,13 +49,12 @@ export default function LandingPage() {
                     Get Started
                   </button>
                 </Link>
-                <button 
-                  onClick={() => setIsDemoModalOpen(true)}
-                  className="bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors"
-                >
-                  <PlayCircle className="w-4 h-4 text-teal-600" />
-                  Watch 1-min demo
-                </button>
+                <Link href="/how-it-works">
+                  <button className="w-full sm:w-auto bg-white text-slate-700 text-sm px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 transition-colors">
+                    <PlayCircle className="w-4 h-4 text-teal-600" />
+                    See how it works
+                  </button>
+                </Link>
               </div>
             </div>
             <div className="flex-1 relative w-full mt-8 md:mt-0 flex justify-center md:justify-end">
@@ -77,8 +77,8 @@ export default function LandingPage() {
                   <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div>
-                  <div className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">AVG. MONTHLY RECOVERY</div>
-                  <div className="text-lg md:text-xl font-extrabold text-teal-700 tracking-tight font-headline">$4,280/mo</div>
+                  <div className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">TRIAGE A DENIED CLAIM IN</div>
+                  <div className="text-lg md:text-xl font-extrabold text-teal-700 tracking-tight font-headline">~10 seconds</div>
                 </div>
               </div>
             </div>
@@ -88,20 +88,13 @@ export default function LandingPage() {
         {/* Trust Signals */}
         <section className="py-6 bg-white border-y border-slate-100">
           <div className="max-w-7xl mx-auto px-6">
-            <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Trusted by leading clinics and surgical centers</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 cursor-default">
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
-                PURE DENTAL
-              </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
-                CLINIC PLUS
-              </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
-                ORTHO VEDA
-              </div>
-              <div className="text-base font-bold text-slate-800 tracking-tighter flex items-center gap-1.5 hover:text-teal-600 transition-colors">
-                REGEN HUB
-              </div>
+            <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Built for the denial reasons that cost practices the most</p>
+            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12">
+              {['Missing documentation', 'Coordination of benefits', 'Coding errors', 'Timely filing'].map((label) => (
+                <div key={label} className="text-xs md:text-sm font-bold text-slate-500 tracking-tight">
+                  {label}
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -110,8 +103,8 @@ export default function LandingPage() {
         <section className="py-16 md:py-20 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter mb-3 font-headline">Precision tools for sovereign analysts</h2>
-              <p className="text-sm text-slate-500 max-w-2xl mx-auto font-medium">Stop managing spreadsheet chaos. Our AI handles the heavy lifting of financial recovery so you can focus on patient care.</p>
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter mb-3 font-headline">What it actually does</h2>
+              <p className="text-sm text-slate-500 max-w-2xl mx-auto font-medium">Denial management is well-understood work that small practices skip because it is tedious. This does the tedious part.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[220px] md:auto-rows-[260px]">
               {/* Large Feature Card */}
@@ -130,12 +123,12 @@ export default function LandingPage() {
                   <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Brain className="w-6 h-6" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-extrabold tracking-tight mb-3 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Predictive No-Show Engine</h3>
-                  <p className="text-xs md:text-sm text-slate-600 max-w-md leading-relaxed font-medium">Our neural networks analyze 40+ behavioral variables to flag "high-risk" appointments 48 hours in advance.</p>
+                  <h3 className="text-xl md:text-2xl font-extrabold tracking-tight mb-3 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Denial triage that tells you the truth</h3>
+                  <p className="text-xs md:text-sm text-slate-600 max-w-md leading-relaxed font-medium">Every denied claim gets a recovery probability, a root cause, and a specific next step — including when the honest answer is &ldquo;this one is contractual, bill the patient.&rdquo;</p>
                 </div>
-                <div className="relative z-10 mt-6 flex gap-2">
-                  <span className="px-3 py-1 bg-teal-50 rounded-full text-[9px] font-bold text-teal-800 uppercase tracking-wider">84% ACCURACY</span>
-                  <span className="px-3 py-1 bg-teal-50 rounded-full text-[9px] font-bold text-teal-800 uppercase tracking-wider">REAL-TIME ALERTS</span>
+                <div className="relative z-10 mt-6 flex gap-2 flex-wrap">
+                  <span className="px-3 py-1 bg-teal-50 rounded-full text-[9px] font-bold text-teal-800 uppercase tracking-wider">RECOVERY PROBABILITY</span>
+                  <span className="px-3 py-1 bg-teal-50 rounded-full text-[9px] font-bold text-teal-800 uppercase tracking-wider">DRAFT APPEAL LETTERS</span>
                 </div>
                 <div className="absolute right-[-5%] bottom-[-5%] w-1/2 h-1/2 opacity-5 rotate-[-12deg] group-hover:rotate-0 transition-transform duration-700 z-0">
                   <Brain className="w-full h-full text-teal-600" />
@@ -157,8 +150,8 @@ export default function LandingPage() {
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                     <CreditCard className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline">Automated Arrears</h3>
-                  <p className="text-[11px] opacity-90 leading-relaxed font-medium">Gentle, systematic recovery of overdue balances via SMS and email that feels personal, not robotic.</p>
+                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline">Patient balance pipeline</h3>
+                  <p className="text-[11px] opacity-90 leading-relaxed font-medium">Track outstanding patient balances through a simple pipeline, with AI guidance on which are worth pursuing. Automated SMS and email sending is not live yet.</p>
                 </div>
               </div>
               {/* Small Feature Card 2 */}
@@ -177,15 +170,15 @@ export default function LandingPage() {
                   <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Shield className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Sovereign Security</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed font-medium">SOC2 Type II &amp; HIPAA compliant. Your clinical data never leaves the encrypted vault.</p>
+                  <h3 className="text-lg font-extrabold tracking-tight mb-1.5 font-headline text-slate-900 group-hover:text-teal-700 transition-colors">Built for sensitive data</h3>
+                  <p className="text-[11px] text-slate-500 leading-relaxed font-medium">Encrypted in transit and at rest, scoped per practice. Formal HIPAA and SOC 2 work is in progress — see our compliance page.</p>
                 </div>
               </div>
               {/* Wide Card */}
               <div className="md:col-span-3 bg-slate-100 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 md:gap-12 hover:bg-slate-200/50 transition-colors cursor-default">
                 <div className="flex-1">
-                  <h3 className="text-lg font-extrabold tracking-tight mb-3 font-headline">Deep Integration Ecosystem</h3>
-                  <p className="text-xs text-slate-600 mb-4 font-medium leading-relaxed">Connects seamlessly with Open Dental, Dentrix, and Eaglesoft in under 15 minutes. No manual data entry required.</p>
+                  <h3 className="text-lg font-extrabold tracking-tight mb-3 font-headline">Getting your claims in</h3>
+                  <p className="text-xs text-slate-600 mb-4 font-medium leading-relaxed">Import your outstanding claims from a CSV export today. Direct connectors to Open Dental, Dentrix and Eaglesoft are on the roadmap, not shipped yet.</p>
                   <div className="flex flex-wrap gap-2">
                     <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider hover:text-teal-600 transition-colors cursor-pointer">DENTRIX GOLD</div>
                     <div className="px-3 py-1 bg-white rounded-lg shadow-sm font-bold text-[9px] text-slate-400 uppercase tracking-wider hover:text-teal-600 transition-colors cursor-pointer">OPEN DENTAL</div>
@@ -195,12 +188,12 @@ export default function LandingPage() {
                 <div className="flex-1 flex justify-end w-full md:w-auto">
                   <div className="grid grid-cols-2 gap-3 w-full max-w-[280px]">
                     <div className="bg-white p-3 rounded-xl shadow-sm text-center transform hover:scale-105 transition-transform cursor-default">
-                      <div className="text-xl font-extrabold text-teal-600 tracking-tighter font-headline">15m</div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Setup Time</div>
+                      <div className="text-xl font-extrabold text-teal-600 tracking-tighter font-headline">CSV</div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Import today</div>
                     </div>
                     <div className="bg-white p-3 rounded-xl shadow-sm text-center transform hover:scale-105 transition-transform cursor-default">
                       <div className="text-xl font-extrabold text-teal-600 tracking-tighter font-headline">0</div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Code Required</div>
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Code required</div>
                     </div>
                   </div>
                 </div>
@@ -213,28 +206,27 @@ export default function LandingPage() {
         <section className="py-16 md:py-20 bg-teal-900 text-white">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
             <div>
-              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter mb-6 leading-tight font-headline">Your practice is leaking revenue. We fix the plumbing.</h2>
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tighter mb-6 leading-tight font-headline">Most write-offs were never actually worked.</h2>
               <ul className="space-y-4">
                 <li className="flex gap-3 group">
                   <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-medium">Recover $2k - $8k per month in uncollected insurance claims.</span>
+                  <span className="text-sm font-medium">See which denials are genuinely appealable — and which are contractual write-offs.</span>
                 </li>
                 <li className="flex gap-3 group">
                   <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-medium">Reduce no-shows by 25% using behavioral nudges.</span>
+                  <span className="text-sm font-medium">Get a drafted appeal letter instead of a blank page.</span>
                 </li>
                 <li className="flex gap-3 group">
                   <CheckCircle className="w-5 h-5 text-teal-400 shrink-0 group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-medium">Clean up historical arrears going back 12 months.</span>
+                  <span className="text-sm font-medium">Flag the appointments most likely to no-show, before the slot is lost.</span>
                 </li>
               </ul>
             </div>
             <div className="bg-white/5 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors cursor-default">
               <div className="mb-6">
-                <div className="text-[9px] font-bold text-teal-400 uppercase tracking-[0.2em] mb-1.5">Live Recovery Pulse</div>
+                <div className="text-[9px] font-bold text-teal-400 uppercase tracking-[0.2em] mb-1.5">Example output</div>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
-                  <div className="text-lg font-bold font-headline tracking-tight">Active Recovery Session...</div>
+                  <div className="text-lg font-bold font-headline tracking-tight">What the engine surfaces</div>
                 </div>
               </div>
               <div className="space-y-3">
@@ -260,7 +252,7 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto bg-teal-50 rounded-3xl p-8 md:p-16 text-center relative overflow-hidden border border-teal-100">
             <div className="z-10 relative">
               <h2 className="text-2xl md:text-4xl font-extrabold tracking-tighter mb-4 font-headline text-slate-900">Ready to reclaim your <span className="text-teal-600">full potential?</span></h2>
-              <p className="text-sm md:text-base text-slate-600 mb-8 max-w-2xl mx-auto font-medium">Join over 450 clinics using RevRecover AI to stabilize their cash flow. 30-day free trial. No credit card required.</p>
+              <p className="text-sm md:text-base text-slate-600 mb-8 max-w-2xl mx-auto font-medium">We&apos;re onboarding our first practices now, and working closely with each one. 30-day free trial. No credit card required.</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/dashboard" onClick={handleStartTrial}>
                   <button className="bg-teal-600 text-white text-sm px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-700 hover:scale-[1.02] active:scale-[0.98]">
@@ -281,31 +273,6 @@ export default function LandingPage() {
         </section>
       </main>
       <Footer />
-
-      {/* Demo Modal */}
-      {isDemoModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-4xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 border border-white/10">
-            <button 
-              onClick={() => setIsDemoModalOpen(false)}
-              className="absolute top-6 right-6 z-10 p-2 bg-black/50 text-white/80 hover:text-white rounded-full backdrop-blur-md transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            
-            <iframe 
-              width="100%" 
-              height="100%" 
-              src="https://www.youtube.com/embed/aqz-KE-bpKQ?autoplay=1" 
-              title="RevRecover AI Demo" 
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen
-              className="w-full h-full"
-            ></iframe>
-          </div>
-        </div>
-      )}
 
       {/* Login Modal */}
       <LoginModal 

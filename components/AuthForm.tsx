@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { TrendingUp, Loader2 } from 'lucide-react';
@@ -68,7 +69,8 @@ export const AuthForm = () => {
 
       <div className="text-center text-[11px] text-slate-400 mt-8">
         By continuing, you agree to our <br />
-        <a href="#" className="text-teal-600 hover:underline">Terms of Service</a> and <a href="#" className="text-teal-600 hover:underline">Privacy Policy</a>.
+        <Link href="/legal/terms" className="text-teal-600 hover:underline">Terms of Service</Link> and{' '}
+        <Link href="/legal/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>.
       </div>
     </div>
   );

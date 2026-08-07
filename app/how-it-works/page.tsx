@@ -5,20 +5,29 @@ import { Database, Cpu, MessageSquare, BarChart3, ShieldCheck, ArrowRight, Check
 import Link from 'next/link';
 import Image from 'next/image';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'How It Works',
+  description:
+    'From connecting your practice management system to recovering revenue - the four steps behind RevRecover AI.',
+  alternates: { canonical: '/how-it-works' },
+};
+
 export default function HowItWorksPage() {
   const steps = [
     {
       icon: <Plug className="w-8 h-8 text-teal-600" />,
       title: "1. Seamless Integration",
-      description: "Connect your existing Patient Management System (PMS) like Open Dental, Dentrix, or Eaglesoft in under 15 minutes. Our secure bridge pulls historical and real-time data without manual entry.",
-      example: "e.g., Automatically syncs your daily appointment ledger and patient balance history without any manual exports.",
-      features: ["Direct API Connectivity", "Historical Data Sync", "SOC2 Compliant Encryption"]
+      description: "Today you add claims directly in the dashboard or import them from a CSV export out of your practice management system. Direct PMS connectors are on the roadmap, not shipped — we would rather say so than promise an integration that does not exist yet.",
+      example: "e.g., Export your outstanding claims report from Open Dental or Dentrix and import it here.",
+      features: ["Manual claim entry today", "CSV import", "Encrypted storage"]
     },
     {
       icon: <Brain className="w-8 h-8 text-teal-600" />,
       title: "2. AI Analysis & Prediction",
-      description: "Our clinical-grade AI engine analyzes 40+ behavioral and financial variables to identify leaking revenue, predict no-show risks, and flag underpaid insurance claims.",
-      example: "e.g., Flags patients who always cancel Friday 4 PM appointments, or identifies claims consistently underpaid by Delta Dental.",
+      description: "The engine reads each denial reason, weighs it against known denial-category baselines and the age of the claim, and returns a recovery probability with the reasoning behind it.",
+      example: "e.g., Flags a 14-month-old timely-filing denial as effectively dead, and a 3-week-old missing-attachment denial as worth chasing today.",
       features: ["No-Show Risk Scoring", "Denial Prediction", "Underpayment Detection"]
     },
     {
@@ -128,18 +137,18 @@ export default function HowItWorksPage() {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-[10px] font-bold tracking-widest uppercase mb-6">
                 Security First
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-headline tracking-tight">Sovereign Data Protection</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-headline tracking-tight">How we handle your data</h2>
               <p className="text-teal-100 mb-8 text-lg leading-relaxed">
-                We understand that clinical data is your most sensitive asset. RevRecover AI is built with a "zero-trust" architecture, ensuring that your patient information remains encrypted and compliant with all federal regulations.
+                Your data is encrypted in transit and at rest, and scoped so one practice can never read another’s. We have not completed HIPAA attestation or a SOC 2 audit yet and cannot sign BAAs — so the product is designed to work with de-identified claim data. Our compliance page spells this out in full.
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-teal-400" />
-                  <span className="text-sm font-bold uppercase tracking-wider">HIPAA Compliant</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Encrypted at rest</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-teal-400" />
-                  <span className="text-sm font-bold uppercase tracking-wider">SOC2 Type II</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Per-practice isolation</span>
                 </div>
               </div>
             </div>

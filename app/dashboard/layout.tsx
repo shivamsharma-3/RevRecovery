@@ -17,16 +17,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    /* Redirect to auth commented out for testing
     if (!loading && !user) {
-      router.push('/auth');
+      router.replace('/auth');
     }
-    */
   }, [user, loading, router]);
 
   const handleSignOut = async () => {
@@ -34,7 +31,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/');
   };
 
-  if (!isMounted) {
+  // Gate the whole dashboard behind auth. While Firebase resolves the session we
+  // show a spinner; once it settles without a user the effect above redirects.
+  if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface text-on-surface">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -137,10 +136,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Status</span>
+                <div className="w-2 h-2 bg-teal-500 rounded-full" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recovery engine</span>
               </div>
-              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">AI Engine is currently processing 142 claims across 3 clinics.</p>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                Open a claim and run the analysis to get a recovery probability and a drafted appeal.
+              </p>
             </div>
           </div>
         </aside>

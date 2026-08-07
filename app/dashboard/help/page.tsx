@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState } from 'react';
 import { Search, Book, MessageCircle, Phone, FileText, ExternalLink, ChevronRight, HelpCircle } from 'lucide-react';
 
@@ -8,7 +9,7 @@ export default function HelpCenterPage() {
 
   const faqs = [
     { q: "How does the AI predict no-shows?", a: "Our AI analyzes over 40 behavioral variables including past attendance, appointment type, weather, and communication responsiveness to assign a risk score." },
-    { q: "Is patient data secure and HIPAA compliant?", a: "Yes. All data is encrypted at rest and in transit. We are fully SOC2 Type II and HIPAA compliant, ensuring clinical data never leaves our secure vault." },
+    { q: "Is patient data secure?", a: "Data is encrypted in transit and at rest, and scoped so one practice can never read another's. We have not completed a HIPAA attestation or SOC 2 audit yet and cannot sign BAAs — please do not upload PHI. See our compliance page for the full picture." },
     { q: "How do I integrate with Dentrix?", a: "Navigate to Settings > PMS Integrations, select Dentrix, and follow the OAuth flow. The sync typically takes less than 15 minutes." },
     { q: "Can I customize the automated SMS messages?", a: "Absolutely. Go to Campaigns > Templates to modify the tone, timing, and content of all automated outreach." }
   ];
@@ -40,10 +41,10 @@ export default function HelpCenterPage() {
             <div className="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 mb-6 group-hover:scale-110 transition-transform">
               <Book className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Documentation</h3>
-            <p className="text-sm text-slate-500 mb-6">Detailed guides on setting up and optimizing your RevRecover AI instance.</p>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">How it works</h3>
+            <p className="text-sm text-slate-500 mb-6">A walkthrough of what the recovery engine does with each denied claim.</p>
           </div>
-          <span className="text-teal-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">Read Docs <ChevronRight className="w-4 h-4" /></span>
+          <Link href="/how-it-works" className="text-teal-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">Read the guide <ChevronRight className="w-4 h-4" /></Link>
         </div>
         
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
@@ -51,10 +52,10 @@ export default function HelpCenterPage() {
             <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
               <MessageCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Live Chat Support</h3>
-            <p className="text-sm text-slate-500 mb-6">Connect with our clinical success team for real-time assistance.</p>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Email support</h3>
+            <p className="text-sm text-slate-500 mb-6">We are a small team, so support comes straight from the person who built it. Expect a reply within one business day.</p>
           </div>
-          <span className="text-blue-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">Start Chat <ChevronRight className="w-4 h-4" /></span>
+          <a href="mailto:shivam.sharma4c21@gmail.com" className="text-blue-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">Send an email <ChevronRight className="w-4 h-4" /></a>
         </div>
 
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
@@ -62,10 +63,10 @@ export default function HelpCenterPage() {
             <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
               <Phone className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Phone Support</h3>
-            <p className="text-sm text-slate-500 mb-6">Available 24/7 for Enterprise customers and critical system issues.</p>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Report a problem</h3>
+            <p className="text-sm text-slate-500 mb-6">Found a bug, or think the engine got a claim wrong? That feedback is genuinely the most useful thing you can send us.</p>
           </div>
-          <span className="text-purple-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">View Numbers <ChevronRight className="w-4 h-4" /></span>
+          <Link href="/contact" className="text-purple-600 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 group-hover:gap-2 transition-all">Get in touch <ChevronRight className="w-4 h-4" /></Link>
         </div>
       </div>
 

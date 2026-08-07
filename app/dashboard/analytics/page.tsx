@@ -23,7 +23,10 @@ export default function RevenueAnalyticsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const q = query(collection(db, 'users', user.uid, 'claims'));

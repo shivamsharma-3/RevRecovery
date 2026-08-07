@@ -2,6 +2,15 @@ import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Book a Demo',
+  description:
+    'Schedule a walkthrough of RevRecover AI for your practice.',
+  alternates: { canonical: '/book-demo' },
+};
+
 export default async function BookDemoPage({ searchParams }: { searchParams: Promise<{ solution?: string }> }) {
   const { solution } = await searchParams;
   

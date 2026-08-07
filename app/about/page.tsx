@@ -2,7 +2,17 @@ import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import Image from 'next/image';
+import Link from 'next/link';
 import { History, Heart, Lightbulb, Lock } from 'lucide-react';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About',
+  description:
+    'The team and thinking behind RevRecover AI, a revenue recovery tool for dental and medical practices.',
+  alternates: { canonical: '/about' },
+};
 
 export default function AboutPage() {
   return (
@@ -12,7 +22,7 @@ export default function AboutPage() {
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-extrabold text-teal-900 mb-6 font-headline tracking-tight">About RevRecover AI</h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            We are on a mission to bring clinical-grade revenue recovery to modern healthcare practices, ensuring providers get paid for the care they deliver.
+            An early-stage tool that helps small practices work their denied claims properly, instead of writing them off.
           </p>
         </div>
         
@@ -33,22 +43,18 @@ export default function AboutPage() {
               <History className="w-4 h-4" />
               Our Story
             </div>
-            <h2 className="text-4xl font-bold text-slate-900 mb-6">Built by providers, for providers.</h2>
+            <h2 className="text-4xl font-bold text-slate-900 mb-6">Why this exists</h2>
             <p className="text-slate-600 mb-6 leading-relaxed text-lg">
-              Founded in 2023 by a team of former healthcare administrators and AI engineers, RevRecover AI was born out of frustration. We watched our own clinics leave millions of dollars on the table due to inefficient billing processes, complex insurance denials, and understaffed front desks.
+              RevRecover AI started from a simple observation: denial management is well-understood work that small practices still get wrong, because it is tedious and nobody has time for it. A claim gets denied for missing documentation, nobody follows up within the filing window, and it quietly becomes a write-off.
             </p>
             <p className="text-slate-600 mb-8 leading-relaxed text-lg">
-              Traditional collection agencies alienated patients, and existing software was too rigid. We realized that to truly solve the revenue cycle problem, we needed a system that understood clinical context—a system that could parse an EOB like a seasoned biller and communicate with a patient like a compassionate care coordinator.
+              Enterprise revenue cycle software solves this for large health systems and prices accordingly. Collection agencies solve it by damaging the patient relationship. The gap in the middle — a practice with a few thousand dollars of recoverable denials and no dedicated biller — is what this is built for.
             </p>
-            <div className="grid grid-cols-2 gap-6 border-t border-slate-200 pt-8">
-              <div>
-                <div className="text-4xl font-black text-teal-600 mb-2">$500M+</div>
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-wider">Revenue Recovered</div>
-              </div>
-              <div>
-                <div className="text-4xl font-black text-teal-600 mb-2">1,200+</div>
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-wider">Clinics Supported</div>
-              </div>
+            <div className="border-t border-slate-200 pt-8">
+              <p className="text-sm text-slate-500 leading-relaxed">
+                We are pre-revenue and onboarding our first practices. When we have results worth
+                quoting, they will be real ones with a named practice behind them.
+              </p>
             </div>
           </div>
         </div>
@@ -74,9 +80,9 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-teal-600 transition-colors">
                 <Lightbulb className="w-8 h-8 text-teal-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Clinical Precision</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Calibrated, not optimistic</h3>
               <p className="text-slate-600 leading-relaxed">
-                General AI isn't enough for healthcare. Every decision our platform makes is backed by millions of clinical data points, specific CPT codes, and historical payer behavior.
+                The model is given explicit denial-category baselines, aging multipliers, and calibration rules so it does not simply mark every claim as highly recoverable. It is built to tell you when a denial is contractual and not worth appealing.
               </p>
             </div>
             
@@ -84,75 +90,40 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-teal-600 transition-colors">
                 <Lock className="w-8 h-8 text-teal-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Uncompromising Security</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Honest about security</h3>
               <p className="text-slate-600 leading-relaxed">
-                We treat your patients' data with the highest level of security. We don't just meet industry compliance standards like HIPAA and SOC 2; we aim to exceed them.
+                Data is encrypted in transit and at rest, and scoped so one practice can never read another's. We have not completed HIPAA attestation or a SOC 2 audit yet, and we say so plainly on our compliance page rather than implying otherwise.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Team Section */}
+        {/* Who's behind this */}
         <div className="mb-24">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Meet the Leadership Team</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Experts in healthcare administration, artificial intelligence, and revenue cycle management.</p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Who&apos;s behind this</h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-12">
-            {/* Team Member 1 */}
-            <div className="text-center group">
-              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
-                <Image 
-                  src="https://picsum.photos/seed/ceo/400/400" 
-                  alt="Dr. Sarah Chen, CEO" 
-                  fill 
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-1">Dr. Sarah Chen</h3>
-              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Founder & CEO</p>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                Former Chief Medical Officer with 15 years of experience managing multi-specialty clinics. Sarah founded RevRecover AI after seeing firsthand the devastating impact of inefficient billing on patient care.
-              </p>
-            </div>
-
-            {/* Team Member 2 */}
-            <div className="text-center group">
-              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
-                <Image 
-                  src="https://picsum.photos/seed/cto/400/400" 
-                  alt="Marcus Johnson, CTO" 
-                  fill 
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-1">Marcus Johnson</h3>
-              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Co-Founder & CTO</p>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                Ex-Google AI researcher specializing in natural language processing and predictive modeling. Marcus leads the development of our proprietary denial prediction algorithms.
-              </p>
-            </div>
-
-            {/* Team Member 3 */}
-            <div className="text-center group">
-              <div className="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden shadow-lg border-4 border-white group-hover:scale-105 transition-transform duration-300">
-                <Image 
-                  src="https://picsum.photos/seed/coo/400/400" 
-                  alt="Elena Rodriguez, COO" 
-                  fill 
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-1">Elena Rodriguez</h3>
-              <p className="text-teal-600 font-bold text-sm uppercase tracking-widest mb-4">Chief Operating Officer</p>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                Veteran Revenue Cycle Director who has managed billing operations for over 200 healthcare facilities. Elena ensures our AI solutions align perfectly with real-world clinical workflows.
-              </p>
-            </div>
+          <div className="max-w-2xl mx-auto bg-white p-8 md:p-10 rounded-[2rem] border border-teal-500/10 shadow-sm">
+            <p className="text-slate-600 leading-relaxed mb-4">
+              RevRecover AI is built and run by Shivam Sharma. Right now it is a one-person
+              company &mdash; there is no leadership team to introduce, and pretending otherwise
+              would be a strange way to start a relationship with a practice trusting us with
+              their revenue.
+            </p>
+            <p className="text-slate-600 leading-relaxed mb-4">
+              The product exists because denial management is genuinely tedious work that small
+              practices either do badly or pay a lot to outsource. A model that can read a denial
+              reason, weigh it honestly, and draft the appeal removes most of that drudgery.
+            </p>
+            <p className="text-slate-600 leading-relaxed">
+              We are onboarding our first practices now and working closely with each of them.
+              If that is interesting to you,{' '}
+              <Link href="/contact" className="text-teal-600 font-semibold hover:underline">
+                get in touch
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </main>

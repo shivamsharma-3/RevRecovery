@@ -6,12 +6,13 @@ import {
   Plus, ArrowRight, DollarSign, Clock, CheckCircle2, 
   AlertCircle, MoreHorizontal, Search, Filter,
   ArrowUpRight, Download, Share2, Trash2, Edit3,
-  Calendar, User, Tag, ShieldCheck, X
+  Calendar, User, Tag, ShieldCheck, X, Sparkles, Loader2, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query, deleteDoc } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
+import { analyzeClaim, type ClaimAnalysis } from '@/lib/ai/api';
 
 const INITIAL_PIPELINES = [
   { id: 'identified', title: 'Identified', color: 'bg-slate-400' },
@@ -26,13 +27,17 @@ export default function RecoveryPage() {
   const [selectedCase, setSelectedCase] = useState<any>(null);
   const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [caseAnalysis, setCaseAnalysis] = useState<ClaimAnalysis | null>(null);
   const [cases, setCases] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchCases = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const q = query(collection(db, 'users', user.uid, 'recovery_cases'));
@@ -186,6 +191,64 @@ export default function RecoveryPage() {
     }
   };
 
+  const handleMoveCase = async (cardId: string, targetPipelineId: string) => {
+    if (!user?.uid) return;
+    const recoveryCase = cases.find(c => c.id === cardId);
+    const patientName = recoveryCase?.patient || 'Unknown';
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'recovery_cases', cardId), { pipelineId: targetPipelineId });
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Updated Case Pipeline',
+        target: `Case for ${patientName} moved to ${targetPipelineId}`,
+        status: 'Success',
+        severity: 'Low',
+        type: 'recovery'
+      });
+      setCases(prev => prev.map(c => (c.id === cardId ? { ...c, pipelineId: targetPipelineId } : c)));
+      setSelectedCase((prev: any) => (prev && prev.id === cardId ? { ...prev, pipelineId: targetPipelineId } : prev));
+      toast.success(`Case moved to ${targetPipelineId.replace('-', ' ')}`);
+    } catch (error) {
+      console.error('Error updating case pipeline:', error);
+      toast.error('Failed to update case pipeline');
+    }
+  };
+
+  const handleAnalyseCase = async () => {
+    if (!selectedCase) return;
+    setIsProcessing(true);
+    setCaseAnalysis(null);
+    try {
+      const dateOfService = selectedCase.days
+        ? new Date(Date.now() - Number(selectedCase.days) * 86_400_000).toISOString().split('T')[0]
+        : undefined;
+
+      const result = await analyzeClaim({
+        patientName: selectedCase.patient,
+        amount: Number(selectedCase.amount) || 0,
+        status: 'Outstanding patient balance',
+        denialReason: `Patient balance of type "${selectedCase.type}" outstanding for ${selectedCase.days} days`,
+        date: dateOfService,
+        notes: `Pipeline stage: ${selectedCase.pipelineId}. Practice-assigned priority: ${selectedCase.priority}.`,
+      });
+      setCaseAnalysis(result);
+
+      await logAuditAction(user!.uid, {
+        user: user!.displayName || user!.email || 'User',
+        action: 'AI Case Analysis',
+        target: `Case for ${selectedCase.patient}`,
+        status: 'Success',
+        severity: 'Info',
+        type: 'recovery'
+      });
+    } catch (error: any) {
+      toast.error(error?.message || 'Analysis failed.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const filteredCases = cases.filter(c => {
     const matchesSearch = c.patient?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.id?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -245,7 +308,7 @@ export default function RecoveryPage() {
         </div>
 
         {/* Sub-navigation/Tabs */}
-        <div className="max-w-[1600px] mx-auto mt-6 flex items-center gap-8 border-t border-slate-100 pt-4">
+        <div className="max-w-[1600px] mx-auto mt-6 flex items-center gap-8 border-t border-slate-100 pt-4 overflow-x-auto">
           {['all', 'active', 'pending', 'recovered', 'flagged'].map((tab) => (
             <button
               key={tab}
@@ -260,7 +323,7 @@ export default function RecoveryPage() {
               )}
             </button>
           ))}
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-4 shrink-0">
             <button 
               onClick={() => toast.info('Exporting queue to CSV...')}
               className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-slate-600 transition-colors"
@@ -306,7 +369,7 @@ export default function RecoveryPage() {
                     key={card.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, card.id, column.id)}
-                    onClick={() => setSelectedCase(card)}
+                    onClick={() => { setSelectedCase(card); setCaseAnalysis(null); }}
                     className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing group relative overflow-hidden"
                   >
                     {/* Priority Indicator Line */}
@@ -395,7 +458,7 @@ export default function RecoveryPage() {
                   <Trash2 className="w-5 h-5" />
                 </button>
                 <button 
-                  onClick={() => setSelectedCase(null)}
+                  onClick={() => { setSelectedCase(null); setCaseAnalysis(null); }}
                   className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
                 >
                   <X className="w-6 h-6" />
@@ -434,29 +497,76 @@ export default function RecoveryPage() {
                 </div>
               </div>
 
+              {caseAnalysis && (
+                <div className="mb-8 p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    <h4 className="text-sm font-bold text-slate-900">AI Recovery Analysis</h4>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recovery probability</div>
+                      <div className="text-2xl font-extrabold text-slate-900">{Math.round(caseAnalysis.recoveryProbability * 100)}%</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Suggested priority</div>
+                      <div className={`text-2xl font-extrabold ${
+                        caseAnalysis.priority === 'High' ? 'text-red-600' :
+                        caseAnalysis.priority === 'Medium' ? 'text-amber-600' : 'text-slate-500'
+                      }`}>{caseAnalysis.priority}</div>
+                    </div>
+                  </div>
+
+                  {caseAnalysis.isPatientResponsibility && (
+                    <div className="flex gap-3 p-3 bg-amber-50 border border-amber-100 rounded-2xl">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                        Treat this as a patient billing conversation rather than a payer appeal.
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Assessment</div>
+                    <p className="text-sm text-slate-700 leading-relaxed">{caseAnalysis.rootCause}</p>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Recommended next step</div>
+                    <p className="text-sm text-slate-700 leading-relaxed">{caseAnalysis.recommendedAction}</p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    AI-generated estimate from the data recorded on this case. Not a guarantee of collection.
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-4">
-                <button 
-                  onClick={() => {
-                    setIsProcessing(true);
-                    setTimeout(() => {
-                      setIsProcessing(false);
-                      toast.success('AI Agent sequence initiated.');
-                    }, 1500);
-                  }}
+                <button
+                  onClick={handleAnalyseCase}
                   disabled={isProcessing}
                   className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                 >
                   {isProcessing ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analysing…
+                    </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-5 h-5" />
-                      Trigger AI Agent
+                      <Sparkles className="w-5 h-5" />
+                      {caseAnalysis ? 'Re-run AI analysis' : 'Run AI analysis'}
                     </>
                   )}
                 </button>
-                <button className="px-6 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-colors">
-                  Manual Action
+                <button
+                  onClick={() => {
+                    const next = selectedCase.pipelineId === 'recovered' ? 'identified' : 'recovered';
+                    handleMoveCase(selectedCase.id, next);
+                  }}
+                  className="px-6 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-colors"
+                >
+                  {selectedCase.pipelineId === 'recovered' ? 'Reopen case' : 'Mark recovered'}
                 </button>
               </div>
             </div>

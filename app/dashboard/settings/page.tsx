@@ -296,7 +296,7 @@ export default function SettingsPage() {
                     >
                       Upload Photo
                     </button>
-                    <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">JPG, GIF or PNG. Max size of 800K</p>
+                    
                   </div>
                 </div>
 
@@ -702,10 +702,10 @@ export default function SettingsPage() {
               {/* Modal Content based on activeModal */}
               {activeModal === 'upload-photo' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer">
+                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
                     <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
-                    <p className="text-xs text-slate-500 mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                    <p className="text-sm font-bold text-slate-700">Paste an image URL below</p>
+                    <p className="text-xs text-slate-500 mt-1">File uploads are not supported yet.</p>
                   </div>
                   <input type="text" id="photoUrlInput" placeholder="Or enter an image URL..." className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
                   <button onClick={async () => { 

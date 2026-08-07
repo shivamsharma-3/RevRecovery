@@ -4,6 +4,15 @@ import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 import { Shield, ShieldCheck, CheckCircle2, Lock, FileText, Fingerprint, Eye, Server, Globe, ExternalLink, BadgeCheck, AlertCircle, ArrowRight } from 'lucide-react';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Security & Compliance',
+  description:
+    'How RevRecover AI handles practice and patient data, and where we stand on HIPAA and security certification.',
+  alternates: { canonical: '/compliance' },
+};
+
 export default function CompliancePage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">
@@ -16,7 +25,7 @@ export default function CompliancePage() {
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-teal-900 mb-6 font-headline tracking-tight">Security & Compliance</h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-10">
-            Bank-grade security meets healthcare-grade compliance. We protect your patients' data with the same rigor we apply to recovering your revenue.
+            We are an early-stage company, so here is exactly where we stand on security and compliance — including what we have not achieved yet.
           </p>
           
           {/* Trust Badges */}
@@ -25,13 +34,13 @@ export default function CompliancePage() {
               <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
                 <ShieldCheck className="w-8 h-8 text-teal-600" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">HIPAA Compliant</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">HIPAA Readiness</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
                 <BadgeCheck className="w-8 h-8 text-teal-600" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">SOC 2 Type II</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">SOC 2 Planned</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
@@ -43,7 +52,7 @@ export default function CompliancePage() {
               <div className="w-16 h-16 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center">
                 <Globe className="w-8 h-8 text-teal-600" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">GDPR Ready</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Data Minimisation</span>
             </div>
           </div>
         </div>
@@ -54,19 +63,19 @@ export default function CompliancePage() {
               <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6 text-teal-600" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900">HIPAA Compliance</h2>
+              <h2 className="text-2xl font-bold text-slate-900">HIPAA: where we stand</h2>
             </div>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              RevRecover AI is fully compliant with the Health Insurance Portability and Accountability Act (HIPAA). We implement strict physical, network, and process security measures to protect Protected Health Information (PHI) at every touchpoint.
+              RevRecover AI has not yet completed a third-party HIPAA attestation, and we are not currently able to sign Business Associate Agreements. We have built the product around HIPAA’s technical safeguards from the start, and we are working toward formal readiness. Until that is finished, please do not upload Protected Health Information (PHI) — the product is designed to work with de-identified claim and balance data.
             </p>
             <ul className="space-y-3 text-sm text-slate-700">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" /> 
-                <span><strong>Business Associate Agreements (BAAs):</strong> Standard for all clients.</span>
+                <span><strong>Business Associate Agreements (BAAs):</strong> Not yet available. Contact us if you need one — we will tell you our honest timeline.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" /> 
-                <span><strong>Minimum Necessary Rule:</strong> AI models only access data required for recovery.</span>
+                <span><strong>Data minimisation:</strong> The product only asks for the fields needed to assess a claim.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" /> 
@@ -80,10 +89,10 @@ export default function CompliancePage() {
               <div className="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center">
                 <BadgeCheck className="w-6 h-6 text-teal-600" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900">SOC 2 Type II Certified</h2>
+              <h2 className="text-2xl font-bold text-slate-900">SOC 2: not yet audited</h2>
             </div>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Our infrastructure, software development lifecycle, and internal processes are audited annually by independent third parties to ensure we meet the rigorous standards of SOC 2 Type II for security, availability, and confidentiality.
+              We have not undergone a SOC 2 audit. Claiming otherwise would be untrue, so we do not. We follow the practices a SOC 2 Type II audit would look for — least-privilege access, encrypted storage, audit logging of every data change — and intend to pursue certification once we have the customer base to justify the cost.
             </p>
             <ul className="space-y-3 text-sm text-slate-700">
               <li className="flex items-start gap-3">
@@ -164,7 +173,7 @@ export default function CompliancePage() {
           <div className="relative z-10">
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8 font-headline">Need more details?</h2>
             <p className="text-teal-100 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
-              Our security team is happy to provide our full SOC 2 report or answer any specific compliance questions your IT department may have.
+              We do not have a SOC 2 report to send yet. We are happy to walk your IT team through our architecture, data flows, and retention policy in detail.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link href="/contact">
@@ -174,17 +183,17 @@ export default function CompliancePage() {
               </Link>
               <Link href="/contact?subject=SOC2%20Report%20Request">
                 <button className="bg-teal-800/50 backdrop-blur text-white border-2 border-teal-700 px-10 py-5 rounded-2xl font-bold text-lg hover:bg-teal-800 transition-all">
-                  Request Full SOC 2 Report
+                  Ask us a security question
                 </button>
               </Link>
             </div>
             
             <div className="mt-12 flex flex-wrap justify-center items-center gap-8 opacity-60">
               <div className="flex items-center gap-2 text-white font-medium">
-                <ShieldCheck className="w-5 h-5" /> HIPAA Compliant
+                <ShieldCheck className="w-5 h-5" /> Encrypted in transit and at rest
               </div>
               <div className="flex items-center gap-2 text-white font-medium">
-                <BadgeCheck className="w-5 h-5" /> SOC2 Type II
+                <BadgeCheck className="w-5 h-5" /> Per-practice data isolation
               </div>
               <div className="flex items-center gap-2 text-white font-medium">
                 <Lock className="w-5 h-5" /> 256-bit Encryption

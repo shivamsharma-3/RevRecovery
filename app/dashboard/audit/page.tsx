@@ -35,7 +35,10 @@ export default function AuditLogsPage() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const logsRef = collection(db, 'users', user.uid, 'audit_logs');
     const q = query(logsRef, orderBy('date', 'desc'));
@@ -359,7 +362,9 @@ export default function AuditLogsPage() {
         </div>
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredLogs.length)} of {filteredLogs.length} events
+            {filteredLogs.length === 0
+              ? 'No events'
+              : `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, filteredLogs.length)} of ${filteredLogs.length} events`}
           </p>
           <div className="flex items-center gap-2">
             <button 

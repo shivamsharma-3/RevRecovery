@@ -5,12 +5,14 @@ import { toast } from 'sonner';
 import { 
   Search, Filter, Download, Plus, 
   CheckCircle2, AlertCircle, Clock,
-  FileText, Activity, Users, Megaphone, BarChart3, X, Eye, RefreshCw, Check
+  FileText, Activity, Users, Megaphone, BarChart3, X, Eye, RefreshCw, Check,
+  Sparkles, Loader2, Copy, AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
+import { analyzeClaim, generateAppealLetter, type ClaimAnalysis } from '@/lib/ai/api';
 
 export default function ClaimsRecoveryPage() {
   const { user } = useAuth();
@@ -18,6 +20,10 @@ export default function ClaimsRecoveryPage() {
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [selectedClaim, setSelectedClaim] = useState<any>(null);
   const [isNewClaimModalOpen, setIsNewClaimModalOpen] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<ClaimAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [appealLetter, setAppealLetter] = useState<string | null>(null);
+  const [isDrafting, setIsDrafting] = useState(false);
   const [claims, setClaims] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +31,10 @@ export default function ClaimsRecoveryPage() {
 
   useEffect(() => {
     const fetchClaims = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const q = query(collection(db, 'users', user.uid, 'claims'));
@@ -182,6 +191,85 @@ export default function ClaimsRecoveryPage() {
 
   const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
+  const openClaim = (claim: any) => {
+    setSelectedClaim(claim);
+    setAiAnalysis(null);
+    setAppealLetter(null);
+  };
+
+  const closeClaim = () => {
+    setSelectedClaim(null);
+    setAiAnalysis(null);
+    setAppealLetter(null);
+  };
+
+  const handleAnalyze = async () => {
+    if (!selectedClaim) return;
+    setIsAnalyzing(true);
+    setAiAnalysis(null);
+    try {
+      const result = await analyzeClaim({
+        patientName: selectedClaim.patientName || selectedClaim.patient,
+        amount: getAmountValue(selectedClaim),
+        status: selectedClaim.status,
+        denialReason: selectedClaim.denialReason,
+        date: selectedClaim.date,
+        payer: selectedClaim.insurance,
+        procedureCode: selectedClaim.procedureCode,
+      });
+      setAiAnalysis(result);
+      if (user?.uid) {
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'AI Claim Analysis',
+          target: `Claim ${String(selectedClaim.id).substring(0, 8)}`,
+          status: 'Success',
+          severity: 'Info',
+          type: 'claim',
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Analysis failed.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleDraftAppeal = async () => {
+    if (!selectedClaim) return;
+    if (!selectedClaim.denialReason) {
+      toast.error('This claim has no denial reason recorded — add one before drafting an appeal.');
+      return;
+    }
+    setIsDrafting(true);
+    try {
+      const { letter } = await generateAppealLetter({
+        patientName: selectedClaim.patientName || selectedClaim.patient,
+        amount: getAmountValue(selectedClaim),
+        denialReason: selectedClaim.denialReason,
+        date: selectedClaim.date,
+        payer: selectedClaim.insurance,
+        procedureCode: selectedClaim.procedureCode,
+        claimNumber: String(selectedClaim.id),
+      });
+      setAppealLetter(letter);
+      if (user?.uid) {
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'Generated Appeal Letter',
+          target: `Claim ${String(selectedClaim.id).substring(0, 8)}`,
+          status: 'Success',
+          severity: 'Medium',
+          type: 'claim',
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not draft the appeal.');
+    } finally {
+      setIsDrafting(false);
+    }
+  };
+
   return (
     <div className="p-6 md:p-10 max-w-[1600px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -286,14 +374,14 @@ export default function ClaimsRecoveryPage() {
                     
                     return (
                     <tr key={claim.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="p-4 pl-6 cursor-pointer" onClick={() => setSelectedClaim(claim)}>
+                      <td className="p-4 pl-6 cursor-pointer" onClick={() => openClaim(claim)}>
                         <p className="text-sm font-bold text-teal-600 font-mono">{claim.id.substring(0, 8)}...</p>
                         <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
                           <Clock className="w-3 h-3" />
                           {claim.date ? new Date(claim.date).toLocaleDateString() : 'N/A'}
                         </p>
                       </td>
-                      <td className="p-4 cursor-pointer" onClick={() => setSelectedClaim(claim)}>
+                      <td className="p-4 cursor-pointer" onClick={() => openClaim(claim)}>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">
                             {patientName.charAt(0)}
@@ -301,14 +389,14 @@ export default function ClaimsRecoveryPage() {
                           <span className="text-sm font-bold text-slate-900">{patientName}</span>
                         </div>
                       </td>
-                      <td className="p-4 cursor-pointer" onClick={() => setSelectedClaim(claim)}>
+                      <td className="p-4 cursor-pointer" onClick={() => openClaim(claim)}>
                         <p className="text-sm font-bold text-slate-700">{claim.insurance || 'Unknown'}</p>
                         <p className="text-xs font-medium text-slate-500 mt-0.5">{claim.type || 'Outpatient'}</p>
                       </td>
-                      <td className="p-4 cursor-pointer" onClick={() => setSelectedClaim(claim)}>
+                      <td className="p-4 cursor-pointer" onClick={() => openClaim(claim)}>
                         <span className="text-sm font-extrabold text-slate-900">{formatCurrency(amountValue)}</span>
                       </td>
-                      <td className="p-4 cursor-pointer" onClick={() => setSelectedClaim(claim)}>
+                      <td className="p-4 cursor-pointer" onClick={() => openClaim(claim)}>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
                           claim.status === 'Recovered' ? 'bg-teal-50 text-teal-700' :
                           claim.status === 'Pending' ? 'bg-amber-50 text-amber-700' :
@@ -325,7 +413,7 @@ export default function ClaimsRecoveryPage() {
                       <td className="p-4 pr-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button 
-                            onClick={() => setSelectedClaim(claim)}
+                            onClick={() => openClaim(claim)}
                             className="p-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition-all shadow-sm flex items-center gap-1 text-xs font-bold"
                             title="View Details"
                           >
@@ -513,7 +601,7 @@ export default function ClaimsRecoveryPage() {
                 </div>
               </div>
               <button 
-                onClick={() => setSelectedClaim(null)}
+                onClick={closeClaim}
                 className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -550,6 +638,133 @@ export default function ClaimsRecoveryPage() {
                 </div>
               </div>
               
+              {/* AI Recovery Analysis */}
+              <div className="border-t border-slate-100 pt-6 mb-6">
+                <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-teal-600" />
+                    AI Recovery Analysis
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing}
+                      className="px-4 py-2 bg-teal-600 text-white rounded-xl font-bold text-xs hover:bg-teal-700 transition-all disabled:opacity-60 flex items-center gap-2"
+                    >
+                      {isAnalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                      {isAnalyzing ? 'Analysing…' : aiAnalysis ? 'Re-analyse' : 'Analyse claim'}
+                    </button>
+                    <button
+                      onClick={handleDraftAppeal}
+                      disabled={isDrafting}
+                      className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all disabled:opacity-60 flex items-center gap-2"
+                    >
+                      {isDrafting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                      {isDrafting ? 'Drafting…' : 'Draft appeal'}
+                    </button>
+                  </div>
+                </div>
+
+                {!aiAnalysis && !isAnalyzing && (
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Run the recovery engine to estimate how collectable this claim is, identify the
+                    denial category, and get the next concrete step.
+                  </p>
+                )}
+
+                {aiAnalysis && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                          Recovery Probability
+                        </div>
+                        <div className="text-2xl font-extrabold text-slate-900">
+                          {Math.round(aiAnalysis.recoveryProbability * 100)}%
+                        </div>
+                      </div>
+                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                          Priority
+                        </div>
+                        <div className={`text-2xl font-extrabold ${
+                          aiAnalysis.priority === 'High' ? 'text-red-600' :
+                          aiAnalysis.priority === 'Medium' ? 'text-amber-600' : 'text-slate-500'
+                        }`}>
+                          {aiAnalysis.priority}
+                        </div>
+                      </div>
+                      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                          Category
+                        </div>
+                        <div className="text-sm font-bold text-slate-900 leading-snug">
+                          {aiAnalysis.denialCategory}
+                        </div>
+                      </div>
+                    </div>
+
+                    {aiAnalysis.isPatientResponsibility && (
+                      <div className="flex gap-3 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                          This looks contractual rather than an error — it is likely patient
+                          responsibility, not an appeal.
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Root cause</div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{aiAnalysis.rootCause}</p>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Recommended action</div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{aiAnalysis.recommendedAction}</p>
+                    </div>
+
+                    {aiAnalysis.missingInformation?.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Missing information</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {aiAnalysis.missingInformation.map((item, i) => (
+                            <li key={i} className="text-xs text-slate-600 leading-relaxed">{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-slate-400 leading-relaxed">
+                      AI-generated estimate based on the claim data recorded here. Verify against the
+                      payer&apos;s remittance advice before acting.
+                    </p>
+                  </div>
+                )}
+
+                {appealLetter && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draft appeal letter</div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(appealLetter);
+                          toast.success('Appeal letter copied');
+                        }}
+                        className="text-[10px] font-bold text-teal-600 hover:text-teal-800 uppercase tracking-widest flex items-center gap-1.5"
+                      >
+                        <Copy className="w-3 h-3" /> Copy
+                      </button>
+                    </div>
+                    <pre className="whitespace-pre-wrap font-body text-xs text-slate-700 leading-relaxed bg-slate-50 border border-slate-200 rounded-2xl p-5 max-h-72 overflow-y-auto">
+                      {appealLetter}
+                    </pre>
+                    <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
+                      Review every bracketed placeholder and confirm the clinical detail before sending.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="border-t border-slate-100 pt-6">
                 <h4 className="text-sm font-bold text-slate-900 mb-4">Activity Log</h4>
                 <div className="space-y-4">
@@ -576,7 +791,7 @@ export default function ClaimsRecoveryPage() {
             </div>
             <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
               <button 
-                onClick={() => setSelectedClaim(null)}
+                onClick={closeClaim}
                 className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm text-sm"
               >
                 Close
