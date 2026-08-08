@@ -7,21 +7,25 @@ import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
 import { Photo } from '@/components/Photo';
 import { TryItDemo } from '@/components/TryItDemo';
-import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
+import {
+  PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle,
+  FileWarning, GitMerge, Hash, CalendarClock, Stethoscope, ShieldCheck,
+  Repeat, Layers, UserX, TrendingDown, type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
 /** Denial categories the engine is calibrated for, scrolled in the trust strip. */
-const DENIAL_REASONS = [
-  'Missing documentation',
-  'Coordination of benefits',
-  'Coding errors',
-  'Timely filing',
-  'Medical necessity',
-  'Prior authorisation',
-  'Frequency limitations',
-  'Bundling and NCCI edits',
-  'Eligibility lapses',
-  'Alternate benefit downgrades',
+const DENIAL_REASONS: { label: string; icon: LucideIcon }[] = [
+  { label: 'Missing documentation', icon: FileWarning },
+  { label: 'Coordination of benefits', icon: GitMerge },
+  { label: 'Coding errors', icon: Hash },
+  { label: 'Timely filing', icon: CalendarClock },
+  { label: 'Medical necessity', icon: Stethoscope },
+  { label: 'Prior authorisation', icon: ShieldCheck },
+  { label: 'Frequency limitations', icon: Repeat },
+  { label: 'Bundling and NCCI edits', icon: Layers },
+  { label: 'Eligibility lapses', icon: UserX },
+  { label: 'Alternate benefit downgrades', icon: TrendingDown },
 ];
 
 export default function LandingPage() {
@@ -104,22 +108,31 @@ export default function LandingPage() {
         </section>
 
         {/* Trust Signals — scrolling denial categories */}
-        <section className="py-8 bg-white border-y border-slate-100">
-          <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 px-6">
-            Built for the denial reasons that cost practices the most
-          </p>
+        <section className="relative py-12 md:py-14 bg-gradient-to-b from-white via-slate-50/60 to-white border-y border-slate-200/60">
+          <div className="flex items-center justify-center gap-3 mb-8 px-6">
+            <span className="h-px w-8 bg-gradient-to-r from-transparent to-slate-300" />
+            <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.22em]">
+              Calibrated for the denials that cost practices the most
+            </p>
+            <span className="h-px w-8 bg-gradient-to-l from-transparent to-slate-300" />
+          </div>
 
-          {/* Edges fade so items enter and leave rather than popping */}
-          <div className="marquee-viewport relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+          {/* Edges fade so chips enter and leave rather than popping */}
+          <div className="marquee-viewport relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <div className="marquee-track">
               {[0, 1].map((copy) => (
                 <div key={copy} className="flex items-center shrink-0" aria-hidden={copy === 1}>
-                  {DENIAL_REASONS.map((label) => (
-                    <div key={label} className="flex items-center shrink-0">
-                      <span className="px-10 md:px-16 text-base md:text-lg font-bold text-slate-600 tracking-tight whitespace-nowrap">
+                  {DENIAL_REASONS.map(({ label, icon: Icon }) => (
+                    <div
+                      key={label}
+                      className="mx-2.5 md:mx-3.5 shrink-0 inline-flex items-center gap-2.5 rounded-full bg-white pl-4 pr-5 py-2.5 border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_-6px_rgba(15,23,42,0.10)]"
+                    >
+                      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-teal-50 text-teal-600 shrink-0">
+                        <Icon className="w-3.5 h-3.5" strokeWidth={2.25} />
+                      </span>
+                      <span className="text-sm md:text-[15px] font-semibold text-slate-700 tracking-tight whitespace-nowrap">
                         {label}
                       </span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-teal-500/40 shrink-0" />
                     </div>
                   ))}
                 </div>
