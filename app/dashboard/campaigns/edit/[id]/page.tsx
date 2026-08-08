@@ -29,8 +29,11 @@ export default function EditCampaign() {
 
   useEffect(() => {
     const fetchCampaign = async () => {
-      if (!user || !campaignId) return;
-      
+      if (!user || !campaignId) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const docRef = doc(db, 'users', user.uid, 'campaigns', campaignId);
         const docSnap = await getDoc(docRef);

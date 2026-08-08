@@ -12,9 +12,40 @@ const manrope = Manrope({
   variable: '--font-manrope',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://revrecovery.vercel.app';
+
 export const metadata: Metadata = {
-  title: 'RevRecover AI',
-  description: 'Clinical Precision in Revenue Recovery',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'RevRecover AI — Recover revenue lost to denials and no-shows',
+    template: '%s | RevRecover AI',
+  },
+  description:
+    'RevRecover AI helps dental and medical practices triage denied claims, draft payer appeals, and flag appointments at risk of no-showing.',
+  applicationName: 'RevRecover AI',
+  keywords: [
+    'revenue cycle management',
+    'dental billing',
+    'claim denial management',
+    'patient no-show prediction',
+    'accounts receivable recovery',
+  ],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: 'RevRecover AI',
+    url: siteUrl,
+    title: 'RevRecover AI — Recover revenue lost to denials and no-shows',
+    description:
+      'Triage denied claims, draft payer appeals, and flag at-risk appointments — built for dental and medical practices.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RevRecover AI',
+    description:
+      'Triage denied claims, draft payer appeals, and flag at-risk appointments.',
+  },
+  robots: { index: true, follow: true },
 };
 
 import { AuthProvider } from '@/components/AuthProvider';

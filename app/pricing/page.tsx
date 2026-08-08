@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
@@ -185,7 +185,7 @@ export default function PricingPage() {
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                <span className="text-sm font-medium text-on-surface-variant">SOC2 Compliance</span>
+                <span className="text-sm font-medium text-on-surface-variant">Custom data agreements</span>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
@@ -210,11 +210,11 @@ export default function PricingPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-bold tracking-tight">HIPAA Compliant</span>
+                  <span className="text-sm font-bold tracking-tight">Encrypted in transit &amp; at rest</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-bold tracking-tight">SOC2 Certified</span>
+                  <span className="text-sm font-bold tracking-tight">Per-practice data isolation</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Lock className="w-5 h-5 text-primary" />
@@ -227,13 +227,7 @@ export default function PricingPage() {
               </div>
             </div>
             <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100">
-              <Image 
-                src="https://picsum.photos/seed/dashboard/800/600" 
-                alt="Modern clinical data dashboard showing revenue recovery metrics" 
-                fill
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="dashboard" />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
             </div>
           </div>
@@ -243,39 +237,27 @@ export default function PricingPage() {
           <h2 className="text-2xl font-bold font-headline text-center mb-12">Frequently Asked Questions</h2>
           <div className="space-y-8">
             <div className="group">
-              <button className="flex justify-between items-center w-full text-left">
-                <span className="text-lg font-semibold text-on-surface">How does the 30-day trial work?</span>
-                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-              </button>
+              <h3 className="flex justify-between items-center w-full text-left"><span className="text-lg font-semibold text-on-surface">How does the 30-day trial work?</span></h3>
               <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
                 Every plan starts with a full-featured 30-day trial. We'll help you integrate your existing patient management system and start recovering revenue immediately. No credit card required.
               </div>
             </div>
             <div className="group">
-              <button className="flex justify-between items-center w-full text-left">
-                <span className="text-lg font-semibold text-on-surface">What counts as a 'Monthly Claim'?</span>
-                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-              </button>
+              <h3 className="flex justify-between items-center w-full text-left"><span className="text-lg font-semibold text-on-surface">What counts as a 'Monthly Claim'?</span></h3>
               <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
                 A claim is any individual no-show or overdue balance entry that the AI begins working to recover (e.g., one patient no-show = 1 claim). We do not count successful follow-ups or multiple touches on the same claim as new claims.
               </div>
             </div>
             <div className="group">
-              <button className="flex justify-between items-center w-full text-left">
-                <span className="text-lg font-semibold text-on-surface">Can I cancel or change my plan anytime?</span>
-                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-              </button>
+              <h3 className="flex justify-between items-center w-full text-left"><span className="text-lg font-semibold text-on-surface">Can I cancel or change my plan anytime?</span></h3>
               <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
                 Yes, our Starter and Pro plans are billed month-to-month with no long-term commitment. You can upgrade, downgrade, or cancel your subscription at any time from your dashboard.
               </div>
             </div>
             <div className="group">
-              <button className="flex justify-between items-center w-full text-left">
-                <span className="text-lg font-semibold text-on-surface">Is my patient data secure?</span>
-                <ChevronDown className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
-              </button>
+              <h3 className="flex justify-between items-center w-full text-left"><span className="text-lg font-semibold text-on-surface">Is my patient data secure?</span></h3>
               <div className="mt-4 text-on-surface-variant text-sm leading-relaxed">
-                Absolutely. RevRecover AI is fully HIPAA compliant and SOC2 certified. We use end-to-end encryption for all data in transit and at rest, ensuring your patients' information is always protected.
+                Data is encrypted in transit and at rest, and each practice's data is isolated from every other. To be straight with you: we have not completed a HIPAA attestation or a SOC 2 audit yet, and we cannot sign BAAs, so please do not upload PHI. Our compliance page explains exactly where we stand.
               </div>
             </div>
           </div>

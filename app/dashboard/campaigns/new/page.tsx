@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Check, MessageSquare, Mail, MessageCircle, ArrowLeft, Send, BarChart, Zap, Shield, Sparkles, Upload, FileText, Loader2 } from 'lucide-react';
+import { Check, MessageSquare, Mail, MessageCircle, ArrowLeft, Send, BarChart, Zap, Shield, Sparkles, Upload, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -74,7 +74,7 @@ export default function CreateCampaign() {
 
       setIsDeploying(false);
       setIsSuccess(true);
-      toast.success('Campaign deployed successfully');
+      toast.success('Campaign saved');
     } catch (error) {
       console.error('Error deploying campaign:', error);
       await logAuditAction(user.uid, {
@@ -96,9 +96,9 @@ export default function CreateCampaign() {
         <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 animate-bounce">
           <Check className="w-10 h-10" />
         </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-4 font-headline">Campaign Deployed!</h1>
+        <h1 className="text-3xl font-extrabold text-slate-900 mb-4 font-headline">Campaign saved</h1>
         <p className="text-slate-500 mb-8">
-          Your recovery protocol is now live. AI is beginning to process and send personalized appeals for {uploadedFile?.name || 'your claims'}.
+          Saved as a plan for {uploadedFile?.name || 'your claims'}. Nothing has been sent to patients — automated SMS and email delivery is not live yet, so treat this as a worklist you action yourself.
         </p>
         <div className="flex gap-4">
           <button 
@@ -125,7 +125,7 @@ export default function CreateCampaign() {
         {/* Header */}
         <header>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1.5 font-headline">Create Recovery Campaign</h1>
-          <p className="text-slate-500 text-sm font-medium">Deploy clinically precise outreach to maximize claim recovery.</p>
+          <p className="text-slate-500 text-sm font-medium">Plan an outreach sequence. Sending is not automated yet — this saves the plan for you to work.</p>
         </header>
         {/* 3-Step Wizard Progress Indicator */}
         <div className="relative flex justify-between items-center max-w-md mx-auto lg:mx-0">
@@ -256,7 +256,14 @@ export default function CreateCampaign() {
         {step === 3 && (
           <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="p-6 rounded-2xl bg-white shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-900 font-headline mb-6">Distribution Channels</h2>
+              <h2 className="text-lg font-bold text-slate-900 font-headline mb-2">Distribution Channels</h2>
+              <div className="flex gap-3 p-4 mb-6 bg-amber-50 border border-amber-100 rounded-2xl">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                  Automated sending is not live yet. Choosing channels records your intended plan —
+                  no messages will reach patients from this app.
+                </p>
+              </div>
               <div className="space-y-4">
                 <div 
                   onClick={() => setChannels(prev => ({ ...prev, whatsapp: !prev.whatsapp }))}
@@ -286,7 +293,7 @@ export default function CreateCampaign() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">Secure Email</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Formal Documentation • HIPAA Compliant</p>
+                      <p className="text-[10px] text-slate-500 font-medium">Formal documentation tone</p>
                     </div>
                   </div>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${channels.email ? 'bg-teal-600 text-white' : 'border-2 border-slate-200'}`}>
@@ -333,11 +340,11 @@ export default function CreateCampaign() {
                 {isDeploying ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Deploying...
+                    Saving...
                   </>
                 ) : (
                   <>
-                    Deploy Campaign
+                    Save campaign plan
                     <Send className="w-4 h-4" />
                   </>
                 )}

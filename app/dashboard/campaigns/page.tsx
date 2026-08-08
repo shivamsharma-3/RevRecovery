@@ -13,6 +13,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, doc, deleteDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { logAuditAction } from '@/lib/audit';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export default function CampaignList() {
   const router = useRouter();
@@ -27,8 +28,11 @@ export default function CampaignList() {
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
   const [campaignToDelete, setCampaignToDelete] = useState<string | null>(null);
 
+  useScrollLock(Boolean(selectedCampaign) || Boolean(campaignToDelete));
+
   useEffect(() => {
     if (!user) {
+      setIsLoading(false);
       return;
     }
 
@@ -159,7 +163,7 @@ export default function CampaignList() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
             </span>
-            Live Optimization Active
+            Recovery engine ready
           </div>
         </div>
         <div className="shrink-0">
@@ -175,25 +179,25 @@ export default function CampaignList() {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="col-span-1 sm:col-span-2 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between min-h-[140px] hover:shadow-md transition-all group">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Aggregate Recovery Rate</span>
-            <span className="text-teal-700 bg-teal-50 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest">+12.4% vs LY</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Share of campaigns running</span>
+            
           </div>
           <div className="flex items-end justify-between gap-4">
-            <h3 className="text-4xl font-extrabold text-teal-600 tracking-tighter">42.8<span className="text-xl opacity-60">%</span></h3>
+            <h3 className="text-4xl font-extrabold text-teal-600 tracking-tighter">{campaigns.length ? Math.round((campaigns.filter((c: any) => c.status === 'Running').length / campaigns.length) * 100) : 0}<span className="text-xl opacity-60">%</span></h3>
             <div className="w-1/2 bg-slate-100 h-1.5 rounded-full overflow-hidden mb-2">
-              <div className="bg-teal-600 h-full w-[42.8%]" />
+              <div className="bg-teal-600 h-full" style={{ width: `${Math.min(100, campaigns.length ? (campaigns.filter((c: any) => c.status === 'Running').length / campaigns.length) * 100 : 0)}%` }} />
             </div>
           </div>
         </div>
         <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all group">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total ROI</span>
-          <h3 className="text-3xl font-extrabold text-slate-900 tracking-tighter mt-2">14.2<span className="text-lg opacity-60">x</span></h3>
-          <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider">Verified Net Recovery Value</p>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total campaigns</span>
+          <h3 className="text-3xl font-extrabold text-slate-900 tracking-tighter mt-2">{campaigns.length}</h3>
+          <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider">Created on this account</p>
         </div>
         <div className="bg-teal-600 text-white p-6 rounded-[2rem] shadow-xl shadow-teal-500/20 flex flex-col justify-between hover:shadow-2xl transition-all group">
           <span className="text-[11px] font-bold text-teal-100 uppercase tracking-widest">Active Protocols</span>
           <h3 className="text-3xl font-extrabold tracking-tighter mt-2">{campaigns.filter(c => c.status === 'Running').length}</h3>
-          <p className="text-[10px] text-teal-50/70 mt-1 font-bold uppercase tracking-wider">Monitoring 2.4k Claims</p>
+          <p className="text-[10px] text-teal-50/70 mt-1 font-bold uppercase tracking-wider">Currently running</p>
         </div>
       </section>
       {/* Campaign Table / List */}
@@ -345,11 +349,7 @@ export default function CampaignList() {
         {/* Table Footer */}
         <div className="p-5 bg-slate-50/30 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Showing {filteredCampaigns.length} of {campaigns.length} protocols</p>
-          <div className="flex gap-1.5">
-            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 hover:bg-white disabled:opacity-30 transition-all" disabled>Previous</button>
-            <button className="px-3 py-1.5 rounded-lg border border-teal-200 text-[10px] font-bold text-teal-700 bg-teal-50 shadow-sm">1</button>
-            <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-400 hover:bg-white disabled:opacity-30 transition-all" disabled>Next</button>
-          </div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Showing {filteredCampaigns.length} of {campaigns.length} campaigns</div>
         </div>
       </section>
 

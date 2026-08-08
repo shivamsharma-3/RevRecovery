@@ -6,11 +6,14 @@ import {
   Users, Search, Filter, MoreHorizontal, 
   ChevronRight, ArrowUpRight, ArrowDownRight,
   Clock, CheckCircle2, AlertCircle, Mail, Phone, X, FileText, Activity,
-  Plus, User, Calendar, CreditCard
+  Plus, User, Calendar, CreditCard, Sparkles, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { Avatar } from '@/components/Avatar';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query } from 'firebase/firestore';
+import { scoreNoShowRisk, type NoShowRisk } from '@/lib/ai/api';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const MOCK_PATIENTS = [
   { 
@@ -20,8 +23,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'In Progress',
     balance: 1240.00,
     lastVisit: '2024-03-15',
-    riskScore: 'Low',
-    avatar: 'https://picsum.photos/seed/sarah/100/100'
+    riskScore: 'Low'
   },
   { 
     name: 'Michael Chen', 
@@ -30,8 +32,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Recovered',
     balance: 0.00,
     lastVisit: '2024-02-28',
-    riskScore: 'Minimal',
-    avatar: 'https://picsum.photos/seed/michael/100/100'
+    riskScore: 'Minimal'
   },
   { 
     name: 'Emma Wilson', 
@@ -40,8 +41,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Pending',
     balance: 3450.00,
     lastVisit: '2023-11-12',
-    riskScore: 'High',
-    avatar: 'https://picsum.photos/seed/emma/100/100'
+    riskScore: 'High'
   },
   { 
     name: 'David Rodriguez', 
@@ -50,8 +50,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'In Progress',
     balance: 850.00,
     lastVisit: '2024-03-20',
-    riskScore: 'Medium',
-    avatar: 'https://picsum.photos/seed/david/100/100'
+    riskScore: 'Medium'
   },
   { 
     name: 'Lisa Brown', 
@@ -60,8 +59,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Recovered',
     balance: 0.00,
     lastVisit: '2024-03-05',
-    riskScore: 'Minimal',
-    avatar: 'https://picsum.photos/seed/lisa/100/100'
+    riskScore: 'Minimal'
   },
 ];
 
@@ -69,15 +67,22 @@ export default function PatientsPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [noShowRisk, setNoShowRisk] = useState<NoShowRisk | null>(null);
+  const [isScoring, setIsScoring] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
   const [patients, setPatients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  useScrollLock(Boolean(selectedPatient) || isAddModalOpen || isMessageModalOpen);
+
   useEffect(() => {
     const fetchPatients = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const q = query(collection(db, 'users', user.uid, 'patients'));
@@ -135,6 +140,27 @@ export default function PatientsPage() {
     }
   };
 
+  const handleScoreRisk = async () => {
+    if (!selectedPatient) return;
+    setIsScoring(true);
+    setNoShowRisk(null);
+    try {
+      const result = await scoreNoShowRisk({
+        patientName: selectedPatient.name,
+        appointmentType: selectedPatient.appointmentType,
+        lastVisit: selectedPatient.lastVisit,
+        outstandingBalance:
+          typeof selectedPatient.balance === 'number' ? selectedPatient.balance : undefined,
+        isNewPatient: selectedPatient.status === 'New'
+      });
+      setNoShowRisk(result);
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not score this patient.');
+    } finally {
+      setIsScoring(false);
+    }
+  };
+
   const handleMessage = (e: React.MouseEvent, patient: any) => {
     e.stopPropagation();
     setSelectedPatient(patient);
@@ -150,10 +176,6 @@ export default function PatientsPage() {
             <p className="text-slate-500 max-w-2xl text-base font-medium leading-relaxed">Manage patient records and recovery status.</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
-              <Filter className="w-4 h-4" />
-              Filters
-            </button>
             <button 
               onClick={() => setIsAddModalOpen(true)}
               className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all active:scale-95"
@@ -167,10 +189,10 @@ export default function PatientsPage() {
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: 'Total Patients', value: patients.length.toString(), change: '+12%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Active Recovery', value: patients.filter(p => p.recoveryStatus === 'In Progress').length.toString(), change: '+5%', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Fully Recovered', value: patients.filter(p => p.recoveryStatus === 'Recovered').length.toString(), change: '+18%', icon: CheckCircle2, color: 'text-teal-600', bg: 'bg-teal-50' },
-          { label: 'High Risk', value: patients.filter(p => p.riskScore === 'High').length.toString(), change: '-2%', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+          { label: 'Total Patients', value: patients.length.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Active Recovery', value: patients.filter(p => p.recoveryStatus === 'In Progress').length.toString(), icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Fully Recovered', value: patients.filter(p => p.recoveryStatus === 'Recovered').length.toString(), icon: CheckCircle2, color: 'text-teal-600', bg: 'bg-teal-50' },
+          { label: 'High Risk', value: patients.filter(p => p.riskScore === 'High').length.toString(), icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between">
             <div>
@@ -178,9 +200,6 @@ export default function PatientsPage() {
                 <div className={`p-3 rounded-2xl ${stat.bg}`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-widest ${stat.change.startsWith('+') ? 'text-teal-600 bg-teal-50' : 'text-red-600 bg-red-50'}`}>
-                  {stat.change}
-                </span>
               </div>
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</div>
               <div className="text-3xl font-extrabold text-slate-900 tracking-tight">{stat.value}</div>
@@ -242,10 +261,10 @@ export default function PatientsPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} onClick={() => setSelectedPatient(patient)} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                <tr key={patient.id} onClick={() => { setSelectedPatient(patient); setNoShowRisk(null); }} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <img src={patient.avatar} alt="" className="w-12 h-12 rounded-full border-2 border-slate-100 shadow-sm" />
+                      <Avatar name={patient.name} className="w-12 h-12 border-2 border-slate-100 shadow-sm" textClassName="text-sm" />
                       <div>
                         <div className="text-sm font-bold text-slate-900">{patient.name}</div>
                         <div className="text-[11px] font-medium text-slate-500 mt-0.5">{patient.id?.substring(0, 8)} • {patient.email}</div>
@@ -316,14 +335,14 @@ export default function PatientsPage() {
           <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between z-10">
               <div className="flex items-center gap-4">
-                <img src={selectedPatient.avatar} alt="" className="w-16 h-16 rounded-full border-4 border-white shadow-md" />
+                <Avatar name={selectedPatient.name} className="w-16 h-16 border-4 border-white shadow-md" textClassName="text-lg" />
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 font-headline">{selectedPatient.name}</h2>
                   <div className="text-sm font-medium text-slate-500">{selectedPatient.id} • {selectedPatient.email}</div>
                 </div>
               </div>
               <button 
-                onClick={() => setSelectedPatient(null)}
+                onClick={() => { setSelectedPatient(null); setNoShowRisk(null); }}
                 className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -349,24 +368,70 @@ export default function PatientsPage() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-bold text-slate-900 mb-4 font-headline">Recent Activity</h3>
-              <div className="space-y-4">
-                {[
-                  { title: 'Payment Reminder Sent', date: 'Today, 10:30 AM', icon: Mail, color: 'text-blue-500', bg: 'bg-blue-50' },
-                  { title: 'Claim Denied - Coding Error', date: 'Yesterday, 2:15 PM', icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' },
-                  { title: 'Patient Portal Login', date: 'Mar 20, 2024', icon: User, color: 'text-teal-500', bg: 'bg-teal-50' },
-                ].map((activity, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
-                    <div className={`p-2 rounded-xl ${activity.bg}`}>
-                      <activity.icon className={`w-5 h-5 ${activity.color}`} />
-                    </div>
+              <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+                <h3 className="text-lg font-bold text-slate-900 font-headline flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-teal-600" />
+                  No-Show Risk
+                </h3>
+                <button
+                  onClick={handleScoreRisk}
+                  disabled={isScoring}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-xl font-bold text-xs hover:bg-teal-700 transition-all disabled:opacity-60 flex items-center gap-2"
+                >
+                  {isScoring ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {isScoring ? 'Scoring…' : noShowRisk ? 'Re-score' : 'Score patient'}
+                </button>
+              </div>
+
+              {!noShowRisk && !isScoring && (
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Estimate the likelihood this patient misses their next appointment, based on the
+                  history recorded here.
+                </p>
+              )}
+
+              {noShowRisk && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-6 p-5 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
-                      <div className="text-sm font-bold text-slate-900">{activity.title}</div>
-                      <div className="text-xs font-medium text-slate-500 mt-1">{activity.date}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Risk</div>
+                      <div className={`text-3xl font-extrabold ${
+                        noShowRisk.riskBand === 'High' ? 'text-red-600' :
+                        noShowRisk.riskBand === 'Medium' ? 'text-amber-600' : 'text-teal-600'
+                      }`}>
+                        {Math.round(noShowRisk.riskScore * 100)}%
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Band</div>
+                      <div className="text-lg font-bold text-slate-900">{noShowRisk.riskBand}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                        Confidence: {noShowRisk.confidence}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {noShowRisk.drivingFactors?.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">What drove this</div>
+                      <ul className="list-disc pl-5 space-y-1">
+                        {noShowRisk.drivingFactors.map((factor, i) => (
+                          <li key={i} className="text-xs text-slate-600 leading-relaxed">{factor}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Recommended action</div>
+                    <p className="text-sm text-slate-700 leading-relaxed">{noShowRisk.recommendedIntervention}</p>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 leading-relaxed">
+                    AI-generated estimate. Confidence is low when little patient history is on file.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

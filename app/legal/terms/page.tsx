@@ -2,6 +2,15 @@ import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description:
+    'The terms governing use of RevRecover AI.',
+  alternates: { canonical: '/legal/terms' },
+};
+
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">

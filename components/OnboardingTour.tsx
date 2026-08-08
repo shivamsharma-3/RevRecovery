@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const TOUR_STEPS = [
   {
-    title: 'Welcome to RevRecover AI',
-    description: 'Let\'s take a quick tour of your new revenue recovery dashboard. We\'ll show you how to find your way around.',
+    title: 'Import your denials',
+    description:
+      'Export your denied or outstanding claims report from your practice management system as CSV, then import it under Claims. Column names do not need to match — we map them for you.',
     target: 'center'
   },
   {
-    title: 'Executive Dashboard',
-    description: 'This is your command center. Here you can monitor your overall clinical revenue health, active recovery cycles, and performance trends.',
+    title: 'Triage them in one pass',
+    description:
+      'Hit "Triage with AI" and every claim gets a recovery probability, a root cause, and a specific next step — including the ones we tell you not to appeal because they are contractual.',
     target: 'center'
   },
   {
-    title: 'Claims Management',
-    description: 'View and manage all your insurance claims. You can search, filter by status, and drill down into specific claim details.',
-    target: 'center'
-  },
-  {
-    title: 'Patient Directory',
-    description: 'Access your patient records, track their recovery status, and view outstanding balances all in one place.',
-    target: 'center'
-  },
-  {
-    title: 'You\'re All Set!',
-    description: 'You\'re ready to start recovering revenue with AI. If you need help, click the Help icon in the bottom left corner.',
+    title: 'Work the top of the list',
+    description:
+      'Claims sort by expected value, so a 55% likely $4,000 claim outranks a 90% likely $80 one. Open any claim to draft an appeal letter, or export the worklist for your billing staff.',
     target: 'center'
   }
 ];
@@ -32,6 +26,8 @@ const TOUR_STEPS = [
 export default function OnboardingTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+
+  useScrollLock(isOpen);
 
   useEffect(() => {
     // Check if user has seen the tour

@@ -2,17 +2,18 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
+import { Avatar } from '@/components/Avatar';
 import { useRouter } from 'next/navigation';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 import { 
   Activity, Megaphone, CreditCard, Settings, Bell, Search, 
   LayoutDashboard, PlusCircle, Zap, ShieldCheck, Users, 
   TrendingUp, MessageSquare, ChevronRight, MoreHorizontal,
-  Plus, X, RefreshCw, LogOut, List
+  Plus, X, RefreshCw, LogOut, List, Upload
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -22,6 +23,15 @@ import {
 
 
 const COLORS = ['#0d9488', '#0f766e', '#115e59', '#134e4a', '#14b8a6'];
+
+// Small totals were rendering as "$0k" under the old `/1000` formatting.
+const formatCompactCurrency = (value: number) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: value >= 10000 ? 'compact' : 'standard',
+    maximumFractionDigits: value >= 10000 ? 1 : 0,
+  }).format(value || 0);
 
 export default function DashboardHome() {
   const { user, loading, logout } = useAuth();
@@ -35,7 +45,7 @@ export default function DashboardHome() {
     totalRecovered: 0,
     recoveryRate: 0,
     activeCampaigns: 0,
-    messagesSent: 0
+    outstandingBalance: 0
   });
 
   const [selectedInsight, setSelectedInsight] = useState<{title: string, desc: string, time: string, color: string} | null>(null);
@@ -45,6 +55,8 @@ export default function DashboardHome() {
   const [dynamicRecoveryDataMonth, setDynamicRecoveryDataMonth] = useState<{name: string, amount: number, projected: number}[]>([]);
   const [dynamicRecoveryDataYear, setDynamicRecoveryDataYear] = useState<{name: string, amount: number, projected: number}[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState('Year');
+
+  useScrollLock(Boolean(selectedInsight));
 
   useEffect(() => {
     const timer = setTimeout(() => setIsMounted(true), 0);
@@ -70,9 +82,9 @@ export default function DashboardHome() {
         
         setMetrics({
           totalRecovered: recovered,
-          recoveryRate: fetchedClaims.length ? (recoveredCount / fetchedClaims.length) * 100 : 0,
+          recoveryRate: fetchedClaims.length ? Math.round((recoveredCount / fetchedClaims.length) * 100) : 0,
           activeCampaigns: pending,
-          messagesSent: fetchedClaims.length * 3 + Math.floor(Math.random() * 10)
+          outstandingBalance: pendingAmount
         });
 
         const newInsights = [];
@@ -282,20 +294,24 @@ export default function DashboardHome() {
             <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 mb-6">
               <Megaphone className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">No active campaigns yet</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">Let&apos;s get your denials in</h3>
             <p className="text-slate-500 max-w-md mb-8 text-sm leading-relaxed">
-              Connect your billing data or upload claim denials to start recovering revenue with AI-powered appeals.
+              Export your denied or outstanding claims report from your practice management system
+              as CSV and import it. Then run the AI triage and you&apos;ll have a ranked worklist in
+              about a minute.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/dashboard/campaigns/new">
-                <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 flex items-center gap-2 text-sm">
-                  <PlusCircle className="w-4 h-4" />
-                  Create First Campaign
+              <Link href="/dashboard/claims/import">
+                <button className="w-full px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2 text-sm">
+                  <Upload className="w-4 h-4" />
+                  Import claims from CSV
                 </button>
               </Link>
-              <button className="px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">
-                Watch Tutorial
-              </button>
+              <Link href="/dashboard/help">
+                <button className="w-full px-6 py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all text-sm">
+                  Read the guide
+                </button>
+              </Link>
             </div>
           </div>
 
@@ -364,15 +380,7 @@ export default function DashboardHome() {
                 <p className="text-sm font-bold leading-none text-slate-900">{user?.email?.split('@')[0] || 'Administrator'}</p>
                 <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-tight">{user?.email}</p>
               </div>
-              <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-md bg-teal-600 flex items-center justify-center">
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.email || 'Admin'}&background=0d9488&color=fff`} 
-                  alt="Avatar" 
-                  width={44} 
-                  height={44} 
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <Avatar name={user?.displayName || user?.email || 'Admin'} className="w-11 h-11 border-2 border-white shadow-md" textClassName="text-sm" />
             </div>
           </div>
         </header>
@@ -385,12 +393,12 @@ export default function DashboardHome() {
                 <div className="p-3 bg-slate-50 rounded-2xl text-teal-600">
                   <CreditCard className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-widest">+12.4%</span>
+                <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-widest">{claims.filter(c => c.status === 'Recovered').length} claims</span>
               </div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Recovered</p>
-              <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">${(metrics.totalRecovered / 1000).toFixed(0)}k</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{formatCompactCurrency(metrics.totalRecovered)}</h3>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">Fiscal year to date</p>
+            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">All recovered claims to date</p>
           </div>
 
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group flex flex-col justify-between">
@@ -399,12 +407,12 @@ export default function DashboardHome() {
                 <div className="p-3 bg-slate-50 rounded-2xl text-teal-600">
                   <TrendingUp className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-widest">Optimal</span>
+                <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-widest">{claims.length} total</span>
               </div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recovery Rate</p>
               <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{metrics.recoveryRate}%</h3>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">Against industry benchmark 82%</p>
+            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">Share of claims marked recovered</p>
           </div>
 
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group flex flex-col justify-between">
@@ -415,10 +423,10 @@ export default function DashboardHome() {
                 </div>
                 <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg uppercase tracking-widest">Active</span>
               </div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Campaigns</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Open Claims</p>
               <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{metrics.activeCampaigns}</h3>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">7 ending within 48 hours</p>
+            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">Pending or in progress</p>
           </div>
 
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group flex flex-col justify-between">
@@ -427,12 +435,12 @@ export default function DashboardHome() {
                 <div className="p-3 bg-slate-50 rounded-2xl text-teal-600">
                   <MessageSquare className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">Live</span>
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">At risk</span>
               </div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Messages Sent</p>
-              <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{metrics.messagesSent.toLocaleString()}</h3>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Outstanding Balance</p>
+              <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">{formatCompactCurrency(metrics.outstandingBalance)}</h3>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">AI-optimized patient outreach</p>
+            <p className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-wider">Value of unrecovered claims</p>
           </div>
         </div>
 

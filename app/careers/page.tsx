@@ -4,6 +4,15 @@ import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 import { CheckCircle2, MapPin, Clock, Code, Bot, HeadphonesIcon } from 'lucide-react';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Careers',
+  description:
+    'Open roles at RevRecover AI. We are an early-stage team building revenue recovery tooling for healthcare practices.',
+  alternates: { canonical: '/careers' },
+};
+
 export default function CareersPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">

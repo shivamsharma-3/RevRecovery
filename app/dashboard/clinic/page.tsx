@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
+import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 const MOCK_CLINICS = [
   { 
@@ -74,9 +75,14 @@ export default function ClinicInsightsPage() {
   const [newClinicLocation, setNewClinicLocation] = useState('');
   const [newClinicType, setNewClinicType] = useState('Primary Care');
 
+  useScrollLock(Boolean(selectedClinic) || isAddClinicModalOpen);
+
   useEffect(() => {
     const fetchClinics = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
       try {
         const q = query(collection(db, 'users', user.uid, 'clinics'));
@@ -197,8 +203,8 @@ export default function ClinicInsightsPage() {
             {[
               { label: 'Total Clinics', value: clinics.length.toString(), icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50', trend: '+2 this quarter', filter: null },
               { label: 'Active Patients', value: totalPatients.toLocaleString(), icon: Users, color: 'text-teal-600', bg: 'bg-teal-50', trend: '+15% vs last month', filter: null },
-              { label: 'Avg. Recovery Rate', value: avgRecoveryRate, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50', trend: '+4.2% improvement', filter: 'recovery' },
-              { label: 'AI Adoption Score', value: '8.2/10', icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50', trend: 'High engagement', filter: 'adoption' },
+              { label: 'Avg. Recovery Rate', value: avgRecoveryRate, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50', trend: 'Across your clinics', filter: 'recovery' },
+              { label: 'Clinics Tracked', value: clinics.length.toString(), icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50', trend: 'In your network', filter: 'adoption' },
             ].map((stat, i) => (
               <div 
                 key={i} 
@@ -369,8 +375,8 @@ export default function ClinicInsightsPage() {
                     <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
                     Network Health
                   </div>
-                  <h3 className="text-2xl font-extrabold mb-2">98.2% Uptime</h3>
-                  <p className="text-sm text-slate-400 font-medium mb-8">All core systems and PMS integrations are operating normally across the network.</p>
+                  <h3 className="text-2xl font-extrabold mb-2">Network Overview</h3>
+                  <p className="text-sm text-slate-400 font-medium mb-8">Practice management system integrations are not connected yet. Clinics and claims you add here are stored against your account only.</p>
                   
                   <div className="space-y-4">
                     {[
@@ -387,7 +393,7 @@ export default function ClinicInsightsPage() {
                         <div className="flex items-center gap-2">
                           {service.warning && (
                             <button className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors">
-                              Reconnect
+                              Not connected
                             </button>
                           )}
                           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${

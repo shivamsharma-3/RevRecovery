@@ -1,9 +1,18 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Smile, Scissors, Stethoscope, Building2 } from 'lucide-react';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Solutions',
+  description:
+    'Revenue recovery built for dental practices, surgical centres, specialty clinics, and enterprise health systems.',
+  alternates: { canonical: '/solutions' },
+};
 
 export default function SolutionsPage() {
   return (
@@ -21,13 +30,7 @@ export default function SolutionsPage() {
           {/* Dental Recovery */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Image 
-                src="https://picsum.photos/seed/dental-office/800/600" 
-                alt="Modern dental clinic office" 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="dental" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -38,7 +41,7 @@ export default function SolutionsPage() {
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
-                Dental billing involves high volumes of low-to-medium value claims. Our system integrates directly with Open Dental and Dentrix to automate follow-ups for outstanding claims and patient balances, recovering an average of $3,200/month in aged receivables.
+                Dental billing is high-volume and low-value per claim, which is exactly why denials get abandoned rather than worked. RevRecover AI reads each denial, tells you whether it is genuinely appealable, and drafts the letter so the follow-up actually happens.
               </p>
               <ul className="space-y-3 text-sm text-slate-700 mb-8">
                 <li className="flex items-start gap-3">
@@ -63,13 +66,7 @@ export default function SolutionsPage() {
           {/* Surgical Centers */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Image 
-                src="https://picsum.photos/seed/surgery-center/800/600" 
-                alt="Surgical center operating room" 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="surgical" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -80,7 +77,7 @@ export default function SolutionsPage() {
             </div>
             <div className="p-8">
               <p className="text-slate-600 mb-6 leading-relaxed">
-                Ambulatory Surgery Centers (ASCs) face complex coding and high-value claim denials. Our AI models are trained on millions of surgical claims to predict denials and generate clinical appeal letters, improving first-pass resolution by up to 18%.
+                Ambulatory Surgery Centers (ASCs) face complex coding and high-value claim denials. The engine weighs each denial against known payer behaviour patterns and drafts a clinical appeal letter you can review and send.
               </p>
               <ul className="space-y-3 text-sm text-slate-700 mb-8">
                 <li className="flex items-start gap-3">
@@ -105,13 +102,7 @@ export default function SolutionsPage() {
           {/* Specialty Clinics */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Image 
-                src="https://picsum.photos/seed/medical-clinic/800/600" 
-                alt="Specialty medical clinic consultation" 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="specialty" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -147,13 +138,7 @@ export default function SolutionsPage() {
           {/* Enterprise Systems */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Image 
-                src="https://picsum.photos/seed/hospital-building/800/600" 
-                alt="Large healthcare hospital building" 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="enterprise" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">

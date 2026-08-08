@@ -2,6 +2,15 @@ import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description:
+    'How RevRecover AI collects, uses, and protects your information.',
+  alternates: { canonical: '/legal/privacy' },
+};
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface">

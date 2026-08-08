@@ -25,9 +25,40 @@ function ContactForm() {
     return '';
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError(null);
+    setIsSending(true);
+
+    const data = new FormData(e.currentTarget);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: data.get('firstName'),
+          lastName: data.get('lastName'),
+          email: data.get('email'),
+          organization: data.get('organization'),
+          message: data.get('message'),
+          website: data.get('website'),
+        }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(payload?.error || 'Something went wrong. Please try again.');
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      setError('We could not reach the server. Please check your connection and try again.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (submitted) {
@@ -53,30 +84,49 @@ function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <h3 className="text-2xl font-bold text-slate-900 mb-6">Send us a message</h3>
+      {error && (
+        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">First Name *</label>
-          <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Jane" />
+          <label htmlFor="firstName" className="block text-sm font-bold text-slate-700 mb-2">First Name *</label>
+          <input id="firstName" name="firstName" autoComplete="given-name" required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Jane" />
         </div>
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Last Name *</label>
-          <input required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Doe" />
+          <label htmlFor="lastName" className="block text-sm font-bold text-slate-700 mb-2">Last Name *</label>
+          <input id="lastName" name="lastName" autoComplete="family-name" required type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Doe" />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">Work Email *</label>
-        <input required type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="jane@clinic.com" />
+        <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-2">Work Email *</label>
+        <input id="email" name="email" autoComplete="email" required type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="jane@clinic.com" />
       </div>
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">Organization Name</label>
-        <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Premier Medical Group" />
+        <label htmlFor="organization" className="block text-sm font-bold text-slate-700 mb-2">Organization Name</label>
+        <input id="organization" name="organization" autoComplete="organization" type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors" placeholder="Premier Medical Group" />
       </div>
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-2">How can we help? *</label>
-        <textarea required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors resize-none" placeholder="I'm interested in learning more about..."></textarea>
+        <label htmlFor="message" className="block text-sm font-bold text-slate-700 mb-2">How can we help? *</label>
+        <textarea id="message" name="message" required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 bg-slate-50 focus:bg-white transition-colors resize-none" placeholder="I'm interested in learning more about..."></textarea>
       </div>
-      <button type="submit" className="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20">
-        Send Message
+      {/* Honeypot — hidden from people, catnip for bots. */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-9999px] w-px h-px opacity-0"
+      />
+      <button
+        type="submit"
+        disabled={isSending}
+        className="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 disabled:opacity-60 flex items-center justify-center gap-2"
+      >
+        {isSending && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+        {isSending ? 'Sending…' : 'Send Message'}
       </button>
       <p className="text-xs text-slate-500 text-center mt-4">
         By submitting this form, you agree to our <a href="/legal/privacy" className="text-teal-600 hover:underline">Privacy Policy</a>.
@@ -104,31 +154,35 @@ export default function ContactPage() {
             <div className="space-y-8 mb-12">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
-                  <MapPin className="w-6 h-6 text-teal-600" />
+                  <Mail className="w-6 h-6 text-teal-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">Headquarters</h3>
-                  <p className="text-slate-600">100 Innovation Drive<br />San Francisco, CA 94103</p>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">Email</h3>
+                  <p className="text-slate-600">
+                    <a href="mailto:shivam.sharma4c21@gmail.com" className="hover:text-teal-700 transition-colors">
+                      shivam.sharma4c21@gmail.com
+                    </a>
+                  </p>
                 </div>
               </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
-                  <Phone className="w-6 h-6 text-teal-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">Phone</h3>
-                  <p className="text-slate-600">Sales: +1 (800) 555-0199<br />Support: +1 (800) 555-0198</p>
-                </div>
-              </div>
-              
+
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
                   <Clock className="w-6 h-6 text-teal-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">Hours</h3>
-                  <p className="text-slate-600">Monday - Friday<br />8:00 AM - 6:00 PM PST</p>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">Response time</h3>
+                  <p className="text-slate-600">We reply to every enquiry within one business day.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin className="w-6 h-6 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-1">Where we work</h3>
+                  <p className="text-slate-600">Remote-first. Demos and onboarding run over video.</p>
                 </div>
               </div>
             </div>

@@ -3,34 +3,47 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Database, Cpu, MessageSquare, BarChart3, ShieldCheck, ArrowRight, CheckCircle2, Plug, Brain, DollarSign } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'How It Works',
+  description:
+    'From connecting your practice management system to recovering revenue - the four steps behind RevRecover AI.',
+  alternates: { canonical: '/how-it-works' },
+};
 
 export default function HowItWorksPage() {
   const steps = [
     {
       icon: <Plug className="w-8 h-8 text-teal-600" />,
-      title: "1. Seamless Integration",
-      description: "Connect your existing Patient Management System (PMS) like Open Dental, Dentrix, or Eaglesoft in under 15 minutes. Our secure bridge pulls historical and real-time data without manual entry.",
-      example: "e.g., Automatically syncs your daily appointment ledger and patient balance history without any manual exports.",
-      features: ["Direct API Connectivity", "Historical Data Sync", "SOC2 Compliant Encryption"]
+      title: "1. Get your claims in",
+      variant: "integration" as const,
+      description: "Today you add claims directly in the dashboard or import them from a CSV export out of your practice management system. Direct PMS connectors are on the roadmap, not shipped — we would rather say so than promise an integration that does not exist yet.",
+      example: "e.g., Export your outstanding claims report from Open Dental or Dentrix and import it here.",
+      features: ["Manual claim entry today", "CSV import", "Encrypted storage"]
     },
     {
       icon: <Brain className="w-8 h-8 text-teal-600" />,
-      title: "2. AI Analysis & Prediction",
-      description: "Our clinical-grade AI engine analyzes 40+ behavioral and financial variables to identify leaking revenue, predict no-show risks, and flag underpaid insurance claims.",
-      example: "e.g., Flags patients who always cancel Friday 4 PM appointments, or identifies claims consistently underpaid by Delta Dental.",
+      title: "2. AI triage",
+      variant: "analysis" as const,
+      description: "The engine reads each denial reason, weighs it against known denial-category baselines and the age of the claim, and returns a recovery probability with the reasoning behind it.",
+      example: "e.g., Flags a 14-month-old timely-filing denial as effectively dead, and a 3-week-old missing-attachment denial as worth chasing today.",
       features: ["No-Show Risk Scoring", "Denial Prediction", "Underpayment Detection"]
     },
     {
       icon: <MessageSquare className="w-8 h-8 text-teal-600" />,
-      title: "3. Automated Patient Outreach",
-      description: "The system initiates gentle, personalized outreach via SMS and email. It handles awkward financial conversations with compassion, offering easy mobile payment links and installment plans.",
-      example: "e.g., Sends a polite SMS with a 1-click Apple Pay link to a patient with a $150 balance that is 60 days past due.",
-      features: ["Behavioral Nudges", "Mobile-First Payments", "Personalized Messaging"]
+      title: "3. Work the ranked list",
+      variant: "outreach" as const,
+      description: "Claims sort by expected value, so the biggest recoverable dollars sit at the top. Open any claim for a drafted appeal letter, or export the ranked worklist for whoever works your A/R.",
+      example: "e.g., A 55% likely $4,000 claim is placed above a 90% likely $80 one, because that is where the money is.",
+      features: ["Expected-value ranking", "Drafted appeal letters", "CSV worklist export"]
     },
     {
       icon: <DollarSign className="w-8 h-8 text-teal-600" />,
-      title: "4. Revenue Reclaimed",
+      title: "4. Revenue reclaimed",
+      variant: "recovered" as const,
       description: "Watch your cash flow stabilize as overdue balances are settled and insurance denials are appealed automatically. Detailed analytics show exactly how much revenue has been recovered in real-time.",
       example: "e.g., Automatically generates and submits an appeal letter for a denied panoramic X-ray claim, recovering $120.",
       features: ["Real-time Dashboard", "Automated Appeals", "ROI Tracking"]
@@ -53,14 +66,7 @@ export default function HowItWorksPage() {
 
         {/* Hero Image */}
         <div className="w-full max-w-5xl mx-auto aspect-[21/9] bg-slate-100 rounded-[2rem] overflow-hidden shadow-2xl border border-teal-500/10 relative mb-24 group">
-          <Image 
-            src="https://picsum.photos/seed/how-it-works-hero/1200/600" 
-            alt="RevRecover AI dashboard showing revenue recovery process" 
-            fill 
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
-            referrerPolicy="no-referrer"
-            priority
-          />
+          <Illustration variant="dashboard" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
         </div>
 
@@ -105,13 +111,7 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex-1 w-full relative group">
                 <div className="aspect-video bg-slate-100 rounded-[2rem] overflow-hidden shadow-xl border border-teal-500/5 relative">
-                  <Image 
-                    src={`https://picsum.photos/seed/step-${index + 1}/800/600`} 
-                    alt={`Illustration for ${step.title}`} 
-                    fill 
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
+                  <Illustration variant={step.variant} />
                   <div className="absolute inset-0 bg-gradient-to-tr from-teal-900/10 to-transparent" />
                 </div>
                 {/* Decorative element */}
@@ -128,29 +128,23 @@ export default function HowItWorksPage() {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-[10px] font-bold tracking-widest uppercase mb-6">
                 Security First
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-headline tracking-tight">Sovereign Data Protection</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-headline tracking-tight">How we handle your data</h2>
               <p className="text-teal-100 mb-8 text-lg leading-relaxed">
-                We understand that clinical data is your most sensitive asset. RevRecover AI is built with a "zero-trust" architecture, ensuring that your patient information remains encrypted and compliant with all federal regulations.
+                Your data is encrypted in transit and at rest, and scoped so one practice can never read another’s. We have not completed HIPAA attestation or a SOC 2 audit yet and cannot sign BAAs — so the product is designed to work with de-identified claim data. Our compliance page spells this out in full.
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-teal-400" />
-                  <span className="text-sm font-bold uppercase tracking-wider">HIPAA Compliant</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Encrypted at rest</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                   <ShieldCheck className="w-5 h-5 text-teal-400" />
-                  <span className="text-sm font-bold uppercase tracking-wider">SOC2 Type II</span>
+                  <span className="text-sm font-bold uppercase tracking-wider">Per-practice isolation</span>
                 </div>
               </div>
             </div>
             <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl">
-              <Image 
-                src="https://picsum.photos/seed/security-vault/800/600" 
-                alt="Secure data vault" 
-                fill 
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="security" />
               <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
             </div>
           </div>

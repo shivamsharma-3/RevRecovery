@@ -13,13 +13,13 @@ export function Footer() {
             RevRecover AI
           </div>
           <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
-            Clinical-grade revenue recovery for the modern practice. Trusted by thousands of healthcare professionals nationwide.
+            Denial triage and appeal drafting for small dental and medical practices. Early access.
           </p>
           <div className="flex gap-3">
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer hover:bg-primary-fixed">
+            <a href="/contact" className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer hover:bg-primary-fixed">
               <Globe className="w-3.5 h-3.5" />
             </a>
-            <a href="mailto:contact@revrecoverai.com" className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer hover:bg-primary-fixed">
+            <a href="mailto:shivam.sharma4c21@gmail.com" className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer hover:bg-primary-fixed">
               <Mail className="w-3.5 h-3.5" />
             </a>
           </div>
