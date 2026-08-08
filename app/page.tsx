@@ -139,7 +139,7 @@ export default function LandingPage() {
                     {DENIAL_REASONS.map(({ label, icon: Icon }) => (
                       <div
                         key={label}
-                        className="mx-2 md:mx-3 shrink-0 inline-flex items-center gap-3 rounded-2xl bg-white/[0.045] backdrop-blur-sm px-5 py-3.5 border border-white/[0.09] ring-1 ring-inset ring-white/[0.04]"
+                        className="mx-4 md:mx-6 shrink-0 inline-flex items-center gap-3 rounded-2xl bg-white/[0.045] backdrop-blur-sm px-5 py-3.5 border border-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),inset_0_0_18px_rgba(255,255,255,0.05)]"
                       >
                         <Icon className="w-4 h-4 text-teal-400/90 shrink-0" strokeWidth={1.75} />
                         <span className="text-sm md:text-[15px] font-medium text-slate-200/90 tracking-tight whitespace-nowrap">
