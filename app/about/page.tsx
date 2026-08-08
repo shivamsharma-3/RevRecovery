@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 import Link from 'next/link';
 import { History, Heart, Lightbulb, Lock } from 'lucide-react';
 
@@ -28,13 +28,7 @@ export default function AboutPage() {
         
         <div className="grid md:grid-cols-2 gap-16 items-center mb-24">
           <div className="relative h-[500px] rounded-[2rem] overflow-hidden shadow-xl">
-            <Image 
-              src="https://picsum.photos/seed/teamwork/800/1000" 
-              alt="Healthcare administrators and engineers collaborating" 
-              fill 
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
+            <Illustration variant="team" />
             <div className="absolute inset-0 bg-teal-900/10 mix-blend-multiply" />
           </div>
           

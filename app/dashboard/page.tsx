@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
+import { Avatar } from '@/components/Avatar';
 import { useRouter } from 'next/navigation';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, query, orderBy } from 'firebase/firestore';
@@ -380,15 +380,7 @@ export default function DashboardHome() {
                 <p className="text-sm font-bold leading-none text-slate-900">{user?.email?.split('@')[0] || 'Administrator'}</p>
                 <p className="text-[10px] text-slate-500 font-bold uppercase mt-1 tracking-tight">{user?.email}</p>
               </div>
-              <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-md bg-teal-600 flex items-center justify-center">
-                <Image 
-                  src={`https://ui-avatars.com/api/?name=${user?.email || 'Admin'}&background=0d9488&color=fff`} 
-                  alt="Avatar" 
-                  width={44} 
-                  height={44} 
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <Avatar name={user?.displayName || user?.email || 'Admin'} className="w-11 h-11 border-2 border-white shadow-md" textClassName="text-sm" />
             </div>
           </div>
         </header>

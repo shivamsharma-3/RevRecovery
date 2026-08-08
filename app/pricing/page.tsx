@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
@@ -227,13 +227,7 @@ export default function PricingPage() {
               </div>
             </div>
             <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100">
-              <Image 
-                src="https://picsum.photos/seed/dashboard/800/600" 
-                alt="Modern clinical data dashboard showing revenue recovery metrics" 
-                fill
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="dashboard" />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
             </div>
           </div>

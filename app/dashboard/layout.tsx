@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
 import OnboardingTour from '@/components/OnboardingTour';
 import { useRouter, usePathname } from 'next/navigation';

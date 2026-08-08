@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
+import { HeroVisual } from '@/components/HeroVisual';
 import { TryItDemo } from '@/components/TryItDemo';
 import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
@@ -58,23 +58,9 @@ export default function LandingPage() {
                 </a>
               </div>
             </div>
-            <div className="flex-1 relative w-full mt-8 md:mt-0 flex justify-center md:justify-end">
-              <div className="w-full max-w-[95%] aspect-video md:aspect-[16/10] bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-100 relative group">
-                <Image 
-                  alt="RevRecover AI Hero Image" 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                  src="/hero.jpeg"
-                  width={1600}
-                  height={1000}
-                  referrerPolicy="no-referrer"
-                  priority
-                  sizes="(max-width: 768px) 100vw, 95vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-teal-600/10 to-transparent pointer-events-none" />
-              </div>
-              {/* Floating Stat Card */}
-              {/* Kept inside the viewport on mobile — negative offsets clipped it off-screen. */}
-              <div className="absolute bottom-2 left-2 md:-bottom-4 md:-left-4 bg-white/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-xl border border-teal-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <div className="flex-1 relative w-full mt-10 md:mt-0 flex justify-center md:justify-end">
+              <HeroVisual />
+              <div className="absolute -bottom-5 left-2 md:-bottom-6 md:-left-4 bg-white/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-xl border border-teal-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600">
                   <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
@@ -113,16 +99,6 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[220px] md:auto-rows-[260px]">
               {/* Large Feature Card */}
               <div className="md:col-span-2 md:row-span-2 bg-white rounded-2xl p-6 md:p-8 flex flex-col justify-between overflow-hidden relative shadow-sm border border-slate-100 hover:shadow-md transition-shadow group cursor-pointer">
-                <div className="absolute inset-0 z-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-                  <Image 
-                    src="https://picsum.photos/seed/patient-care/800/800" 
-                    alt="Background" 
-                    fill 
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                    sizes="(max-width: 768px) 100vw, 66vw"
-                  />
-                </div>
                 <div className="relative z-10">
                   <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Brain className="w-6 h-6" />
@@ -140,16 +116,6 @@ export default function LandingPage() {
               </div>
               {/* Small Feature Card 1 */}
               <div className="bg-teal-600 text-white rounded-2xl p-6 flex flex-col justify-between shadow-lg shadow-teal-600/10 relative overflow-hidden group cursor-pointer">
-                <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Image 
-                    src="https://picsum.photos/seed/digital-payment/400/400" 
-                    alt="Background" 
-                    fill 
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
                 <div className="relative z-10">
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
                     <CreditCard className="w-5 h-5" />
@@ -160,16 +126,6 @@ export default function LandingPage() {
               </div>
               {/* Small Feature Card 2 */}
               <div className="bg-white rounded-2xl p-6 flex flex-col justify-between border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer">
-                <div className="absolute inset-0 z-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-                  <Image 
-                    src="https://picsum.photos/seed/data-security/400/400" 
-                    alt="Background" 
-                    fill 
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
                 <div className="relative z-10">
                   <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4 group-hover:scale-110 transition-transform">
                     <Shield className="w-5 h-5" />

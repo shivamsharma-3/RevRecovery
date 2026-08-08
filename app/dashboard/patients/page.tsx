@@ -9,6 +9,7 @@ import {
   Plus, User, Calendar, CreditCard, Sparkles, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { Avatar } from '@/components/Avatar';
 import { db } from '@/firebase';
 import { collection, getDocs, addDoc, updateDoc, doc, query } from 'firebase/firestore';
 import { scoreNoShowRisk, type NoShowRisk } from '@/lib/ai/api';
@@ -22,8 +23,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'In Progress',
     balance: 1240.00,
     lastVisit: '2024-03-15',
-    riskScore: 'Low',
-    avatar: 'https://picsum.photos/seed/sarah/100/100'
+    riskScore: 'Low'
   },
   { 
     name: 'Michael Chen', 
@@ -32,8 +32,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Recovered',
     balance: 0.00,
     lastVisit: '2024-02-28',
-    riskScore: 'Minimal',
-    avatar: 'https://picsum.photos/seed/michael/100/100'
+    riskScore: 'Minimal'
   },
   { 
     name: 'Emma Wilson', 
@@ -42,8 +41,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Pending',
     balance: 3450.00,
     lastVisit: '2023-11-12',
-    riskScore: 'High',
-    avatar: 'https://picsum.photos/seed/emma/100/100'
+    riskScore: 'High'
   },
   { 
     name: 'David Rodriguez', 
@@ -52,8 +50,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'In Progress',
     balance: 850.00,
     lastVisit: '2024-03-20',
-    riskScore: 'Medium',
-    avatar: 'https://picsum.photos/seed/david/100/100'
+    riskScore: 'Medium'
   },
   { 
     name: 'Lisa Brown', 
@@ -62,8 +59,7 @@ const MOCK_PATIENTS = [
     recoveryStatus: 'Recovered',
     balance: 0.00,
     lastVisit: '2024-03-05',
-    riskScore: 'Minimal',
-    avatar: 'https://picsum.photos/seed/lisa/100/100'
+    riskScore: 'Minimal'
   },
 ];
 
@@ -155,7 +151,7 @@ export default function PatientsPage() {
         lastVisit: selectedPatient.lastVisit,
         outstandingBalance:
           typeof selectedPatient.balance === 'number' ? selectedPatient.balance : undefined,
-        isNewPatient: selectedPatient.status === 'New',
+        isNewPatient: selectedPatient.status === 'New'
       });
       setNoShowRisk(result);
     } catch (error: any) {
@@ -268,7 +264,7 @@ export default function PatientsPage() {
                 <tr key={patient.id} onClick={() => { setSelectedPatient(patient); setNoShowRisk(null); }} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <img src={patient.avatar} alt="" className="w-12 h-12 rounded-full border-2 border-slate-100 shadow-sm" />
+                      <Avatar name={patient.name} className="w-12 h-12 border-2 border-slate-100 shadow-sm" textClassName="text-sm" />
                       <div>
                         <div className="text-sm font-bold text-slate-900">{patient.name}</div>
                         <div className="text-[11px] font-medium text-slate-500 mt-0.5">{patient.id?.substring(0, 8)} • {patient.email}</div>
@@ -339,7 +335,7 @@ export default function PatientsPage() {
           <div className="bg-white rounded-[2.5rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between z-10">
               <div className="flex items-center gap-4">
-                <img src={selectedPatient.avatar} alt="" className="w-16 h-16 rounded-full border-4 border-white shadow-md" />
+                <Avatar name={selectedPatient.name} className="w-16 h-16 border-4 border-white shadow-md" textClassName="text-lg" />
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900 font-headline">{selectedPatient.name}</h2>
                   <div className="text-sm font-medium text-slate-500">{selectedPatient.id} • {selectedPatient.email}</div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 const solutionsData = {
   'dental': {
     title: 'Dental Practices',
-    image: 'https://picsum.photos/seed/dental-office/1200/600',
+    variant: 'dental' as const,
     description: 'Dental billing is high-volume and low-value per claim, which is exactly why denials get abandoned rather than worked. RevRecover AI reads each denial, tells you whether it is genuinely appealable, and drafts the letter so the follow-up actually happens.',
     features: [
       { title: 'Denial triage', desc: 'Every denied claim gets a recovery probability and a root cause, not just a status.' },
@@ -25,7 +25,7 @@ const solutionsData = {
   },
   'surgical': {
     title: 'Surgical Centers',
-    image: 'https://picsum.photos/seed/surgery-center/1200/600',
+    variant: 'surgical' as const,
     description: 'Ambulatory surgery centres carry fewer claims but far more dollars per denial, so a single abandoned appeal is expensive. The engine weighs each denial against known payer behaviour patterns and drafts a clinical appeal you can review and send.',
     features: [
       { title: 'High-value prioritisation', desc: 'Priority reflects expected recovered dollars and filing deadlines, not probability alone.' },
@@ -40,7 +40,7 @@ const solutionsData = {
   },
   'specialty': {
     title: 'Specialty Clinics',
-    image: 'https://picsum.photos/seed/medical-clinic/1200/600',
+    variant: 'specialty' as const,
     description: 'Specialty practices deal with high-cost treatments and complex prior authorisations, where a denial can sit unworked for months. The engine classifies the denial, estimates recoverability honestly, and gives the front office a concrete next step.',
     features: [
       { title: 'Prior authorisation denials', desc: 'Flags where retro-authorisation is plausible and where it is not.' },
@@ -55,7 +55,7 @@ const solutionsData = {
   },
   'enterprise': {
     title: 'Enterprise Health Systems',
-    image: 'https://picsum.photos/seed/hospital-building/1200/600',
+    variant: 'enterprise' as const,
     description: 'We are early, and we will be straight with you: we do not yet have EHR integrations with Epic or Cerner, and we have not completed a SOC 2 audit. If you are an enterprise system, talk to us about what you would need before this is viable for you.',
     features: [
       { title: 'Multi-location view', desc: 'Track claims and clinics across your account in one place.' },
@@ -111,13 +111,7 @@ export default async function SolutionDetailPage({ params }: { params: Promise<{
 
         <div className="bg-white rounded-[2rem] shadow-xl border border-teal-500/10 overflow-hidden mb-16">
           <div className="relative h-64 md:h-96 w-full">
-            <Image 
-              src={solution.image} 
-              alt={solution.title} 
-              fill 
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
+            <Illustration variant={solution.variant} />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
             <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 backdrop-blur-md text-teal-50 text-xs font-bold tracking-widest uppercase mb-4 border border-teal-400/30">

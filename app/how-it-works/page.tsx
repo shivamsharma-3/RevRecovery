@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Database, Cpu, MessageSquare, BarChart3, ShieldCheck, ArrowRight, CheckCircle2, Plug, Brain, DollarSign } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Illustration } from '@/components/Illustration';
 
 import type { Metadata } from 'next';
 
@@ -18,28 +18,32 @@ export default function HowItWorksPage() {
   const steps = [
     {
       icon: <Plug className="w-8 h-8 text-teal-600" />,
-      title: "1. Seamless Integration",
+      title: "1. Get your claims in",
+      variant: "integration" as const,
       description: "Today you add claims directly in the dashboard or import them from a CSV export out of your practice management system. Direct PMS connectors are on the roadmap, not shipped — we would rather say so than promise an integration that does not exist yet.",
       example: "e.g., Export your outstanding claims report from Open Dental or Dentrix and import it here.",
       features: ["Manual claim entry today", "CSV import", "Encrypted storage"]
     },
     {
       icon: <Brain className="w-8 h-8 text-teal-600" />,
-      title: "2. AI Analysis & Prediction",
+      title: "2. AI triage",
+      variant: "analysis" as const,
       description: "The engine reads each denial reason, weighs it against known denial-category baselines and the age of the claim, and returns a recovery probability with the reasoning behind it.",
       example: "e.g., Flags a 14-month-old timely-filing denial as effectively dead, and a 3-week-old missing-attachment denial as worth chasing today.",
       features: ["No-Show Risk Scoring", "Denial Prediction", "Underpayment Detection"]
     },
     {
       icon: <MessageSquare className="w-8 h-8 text-teal-600" />,
-      title: "3. Automated Patient Outreach",
-      description: "The system initiates gentle, personalized outreach via SMS and email. It handles awkward financial conversations with compassion, offering easy mobile payment links and installment plans.",
-      example: "e.g., Sends a polite SMS with a 1-click Apple Pay link to a patient with a $150 balance that is 60 days past due.",
-      features: ["Behavioral Nudges", "Mobile-First Payments", "Personalized Messaging"]
+      title: "3. Work the ranked list",
+      variant: "outreach" as const,
+      description: "Claims sort by expected value, so the biggest recoverable dollars sit at the top. Open any claim for a drafted appeal letter, or export the ranked worklist for whoever works your A/R.",
+      example: "e.g., A 55% likely $4,000 claim is placed above a 90% likely $80 one, because that is where the money is.",
+      features: ["Expected-value ranking", "Drafted appeal letters", "CSV worklist export"]
     },
     {
       icon: <DollarSign className="w-8 h-8 text-teal-600" />,
-      title: "4. Revenue Reclaimed",
+      title: "4. Revenue reclaimed",
+      variant: "recovered" as const,
       description: "Watch your cash flow stabilize as overdue balances are settled and insurance denials are appealed automatically. Detailed analytics show exactly how much revenue has been recovered in real-time.",
       example: "e.g., Automatically generates and submits an appeal letter for a denied panoramic X-ray claim, recovering $120.",
       features: ["Real-time Dashboard", "Automated Appeals", "ROI Tracking"]
@@ -62,14 +66,7 @@ export default function HowItWorksPage() {
 
         {/* Hero Image */}
         <div className="w-full max-w-5xl mx-auto aspect-[21/9] bg-slate-100 rounded-[2rem] overflow-hidden shadow-2xl border border-teal-500/10 relative mb-24 group">
-          <Image 
-            src="https://picsum.photos/seed/how-it-works-hero/1200/600" 
-            alt="RevRecover AI dashboard showing revenue recovery process" 
-            fill 
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
-            referrerPolicy="no-referrer"
-            priority
-          />
+          <Illustration variant="dashboard" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
         </div>
 
@@ -114,13 +111,7 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex-1 w-full relative group">
                 <div className="aspect-video bg-slate-100 rounded-[2rem] overflow-hidden shadow-xl border border-teal-500/5 relative">
-                  <Image 
-                    src={`https://picsum.photos/seed/step-${index + 1}/800/600`} 
-                    alt={`Illustration for ${step.title}`} 
-                    fill 
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
+                  <Illustration variant={step.variant} />
                   <div className="absolute inset-0 bg-gradient-to-tr from-teal-900/10 to-transparent" />
                 </div>
                 {/* Decorative element */}
@@ -153,13 +144,7 @@ export default function HowItWorksPage() {
               </div>
             </div>
             <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl">
-              <Image 
-                src="https://picsum.photos/seed/security-vault/800/600" 
-                alt="Secure data vault" 
-                fill 
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
+              <Illustration variant="security" />
               <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
             </div>
           </div>
