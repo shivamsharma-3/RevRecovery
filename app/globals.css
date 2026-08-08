@@ -58,4 +58,35 @@
   .clinical-gradient {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
   }
+
+  /* Continuous left-to-right marquee. The track holds the item list twice, so
+     travelling exactly 50% lands on an identical frame and the loop is seamless. */
+  @keyframes marquee-ltr {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-ltr 40s linear infinite;
+  }
+
+  .marquee-viewport:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Motion-sensitive users get a static, centred row instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      transform: none;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .marquee-track > *:nth-child(2) {
+      display: none;
+    }
+  }
 }

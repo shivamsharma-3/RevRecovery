@@ -30,7 +30,7 @@ export default function HowItWorksPage() {
       variant: "analysis" as const,
       description: "The engine reads each denial reason, weighs it against known denial-category baselines and the age of the claim, and returns a recovery probability with the reasoning behind it.",
       example: "e.g., Flags a 14-month-old timely-filing denial as effectively dead, and a 3-week-old missing-attachment denial as worth chasing today.",
-      features: ["No-Show Risk Scoring", "Denial Prediction", "Underpayment Detection"]
+      features: ["Recovery probability per claim", "Root cause, not just a status", "Contractual denials flagged"]
     },
     {
       icon: <MessageSquare className="w-8 h-8 text-teal-600" />,
@@ -44,9 +44,9 @@ export default function HowItWorksPage() {
       icon: <DollarSign className="w-8 h-8 text-teal-600" />,
       title: "4. Revenue reclaimed",
       variant: "recovered" as const,
-      description: "Watch your cash flow stabilize as overdue balances are settled and insurance denials are appealed automatically. Detailed analytics show exactly how much revenue has been recovered in real-time.",
-      example: "e.g., Automatically generates and submits an appeal letter for a denied panoramic X-ray claim, recovering $120.",
-      features: ["Real-time Dashboard", "Automated Appeals", "ROI Tracking"]
+      description: "As you work the list and mark claims recovered, the dashboard tracks what has actually come back. You send the appeals yourself — we draft them and tell you which are worth sending.",
+      example: "e.g., Eleven of twenty triaged claims flagged as worth chasing, carrying $6,287 in weighted recoverable value.",
+      features: ["Recovery rate and open balance", "Denial pattern breakdown", "Full audit log of every change"]
     }
   ];
 
@@ -86,8 +86,8 @@ export default function HowItWorksPage() {
         {/* Steps Section */}
         <div className="space-y-24 mb-32">
           {steps.map((step, index) => (
-            <div key={index} className={`flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-12 md:gap-20`}>
-              <div className="flex-1">
+            <div key={index} className={`flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-stretch gap-10 md:gap-16`}>
+              <div className="flex-1 flex flex-col justify-center">
                 <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
                   {step.icon}
                 </div>
@@ -100,7 +100,7 @@ export default function HowItWorksPage() {
                     {step.example}
                   </p>
                 </div>
-                <ul className="space-y-3">
+                <ul className="space-y-3 mt-auto">
                   {step.features.map((feature, fIndex) => (
                     <li key={fIndex} className="flex items-center gap-3 text-slate-700 font-medium">
                       <CheckCircle2 className="w-5 h-5 text-teal-500 shrink-0" />
@@ -109,8 +109,8 @@ export default function HowItWorksPage() {
                   ))}
                 </ul>
               </div>
-              <div className="flex-1 w-full relative group">
-                <div className="aspect-video bg-slate-100 rounded-[2rem] overflow-hidden shadow-xl border border-teal-500/5 relative">
+              <div className="flex-1 w-full relative group md:self-stretch">
+                <div className="h-64 sm:h-80 md:h-full md:min-h-[26rem] bg-slate-100 rounded-[2rem] overflow-hidden shadow-xl border border-teal-500/5 relative">
                   <Photo variant={step.variant} />
                   <div className="absolute inset-0 bg-gradient-to-tr from-teal-900/10 to-transparent" />
                 </div>

@@ -10,6 +10,20 @@ import { TryItDemo } from '@/components/TryItDemo';
 import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
+/** Denial categories the engine is calibrated for, scrolled in the trust strip. */
+const DENIAL_REASONS = [
+  'Missing documentation',
+  'Coordination of benefits',
+  'Coding errors',
+  'Timely filing',
+  'Medical necessity',
+  'Prior authorisation',
+  'Frequency limitations',
+  'Bundling and NCCI edits',
+  'Eligibility lapses',
+  'Alternate benefit downgrades',
+];
+
 export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { user } = useAuth();
@@ -89,14 +103,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Trust Signals */}
-        <section className="py-6 bg-white border-y border-slate-100">
-          <div className="max-w-7xl mx-auto px-6">
-            <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Built for the denial reasons that cost practices the most</p>
-            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12">
-              {['Missing documentation', 'Coordination of benefits', 'Coding errors', 'Timely filing'].map((label) => (
-                <div key={label} className="text-xs md:text-sm font-bold text-slate-500 tracking-tight">
-                  {label}
+        {/* Trust Signals — scrolling denial categories */}
+        <section className="py-8 bg-white border-y border-slate-100">
+          <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-6 px-6">
+            Built for the denial reasons that cost practices the most
+          </p>
+
+          {/* Edges fade so items enter and leave rather than popping */}
+          <div className="marquee-viewport relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+            <div className="marquee-track">
+              {[0, 1].map((copy) => (
+                <div key={copy} className="flex items-center shrink-0" aria-hidden={copy === 1}>
+                  {DENIAL_REASONS.map((label) => (
+                    <div key={label} className="flex items-center shrink-0">
+                      <span className="px-6 md:px-8 text-base md:text-lg font-bold text-slate-600 tracking-tight whitespace-nowrap">
+                        {label}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-teal-500/40 shrink-0" />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
