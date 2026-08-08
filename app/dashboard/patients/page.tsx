@@ -146,7 +146,6 @@ export default function PatientsPage() {
     setNoShowRisk(null);
     try {
       const result = await scoreNoShowRisk({
-        patientName: selectedPatient.name,
         appointmentType: selectedPatient.appointmentType,
         lastVisit: selectedPatient.lastVisit,
         outstandingBalance:

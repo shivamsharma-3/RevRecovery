@@ -228,7 +228,6 @@ export default function RecoveryPage() {
         : undefined;
 
       const result = await analyzeClaim({
-        patientName: selectedCase.patient,
         amount: Number(selectedCase.amount) || 0,
         status: 'Outstanding patient balance',
         denialReason: `Patient balance of type "${selectedCase.type}" outstanding for ${selectedCase.days} days`,
@@ -593,14 +592,17 @@ export default function RecoveryPage() {
             
             <form onSubmit={handleCreateCase} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Patient Name</label>
-                <input 
-                  type="text" 
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Patient Reference</label>
+                <input
+                  type="text"
                   name="patient"
                   required
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 font-medium text-sm"
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Case #4021, or initials"
                 />
+                <p className="text-[11px] text-slate-400 mt-1.5 leading-snug">
+                  Never sent to our AI provider. A case ID or initials work just as well as a full name.
+                </p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">

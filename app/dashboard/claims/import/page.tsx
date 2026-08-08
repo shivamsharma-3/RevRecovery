@@ -267,6 +267,12 @@ export default function ImportClaimsPage() {
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
+                  {field.key === 'patientName' && (
+                    <p className="text-[11px] text-slate-400 leading-snug mb-2 -mt-1">
+                      Never sent to our AI provider. Stays in your account only — a claim ID or
+                      initials work just as well here.
+                    </p>
+                  )}
                   <select
                     value={mapping[field.key] ?? ''}
                     onChange={(e) =>

@@ -69,7 +69,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
-  const { patientName, amount, status, denialReason, date, payer, procedureCode, notes } = body as {
+  // patientName is intentionally destructured and discarded: it must never
+  // reach the model. See lib/ai/client.ts header comment for why.
+  const { amount, status, denialReason, date, payer, procedureCode, notes } = body as {
     patientName?: string;
     amount?: number;
     status?: string;
@@ -96,7 +98,6 @@ export async function POST(request: Request) {
     ageDays !== null ? `Claim age: ${ageDays} days` : 'Claim age: unknown',
     `Payer: ${payer || 'Not recorded'}`,
     `Procedure code: ${procedureCode || 'Not recorded'}`,
-    patientName ? `Patient reference: ${patientName}` : '',
     notes ? `Additional notes: ${notes}` : '',
   ]
     .filter(Boolean)

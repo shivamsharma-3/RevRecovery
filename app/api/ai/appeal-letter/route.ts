@@ -27,8 +27,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
+  // patientName is intentionally destructured and discarded: it must never
+  // reach the model. The prompt below always renders '[PATIENT NAME]' for
+  // this field; the caller fills the real name back in locally, in the
+  // browser, after the letter comes back. See lib/ai/client.ts header comment.
   const {
-    patientName,
     amount,
     denialReason,
     date,
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
   const prompt = [
     'Draft an appeal letter for the following denied claim.',
     '',
-    `Patient: ${patientName || '[PATIENT NAME]'}`,
+    `Patient: [PATIENT NAME]`,
     `Payer: ${payer || '[PAYER NAME]'}`,
     `Claim number: ${claimNumber || '[CLAIM NUMBER]'}`,
     `Date of service: ${date || '[DATE OF SERVICE]'}`,

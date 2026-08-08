@@ -8,6 +8,16 @@ import { GoogleGenAI } from '@google/genai';
  * NEXT_PUBLIC_GEMINI_API_KEY is accepted as a fallback so existing deploys keep
  * working, but it should be removed — anything NEXT_PUBLIC_ is shipped to the
  * browser and can be lifted straight out of the bundle.
+ *
+ * PHI handling: the public Gemini API (this client) is not covered by a
+ * Google HIPAA BAA — only Vertex AI is, which this is not. Every route that
+ * calls into this client must never include a patient name or other
+ * identifier in the prompt. This is enforced at each call site (the field is
+ * destructured and discarded before the prompt is built), not here, because
+ * this module has no way to know what a given caller considers identifying.
+ * See the route handlers under app/api/ai for the enforcement points, and
+ * lib/ai/api.ts for how a personalised appeal letter is still produced
+ * without ever sending the real name over the network.
  */
 const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 

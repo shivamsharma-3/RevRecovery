@@ -241,7 +241,6 @@ export default function ClaimsRecoveryPage() {
         if (!claim) break;
         try {
           const result = await analyzeClaim({
-            patientName: claim.patientName || claim.patient,
             amount: getAmountValue(claim),
             status: claim.status,
             denialReason: claim.denialReason,
@@ -358,7 +357,6 @@ export default function ClaimsRecoveryPage() {
     setAiAnalysis(null);
     try {
       const result = await analyzeClaim({
-        patientName: selectedClaim.patientName || selectedClaim.patient,
         amount: getAmountValue(selectedClaim),
         status: selectedClaim.status,
         denialReason: selectedClaim.denialReason,
@@ -776,15 +774,18 @@ export default function ClaimsRecoveryPage() {
             </div>
             <form onSubmit={handleCreateClaim} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Patient Name</label>
-                <input 
-                  type="text" 
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Patient Reference</label>
+                <input
+                  type="text"
                   required
                   value={newClaim.patient}
                   onChange={e => setNewClaim({...newClaim, patient: e.target.value})}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-                  placeholder="e.g. Jane Doe"
+                  placeholder="e.g. Claim #4021, or initials"
                 />
+                <p className="text-[11px] text-slate-400 mt-1.5 leading-snug">
+                  Never sent to our AI provider. A claim ID or initials work just as well as a full name.
+                </p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Claim Amount ($)</label>

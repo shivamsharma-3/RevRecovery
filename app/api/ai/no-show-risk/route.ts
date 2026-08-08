@@ -54,8 +54,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
   }
 
+  // patientName is intentionally destructured and discarded: it must never
+  // reach the model. See lib/ai/client.ts header comment for why.
   const {
-    patientName,
     appointmentType,
     appointmentDate,
     bookedDate,
@@ -82,7 +83,6 @@ export async function POST(request: Request) {
   const prompt = [
     'Estimate no-show risk for this scheduled appointment.',
     '',
-    patientName ? `Patient reference: ${patientName}` : '',
     `Appointment type: ${appointmentType || 'Not recorded'}`,
     `Appointment date/time: ${appointmentDate || 'Not recorded'}`,
     leadTimeDays !== null ? `Lead time: ${leadTimeDays} days between booking and appointment` : 'Lead time: unknown',

@@ -90,12 +90,18 @@ export default function PrivacyPolicyPage() {
         </p>
         <p><strong>What is sent:</strong> the billed amount, claim status, denial reason, date of
           service, claim age, payer name, procedure code, and any notes you have entered on the
-          claim — plus the patient reference field if you have filled it in.</p>
-        <p><strong>What is not sent:</strong> your account credentials, your email address, other
+          claim.</p>
+        <p><strong>What is never sent, under any circumstance:</strong> the patient name or
+          reference field. It is stripped out before the request is built — the AI never receives it,
+          regardless of what you enter there. For appeal letters specifically, the draft comes back
+          with a placeholder in place of the name, and your browser fills the real name in locally
+          on your device; it never travels to Google at all.</p>
+        <p><strong>Also never sent:</strong> your account credentials, your email address, other
           claims in your account, or anything from other practices.</p>
         <p>
-          Google&apos;s handling of API data is governed by their own terms. Because this data leaves
-          our systems, it is another reason not to place patient identifiers in the platform.
+          Google&apos;s handling of API data is governed by their own terms. The Gemini API used here
+          is not covered by a HIPAA Business Associate Agreement, which is precisely why the patient
+          field is excluded rather than merely discouraged.
         </p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
