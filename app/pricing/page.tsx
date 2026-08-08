@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Illustration } from '@/components/Illustration';
+import { Photo } from '@/components/Photo';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
@@ -227,7 +227,7 @@ export default function PricingPage() {
               </div>
             </div>
             <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-100">
-              <Illustration variant="dashboard" />
+              <Photo variant="dashboard" />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent" />
             </div>
           </div>

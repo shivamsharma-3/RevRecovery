@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Illustration } from '@/components/Illustration';
+import { Photo } from '@/components/Photo';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -111,7 +111,7 @@ export default async function SolutionDetailPage({ params }: { params: Promise<{
 
         <div className="bg-white rounded-[2rem] shadow-xl border border-teal-500/10 overflow-hidden mb-16">
           <div className="relative h-64 md:h-96 w-full">
-            <Illustration variant={solution.variant} />
+            <Photo variant={solution.variant} priority sizes="100vw" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
             <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 backdrop-blur-md text-teal-50 text-xs font-bold tracking-widest uppercase mb-4 border border-teal-400/30">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Illustration } from '@/components/Illustration';
+import { Photo } from '@/components/Photo';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight, Smile, Scissors, Stethoscope, Building2 } from 'lucide-react';
 
@@ -30,7 +30,7 @@ export default function SolutionsPage() {
           {/* Dental Recovery */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Illustration variant="dental" />
+              <Photo variant="dental" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -66,7 +66,7 @@ export default function SolutionsPage() {
           {/* Surgical Centers */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Illustration variant="surgical" />
+              <Photo variant="surgical" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -102,7 +102,7 @@ export default function SolutionsPage() {
           {/* Specialty Clinics */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Illustration variant="specialty" />
+              <Photo variant="specialty" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
@@ -138,7 +138,7 @@ export default function SolutionsPage() {
           {/* Enterprise Systems */}
           <div className="bg-white rounded-[2rem] shadow-sm border border-teal-500/10 overflow-hidden group hover:shadow-md transition-all">
             <div className="relative h-64 w-full">
-              <Illustration variant="enterprise" />
+              <Photo variant="enterprise" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-6 left-8 flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">

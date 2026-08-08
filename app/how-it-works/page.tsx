@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Database, Cpu, MessageSquare, BarChart3, ShieldCheck, ArrowRight, CheckCircle2, Plug, Brain, DollarSign } from 'lucide-react';
 import Link from 'next/link';
-import { Illustration } from '@/components/Illustration';
+import { Photo } from '@/components/Photo';
 
 import type { Metadata } from 'next';
 
@@ -66,7 +66,7 @@ export default function HowItWorksPage() {
 
         {/* Hero Image */}
         <div className="w-full max-w-5xl mx-auto aspect-[21/9] bg-slate-100 rounded-[2rem] overflow-hidden shadow-2xl border border-teal-500/10 relative mb-24 group">
-          <Illustration variant="dashboard" />
+          <Photo variant="hero" priority sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
         </div>
 
@@ -111,7 +111,7 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex-1 w-full relative group">
                 <div className="aspect-video bg-slate-100 rounded-[2rem] overflow-hidden shadow-xl border border-teal-500/5 relative">
-                  <Illustration variant={step.variant} />
+                  <Photo variant={step.variant} />
                   <div className="absolute inset-0 bg-gradient-to-tr from-teal-900/10 to-transparent" />
                 </div>
                 {/* Decorative element */}
@@ -144,7 +144,7 @@ export default function HowItWorksPage() {
               </div>
             </div>
             <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl">
-              <Illustration variant="security" />
+              <Photo variant="security" />
               <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
             </div>
           </div>

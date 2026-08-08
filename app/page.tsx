@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { LoginModal } from '@/components/LoginModal';
-import { HeroVisual } from '@/components/HeroVisual';
+import { Photo } from '@/components/Photo';
 import { TryItDemo } from '@/components/TryItDemo';
 import { PlayCircle, TrendingUp, Brain, CreditCard, Shield, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
@@ -59,7 +59,9 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="flex-1 relative w-full mt-10 md:mt-0 flex justify-center md:justify-end">
-              <HeroVisual />
+              <div className="relative w-full max-w-[95%] aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl border border-slate-200/70">
+                <Photo variant="hero" priority sizes="(max-width: 768px) 100vw, 55vw" />
+              </div>
               <div className="absolute -bottom-5 left-2 md:-bottom-6 md:-left-4 bg-white/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-xl border border-teal-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600">
                   <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
