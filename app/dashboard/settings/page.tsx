@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { 
   Settings, User, Bell, Shield, Database, 
   Globe, Moon, Sun, Save, ChevronRight,
-  CreditCard, Key, Mail, Phone, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Plus, MoreHorizontal, X
+  CreditCard, Key, Mail, Phone, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, X
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { auth, db } from '@/firebase';
@@ -605,73 +605,30 @@ export default function SettingsPage() {
           {activeTab === 'billing' && (
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <h3 className="text-xl font-bold text-slate-900 font-headline mb-8">Billing & Plans</h3>
-              
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden">
+
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Shield className="w-32 h-32 -mr-8 -mt-8" />
                 </div>
                 <div className="relative z-10">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-[10px] uppercase tracking-widest font-bold mb-4">
                     <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-                    Enterprise Plan
+                    Early Access — Not Billed
                   </div>
                   <div className="flex items-end gap-2 mb-2">
-                    <span className="text-4xl font-extrabold">$2,499</span>
-                    <span className="text-slate-400 font-medium mb-1">/month</span>
+                    <span className="text-4xl font-extrabold">$0</span>
+                    <span className="text-slate-400 font-medium mb-1">/month, for now</span>
                   </div>
-                  <p className="text-sm text-slate-300 mb-6 max-w-md">Includes unlimited AI recovery campaigns, full PMS integration, and dedicated account management.</p>
-                  
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => setActiveModal('manage-plan')}
-                      className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
-                    >
-                      Manage Plan
-                    </button>
-                    <button 
-                      onClick={() => setActiveModal('view-invoices')}
-                      className="px-5 py-2.5 bg-white/10 text-white rounded-xl text-sm font-bold hover:bg-white/20 transition-all"
-                    >
-                      View Invoices
-                    </button>
-                    <button 
-                      onClick={() => setActiveModal('switch-plan')}
-                      className="ml-2 text-sm font-bold text-teal-400 hover:text-teal-300 transition-colors underline underline-offset-4"
-                    >
-                      Switch Plan
-                    </button>
-                  </div>
+                  <p className="text-sm text-slate-300 max-w-md leading-relaxed">
+                    There&apos;s no billing system yet, so your account isn&apos;t being charged and no
+                    payment method is on file. You have full access to everything while we&apos;re in
+                    early access. Take a look at{' '}
+                    <a href="/pricing" className="text-teal-300 underline underline-offset-4 hover:text-teal-200">
+                      what we plan to charge later
+                    </a>{' '}
+                    — we&apos;ll tell you before anything changes.
+                  </p>
                 </div>
-              </div>
-
-              <div>
-                <h4 className="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">Payment Methods</h4>
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-8 bg-white rounded shadow-sm border border-slate-200 flex items-center justify-center">
-                      <CreditCard className="w-5 h-5 text-slate-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">•••• •••• •••• 4242</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">Expires 12/2025</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-1 rounded-md uppercase tracking-widest">Default</span>
-                    <button 
-                      onClick={() => setActiveModal('payment-options')}
-                      className="text-slate-400 hover:text-slate-600"
-                    >
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setActiveModal('add-payment')}
-                  className="text-[10px] uppercase tracking-widest font-bold text-teal-600 hover:underline flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Add Payment Method
-                </button>
               </div>
             </div>
           )}
@@ -691,11 +648,6 @@ export default function SettingsPage() {
                 {activeModal === 'connect-integration' && `Connect ${modalData?.pms?.name}`}
                 {activeModal === 'disconnect-integration' && `Disconnect ${modalData?.pms?.name}`}
                 {activeModal === 'integration-settings' && `${modalData?.pms?.name} Settings`}
-                {activeModal === 'manage-plan' && 'Manage Enterprise Plan'}
-                {activeModal === 'view-invoices' && 'Billing History'}
-                {activeModal === 'switch-plan' && 'Compare Plans'}
-                {activeModal === 'payment-options' && 'Payment Options'}
-                {activeModal === 'add-payment' && 'Add Payment Method'}
               </h3>
               <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                 <X className="w-5 h-5" />
@@ -847,90 +799,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {activeModal === 'manage-plan' && (
-                <div className="space-y-4">
-                  <p className="text-sm text-slate-600">Your current plan is Enterprise. You have access to all features.</p>
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Next billing date</span>
-                      <span className="font-bold text-slate-900">May 1, 2026</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Amount</span>
-                      <span className="font-bold text-slate-900">$2,499.00</span>
-                    </div>
-                  </div>
-                  <button onClick={() => { setActiveModal(null); toast.success('Subscription updated.'); }} className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">Update Subscription</button>
-                </div>
-              )}
-
-              {activeModal === 'view-invoices' && (
-                <div className="space-y-2">
-                  {[
-                    { date: 'Apr 1, 2026', amount: '$2,499.00', status: 'Paid' },
-                    { date: 'Mar 1, 2026', amount: '$2,499.00', status: 'Paid' },
-                    { date: 'Feb 1, 2026', amount: '$2,499.00', status: 'Paid' },
-                  ].map((inv, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{inv.date}</p>
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-teal-600 mt-0.5">{inv.status}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-slate-900">{inv.amount}</span>
-                        <button onClick={() => toast.info('Downloading invoice...')} className="text-[10px] uppercase tracking-widest font-bold text-slate-500 hover:text-slate-900 transition-colors">Download</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeModal === 'switch-plan' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div onClick={async () => {
-                      if (user?.uid) await updateDoc(doc(db, 'users', user.uid), { plan: 'Pro' });
-                      setActiveModal(null); toast.success('Switched to Pro plan.');
-                    }} className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center cursor-pointer hover:border-teal-500 transition-all">
-                      <h4 className="text-sm font-bold text-slate-900">Pro</h4>
-                      <p className="text-xl font-extrabold text-slate-900 mt-1">$999</p>
-                      <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">/month</p>
-                    </div>
-                    <div onClick={async () => {
-                      if (user?.uid) await updateDoc(doc(db, 'users', user.uid), { plan: 'Enterprise' });
-                      setActiveModal(null); toast.success('Switched to Enterprise plan.');
-                    }} className="p-4 bg-teal-50 rounded-xl border-2 border-teal-500 text-center cursor-pointer relative">
-                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full">Current</div>
-                      <h4 className="text-sm font-bold text-teal-900">Enterprise</h4>
-                      <p className="text-xl font-extrabold text-teal-900 mt-1">$2,499</p>
-                      <p className="text-[10px] uppercase tracking-widest text-teal-700 mt-1">/month</p>
-                    </div>
-                  </div>
-                  <button onClick={() => { setActiveModal(null); toast.info('Please contact sales to downgrade further.'); }} className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all">Contact Sales</button>
-                </div>
-              )}
-
-              {activeModal === 'payment-options' && (
-                <div className="space-y-2">
-                  <button onClick={() => { setActiveModal(null); toast.success('Card set as default.'); }} className="w-full text-left p-3 hover:bg-slate-50 rounded-xl text-sm font-bold text-slate-900 transition-colors">Set as Default</button>
-                  <button onClick={() => { setActiveModal(null); toast.success('Card details updated.'); }} className="w-full text-left p-3 hover:bg-slate-50 rounded-xl text-sm font-bold text-slate-900 transition-colors">Edit Details</button>
-                  <button onClick={() => { setActiveModal(null); toast.success('Card removed.'); }} className="w-full text-left p-3 hover:bg-red-50 rounded-xl text-sm font-bold text-red-600 transition-colors">Remove Card</button>
-                </div>
-              )}
-
-              {activeModal === 'add-payment' && (
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <input type="text" placeholder="Cardholder Name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
-                    <input type="text" placeholder="Card Number" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <input type="text" placeholder="MM/YY" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
-                      <input type="text" placeholder="CVC" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
-                    </div>
-                  </div>
-                  <button onClick={() => { setActiveModal(null); toast.success('Payment method added.'); }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all">Add Card</button>
-                </div>
-              )}
             </div>
           </div>
         </div>
