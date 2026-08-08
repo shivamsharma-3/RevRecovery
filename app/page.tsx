@@ -26,24 +26,38 @@ export default function LandingPage() {
       <Navbar />
       <main className="pt-14">
         {/* Hero Section */}
-        <section className="relative overflow-hidden pt-12 pb-10 px-6">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-10">
+        <section className="relative overflow-hidden pt-16 md:pt-24 pb-20 md:pb-28 px-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 lg:gap-16">
             <div className="flex-1 text-left z-10">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold mb-4 tracking-wider uppercase">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold mb-6 tracking-wider uppercase">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-600" />
                 </span>
                 EARLY ACCESS — NOW ONBOARDING PRACTICES
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-[1.1] tracking-tighter mb-5 font-headline">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.05] tracking-tighter mb-6 font-headline">
                 Stop writing off <span className="text-teal-600">recoverable</span> revenue
               </h1>
-              <p className="text-sm md:text-base text-slate-600 max-w-lg mb-8 leading-relaxed font-medium">
+              <p className="text-base md:text-lg text-slate-600 max-w-xl mb-6 leading-relaxed font-medium">
                 RevRecover AI reads your denied claims, tells you which ones are actually worth
                 chasing, and drafts the appeal letter for you. Built for dental and medical practices
                 that don&apos;t have a full-time billing team.
               </p>
+
+              {/* Three-point summary — gives the hero substance without another scroll */}
+              <ul className="space-y-2.5 mb-9">
+                {[
+                  'Import your denials from a CSV export in one step',
+                  'Every claim gets a recovery probability and a next action',
+                  'Contractual denials are flagged so you stop chasing them',
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2.5 text-sm text-slate-600 font-medium">
+                    <CheckCircle className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/dashboard" onClick={handleStartTrial} className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto bg-teal-600 text-white text-sm px-6 py-3.5 rounded-xl font-bold transition-all hover:bg-teal-700 shadow-lg shadow-teal-500/20 active:scale-[0.98]">

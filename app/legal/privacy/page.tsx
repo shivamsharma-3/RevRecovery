@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
             Legal & Compliance
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-teal-900 mb-4 font-headline tracking-tight">Privacy Policy</h1>
-          <p className="text-lg text-slate-500">Effective Date: March 25, 2026</p>
+          <p className="text-lg text-slate-500">Effective Date: 8 August 2026</p>
         </div>
         
         <div className="prose prose-slate prose-teal lg:prose-lg mx-auto bg-white p-8 md:p-12 rounded-[2rem] shadow-sm border border-slate-100">
@@ -44,41 +44,87 @@ export default function PrivacyPolicyPage() {
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">2</span>
-            Protected Health Information (PHI) & HIPAA Compliance
+            Protected Health Information (PHI) &amp; HIPAA
           </h2>
         <p>
-          As a healthcare technology provider, RevRecover AI acts as a Business Associate under the Health Insurance Portability and Accountability Act (HIPAA). We handle all Protected Health Information (PHI) in strict accordance with our Business Associate Agreements (BAAs) and applicable federal and state laws.
+          <strong>We are not currently a HIPAA Business Associate and cannot sign Business Associate
+          Agreements.</strong> We have not completed a third-party HIPAA attestation. Please do not
+          upload Protected Health Information to the platform.
         </p>
         <p>
-          PHI is encrypted both at rest (AES-256) and in transit (TLS 1.3). Access to PHI is strictly limited to authorized personnel and automated systems necessary to provide our revenue recovery services. We do not sell, rent, or share PHI for marketing purposes under any circumstances.
+          The product is designed to work with de-identified claim data: procedure codes, billed
+          amounts, denial reasons, dates of service, and payer names. None of those require patient
+          identifiers to be useful. Where a patient name field exists, you are free to enter a
+          reference or initials instead, and we recommend you do.
+        </p>
+        <p>
+          If your practice requires a BAA before it can use a vendor, contact us and we will give
+          you an honest timeline rather than a signature we are not yet in a position to provide.
         </p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">3</span>
             How We Use Your Information
           </h2>
-        <p>We use the information we collect (excluding PHI, which is governed strictly by BAAs) to:</p>
+        <p>We use the information we collect to:</p>
         <ul className="list-disc pl-6 space-y-2 mb-8">
-          <li>Provide, operate, and maintain our AI-driven revenue recovery platform.</li>
-          <li>Process transactions and send related administrative information, including invoices and technical notices.</li>
-          <li>Improve our machine learning models (using strictly de-identified and aggregated data).</li>
-          <li>Respond to your comments, questions, and customer service requests.</li>
-          <li>Monitor and analyze trends, usage, and activities to enhance platform security and performance.</li>
+          <li>Provide, operate, and maintain the claim triage and appeal drafting platform.</li>
+          <li>Send related administrative information, including technical notices and service updates.</li>
+          <li>Respond to your comments, questions, and support requests.</li>
+          <li>Monitor usage and errors to keep the platform secure and working.</li>
         </ul>
+        <p>
+          We do not sell or rent your data. <strong>We do not train any model on your data</strong>,
+          and we do not use your claim data to improve our own systems.
+        </p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">4</span>
+            AI Processing
+          </h2>
+        <p>
+          When you run a claim analysis, draft an appeal letter, or score no-show risk, the relevant
+          claim details are transmitted to <strong>Google&apos;s Gemini API</strong> for processing
+          and the response is returned to you. This is the core of how the product works, so it is
+          worth being precise about it.
+        </p>
+        <p><strong>What is sent:</strong> the billed amount, claim status, denial reason, date of
+          service, claim age, payer name, procedure code, and any notes you have entered on the
+          claim — plus the patient reference field if you have filled it in.</p>
+        <p><strong>What is not sent:</strong> your account credentials, your email address, other
+          claims in your account, or anything from other practices.</p>
+        <p>
+          Google&apos;s handling of API data is governed by their own terms. Because this data leaves
+          our systems, it is another reason not to place patient identifiers in the platform.
+        </p>
+
+          <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">5</span>
+            Data Retention and Deletion
+          </h2>
+        <p>
+          Your claims, patients, campaigns, and audit logs are stored against your account for as
+          long as the account exists. You can delete individual records at any time from within the
+          dashboard. To delete your account and everything in it, email us and we will action it
+          within 30 days.
+        </p>
+
+          <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">6</span>
             Data Sharing and Disclosure
           </h2>
         <p>We may share your information in the following situations:</p>
         <ul className="list-disc pl-6 space-y-2 mb-8">
-          <li><strong>With Service Providers:</strong> We share data with trusted third-party vendors (e.g., cloud hosting providers like Google Cloud) who assist us in operating our platform, subject to strict confidentiality agreements.</li>
+          <li><strong>Google (Firebase):</strong> authentication and database hosting. Your account and all records you create are stored here.</li>
+          <li><strong>Google (Gemini API):</strong> the AI processing described in section 4.</li>
+          <li><strong>Vercel:</strong> website and application hosting, plus anonymous traffic analytics.</li>
+          <li><strong>Resend:</strong> delivery of enquiries submitted through our contact form.</li>
           <li><strong>For Legal Reasons:</strong> We may disclose information if required by law, subpoena, or other legal process, or to protect the rights, property, or safety of RevRecover AI, our users, or others.</li>
           <li><strong>Business Transfers:</strong> In connection with a merger, sale of company assets, financing, or acquisition.</li>
         </ul>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">5</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">7</span>
             Cookies and Tracking Technologies
           </h2>
         <p>
@@ -86,7 +132,7 @@ export default function PrivacyPolicyPage() {
         </p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">6</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">8</span>
             Data Security
           </h2>
         <p>
@@ -94,7 +140,7 @@ export default function PrivacyPolicyPage() {
         </p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">7</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">9</span>
             Your Data Rights
           </h2>
         <p>Depending on your jurisdiction (e.g., CCPA for California residents), you may have the right to:</p>
@@ -106,7 +152,7 @@ export default function PrivacyPolicyPage() {
         <p>To exercise these rights, please contact our Data Protection Officer using the details below.</p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">8</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">10</span>
             Contact Us
           </h2>
         <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact our Privacy Team and Data Protection Officer at:</p>
