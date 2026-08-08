@@ -116,7 +116,7 @@ export default function LandingPage() {
                 <div key={copy} className="flex items-center shrink-0" aria-hidden={copy === 1}>
                   {DENIAL_REASONS.map((label) => (
                     <div key={label} className="flex items-center shrink-0">
-                      <span className="px-6 md:px-8 text-base md:text-lg font-bold text-slate-600 tracking-tight whitespace-nowrap">
+                      <span className="px-10 md:px-16 text-base md:text-lg font-bold text-slate-600 tracking-tight whitespace-nowrap">
                         {label}
                       </span>
                       <span className="w-1.5 h-1.5 rounded-full bg-teal-500/40 shrink-0" />

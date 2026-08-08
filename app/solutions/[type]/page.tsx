@@ -10,7 +10,7 @@ import type { Metadata } from 'next';
 const solutionsData = {
   'dental': {
     title: 'Dental Practices',
-    variant: 'dental' as const,
+    variant: 'dental-detail' as const,
     description: 'Dental billing is high-volume and low-value per claim, which is exactly why denials get abandoned rather than worked. RevRecover AI reads each denial, tells you whether it is genuinely appealable, and drafts the letter so the follow-up actually happens.',
     features: [
       { title: 'Denial triage', desc: 'Every denied claim gets a recovery probability and a root cause, not just a status.' },
@@ -25,7 +25,7 @@ const solutionsData = {
   },
   'surgical': {
     title: 'Surgical Centers',
-    variant: 'surgical' as const,
+    variant: 'surgical-detail' as const,
     description: 'Ambulatory surgery centres carry fewer claims but far more dollars per denial, so a single abandoned appeal is expensive. The engine weighs each denial against known payer behaviour patterns and drafts a clinical appeal you can review and send.',
     features: [
       { title: 'High-value prioritisation', desc: 'Priority reflects expected recovered dollars and filing deadlines, not probability alone.' },
@@ -40,7 +40,7 @@ const solutionsData = {
   },
   'specialty': {
     title: 'Specialty Clinics',
-    variant: 'specialty' as const,
+    variant: 'specialty-detail' as const,
     description: 'Specialty practices deal with high-cost treatments and complex prior authorisations, where a denial can sit unworked for months. The engine classifies the denial, estimates recoverability honestly, and gives the front office a concrete next step.',
     features: [
       { title: 'Prior authorisation denials', desc: 'Flags where retro-authorisation is plausible and where it is not.' },
@@ -55,7 +55,7 @@ const solutionsData = {
   },
   'enterprise': {
     title: 'Enterprise Health Systems',
-    variant: 'enterprise' as const,
+    variant: 'enterprise-detail' as const,
     description: 'We are early, and we will be straight with you: we do not yet have EHR integrations with Epic or Cerner, and we have not completed a SOC 2 audit. If you are an enterprise system, talk to us about what you would need before this is viable for you.',
     features: [
       { title: 'Multi-location view', desc: 'Track claims and clinics across your account in one place.' },

@@ -66,7 +66,7 @@ export default function HowItWorksPage() {
 
         {/* Hero Image */}
         <div className="w-full max-w-5xl mx-auto aspect-[21/9] bg-slate-100 rounded-[2rem] overflow-hidden shadow-2xl border border-teal-500/10 relative mb-24 group">
-          <Photo variant="hero" priority sizes="100vw" />
+          <Photo variant="practice" priority sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
         </div>
 

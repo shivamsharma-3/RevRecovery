@@ -24,7 +24,16 @@ export type PhotoVariant =
   | 'outreach'
   | 'recovered'
   | 'security'
-  | 'dashboard';
+  | 'dashboard'
+  | 'practice'
+  | 'cs-documentation'
+  | 'cs-frequency'
+  | 'cs-cob'
+  | 'cs-timely'
+  | 'dental-detail'
+  | 'surgical-detail'
+  | 'specialty-detail'
+  | 'enterprise-detail';
 
 const ALT: Record<PhotoVariant, string> = {
   hero: 'Dental clinicians reviewing patient information on a tablet in a modern practice',
@@ -39,6 +48,15 @@ const ALT: Record<PhotoVariant, string> = {
   recovered: 'Hands reviewing financial reports and calculating figures',
   security: 'Organised office desk with laptop and payment terminal',
   dashboard: 'Laptop displaying financial graphs beside printed reports',
+  practice: 'Interior of a modern dental practice treatment room',
+  'cs-documentation': 'Gloved hands holding a tablet showing a panoramic dental radiograph',
+  'cs-frequency': 'Dental chair and equipment in a bright treatment room',
+  'cs-cob': 'Billing paperwork marked paid and due beside a calculator',
+  'cs-timely': 'Aged claim paperwork being sorted with a calculator and laptop',
+  'dental-detail': 'Modern dental office with instruments and equipment laid out',
+  'surgical-detail': 'Surgical team operating in a bright sterile theatre',
+  'specialty-detail': 'Two clinicians in scrubs discussing patient notes in a corridor',
+  'enterprise-detail': 'Healthcare staff walking through a modern medical facility',
 };
 
 export function Photo({

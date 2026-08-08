@@ -45,7 +45,7 @@ const SCENARIOS: Scenario[] = [
     reasoning:
       'Attach the pre-operative periapical radiograph and the clinical narrative describing the fracture, then resubmit under the original claim number.',
     action: 'Appeal',
-    photo: 'dental',
+    photo: 'cs-documentation',
     icon: Stethoscope,
     verdict: 'appeal',
   },
@@ -63,7 +63,7 @@ const SCENARIOS: Scenario[] = [
     reasoning:
       'Bill the patient directly. If the practice did not disclose the frequency limit beforehand, consider a courtesy adjustment.',
     action: 'Do not appeal',
-    photo: 'outreach',
+    photo: 'cs-frequency',
     icon: AlertTriangle,
     verdict: 'patient',
   },
@@ -81,7 +81,7 @@ const SCENARIOS: Scenario[] = [
     reasoning:
       'Contact the patient to update their COB record with the payer, confirm which plan is primary, then resubmit. Set a follow-up for 14 days.',
     action: 'Appeal',
-    photo: 'specialty',
+    photo: 'cs-cob',
     icon: Activity,
     verdict: 'appeal',
   },
@@ -99,7 +99,7 @@ const SCENARIOS: Scenario[] = [
     reasoning:
       'Write off, or bill the patient if your financial policy allows it. Then look at why it sat unworked for fourteen months.',
     action: 'Write off',
-    photo: 'surgical',
+    photo: 'cs-timely',
     icon: XCircle,
     verdict: 'writeoff',
   },
