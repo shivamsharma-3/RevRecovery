@@ -107,36 +107,49 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Trust Signals — scrolling denial categories */}
-        <section className="relative py-12 md:py-14 bg-gradient-to-b from-white via-slate-50/60 to-white border-y border-slate-200/60">
-          <div className="flex items-center justify-center gap-3 mb-8 px-6">
-            <span className="h-px w-8 bg-gradient-to-r from-transparent to-slate-300" />
-            <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.22em]">
+        {/* Trust Signals — scrolling denial categories on a dark band */}
+        <section className="relative overflow-hidden bg-[#061f1d] py-14 md:py-16">
+          {/* Depth: one warm teal bloom off-centre, plus a faint grid */}
+          <div
+            className="absolute inset-0 opacity-[0.35]"
+            style={{
+              background:
+                'radial-gradient(60% 120% at 20% 0%, rgba(20,184,166,0.28), transparent 60%), radial-gradient(50% 100% at 85% 100%, rgba(13,148,136,0.20), transparent 60%)',
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
+              backgroundSize: '64px 64px',
+            }}
+          />
+
+          <div className="relative">
+            <p className="text-center text-[10px] font-semibold text-teal-300/70 uppercase tracking-[0.28em] mb-9 px-6">
               Calibrated for the denials that cost practices the most
             </p>
-            <span className="h-px w-8 bg-gradient-to-l from-transparent to-slate-300" />
-          </div>
 
-          {/* Edges fade so chips enter and leave rather than popping */}
-          <div className="marquee-viewport relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            <div className="marquee-track">
-              {[0, 1].map((copy) => (
-                <div key={copy} className="flex items-center shrink-0" aria-hidden={copy === 1}>
-                  {DENIAL_REASONS.map(({ label, icon: Icon }) => (
-                    <div
-                      key={label}
-                      className="mx-2.5 md:mx-3.5 shrink-0 inline-flex items-center gap-2.5 rounded-full bg-white pl-4 pr-5 py-2.5 border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_-6px_rgba(15,23,42,0.10)]"
-                    >
-                      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-teal-50 text-teal-600 shrink-0">
-                        <Icon className="w-3.5 h-3.5" strokeWidth={2.25} />
-                      </span>
-                      <span className="text-sm md:text-[15px] font-semibold text-slate-700 tracking-tight whitespace-nowrap">
-                        {label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ))}
+            {/* Edges fade so chips enter and leave rather than popping */}
+            <div className="marquee-viewport relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+              <div className="marquee-track">
+                {[0, 1].map((copy) => (
+                  <div key={copy} className="flex items-center shrink-0" aria-hidden={copy === 1}>
+                    {DENIAL_REASONS.map(({ label, icon: Icon }) => (
+                      <div
+                        key={label}
+                        className="mx-2 md:mx-3 shrink-0 inline-flex items-center gap-3 rounded-2xl bg-white/[0.045] backdrop-blur-sm px-5 py-3.5 border border-white/[0.09] ring-1 ring-inset ring-white/[0.04]"
+                      >
+                        <Icon className="w-4 h-4 text-teal-400/90 shrink-0" strokeWidth={1.75} />
+                        <span className="text-sm md:text-[15px] font-medium text-slate-200/90 tracking-tight whitespace-nowrap">
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
