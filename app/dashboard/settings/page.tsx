@@ -35,10 +35,13 @@ export default function SettingsPage() {
   });
 
   // Integrations State
+  // NOTE: Live PMS sync is not built yet (see /compliance and /pricing — early access
+  // is CSV-import only). These start as "Available" (not connected) for every account;
+  // do not seed a fake "Connected" status here.
   const [integrations, setIntegrations] = useState([
-    { name: 'Epic Systems', status: 'Connected', lastSync: '2 mins ago', icon: Database, desc: 'Full bi-directional sync enabled.' },
-    { name: 'Cerner', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'Requires API key configuration.' },
-    { name: 'Athenahealth', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'OAuth 2.0 connection supported.' },
+    { name: 'Epic Systems', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'Bi-directional sync — coming soon.' },
+    { name: 'Cerner', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'Requires API key configuration — coming soon.' },
+    { name: 'Athenahealth', status: 'Available', lastSync: 'N/A', icon: Database, desc: 'OAuth 2.0 connection — coming soon.' },
   ]);
 
   // Notifications State
@@ -736,24 +739,22 @@ export default function SettingsPage() {
 
               {activeModal === 'connect-integration' && (
                 <div className="space-y-4">
-                  <p className="text-sm text-slate-600">Enter your {modalData?.pms?.name} credentials to establish a secure connection.</p>
-                  <div className="space-y-3">
-                    <input type="text" placeholder="API Key / Client ID" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
-                    <input type="password" placeholder="Client Secret" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none" />
+                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h5 className="text-sm font-bold text-amber-900">Live {modalData?.pms?.name} sync isn't built yet</h5>
+                      <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                        During early access, RevRecover AI only works from CSV exports — see our{' '}
+                        <a href="/compliance" className="underline font-semibold">compliance page</a> for why (we haven&apos;t completed a HIPAA
+                        attestation and can&apos;t sign BAAs yet, so we don&apos;t accept a live feed of PHI). Leave your email and
+                        we&apos;ll reach out when direct {modalData?.pms?.name} sync is ready.
+                      </p>
+                    </div>
                   </div>
-                  <button onClick={async () => { 
-                    const newIntegrations = [...integrations];
-                    newIntegrations[modalData.index].status = 'Connected';
-                    newIntegrations[modalData.index].lastSync = 'Just now';
-                    setIntegrations(newIntegrations);
-                    
-                    if (user?.uid) {
-                      await updateDoc(doc(db, 'users', user.uid), { integrations: newIntegrations });
-                    }
-                    
-                    setActiveModal(null); 
-                    toast.success(`${modalData?.pms?.name} connected successfully.`); 
-                  }} className="w-full py-3 bg-teal-800 text-white rounded-xl text-sm font-bold hover:bg-teal-900 transition-all shadow-lg shadow-teal-900/20">Connect {modalData?.pms?.name}</button>
+                  <button onClick={() => {
+                    setActiveModal(null);
+                    toast.success(`Thanks — we'll email you when ${modalData?.pms?.name} sync is available.`);
+                  }} className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">Notify Me</button>
                 </div>
               )}
 

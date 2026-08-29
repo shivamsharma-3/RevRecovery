@@ -63,7 +63,8 @@ export default function ClaimsRecoveryPage() {
     patient: '',
     amount: '',
     insurance: '',
-    type: 'Outpatient'
+    type: 'Outpatient',
+    denialReason: ''
   });
 
   useScrollLock(Boolean(selectedClaim) || isNewClaimModalOpen);
@@ -101,7 +102,11 @@ export default function ClaimsRecoveryPage() {
       status: 'Pending',
       insurance: newClaim.insurance,
       type: newClaim.type,
-      denialReason: 'N/A',
+      // Leave this genuinely empty (not the string 'N/A') when the user didn't supply
+      // one. The AI prompt only recognises a missing reason and asks the model to say
+      // so explicitly when this is falsy — a literal 'N/A' string reads as real input
+      // and was causing the model to invent a specific denial category out of nothing.
+      denialReason: newClaim.denialReason.trim(),
       probability: 0.5
     };
 
@@ -119,7 +124,7 @@ export default function ClaimsRecoveryPage() {
 
       setClaims([{ id: docRef.id, ...newClaimData }, ...claims]);
       setIsNewClaimModalOpen(false);
-      setNewClaim({ patient: '', amount: '', insurance: '', type: 'Outpatient' });
+      setNewClaim({ patient: '', amount: '', insurance: '', type: 'Outpatient', denialReason: '' });
       toast.success('Claim created successfully');
     } catch (error) {
       console.error("Error creating claim:", error);
@@ -280,12 +285,15 @@ export default function ClaimsRecoveryPage() {
 
       setClaims((prev) => prev.map((c) => (results.has(c.id) ? { ...c, ...results.get(c.id) } : c)));
 
+      // Reflect partial/total failure honestly — this used to always log 'Success',
+      // even when every claim in the batch failed, which is exactly the kind of gap
+      // that undermines an audit trail meant to be a complete compliance record.
       await logAuditAction(user.uid, {
         user: user.displayName || user.email || 'User',
         action: 'Bulk AI Triage',
-        target: `${results.size} claims triaged`,
-        status: 'Success',
-        severity: 'Info',
+        target: `${results.size}/${pending.length} claims triaged${failed ? `, ${failed} failed` : ''}`,
+        status: failed > 0 && results.size === 0 ? 'Failed' : 'Success',
+        severity: failed > 0 ? 'Medium' : 'Info',
         type: 'claim',
       });
 
@@ -392,6 +400,17 @@ export default function ClaimsRecoveryPage() {
       }
     } catch (error: any) {
       toast.error(error?.message || 'Analysis failed.');
+      if (user?.uid) {
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'AI Claim Analysis Failed',
+          target: `Claim ${String(selectedClaim.id).substring(0, 8)}`,
+          status: 'Failed',
+          severity: 'Medium',
+          type: 'claim',
+          details: error?.message || undefined,
+        });
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -427,6 +446,17 @@ export default function ClaimsRecoveryPage() {
       }
     } catch (error: any) {
       toast.error(error?.message || 'Could not draft the appeal.');
+      if (user?.uid) {
+        await logAuditAction(user.uid, {
+          user: user.displayName || user.email || 'User',
+          action: 'Appeal Letter Generation Failed',
+          target: `Claim ${String(selectedClaim.id).substring(0, 8)}`,
+          status: 'Failed',
+          severity: 'Medium',
+          type: 'claim',
+          details: error?.message || undefined,
+        });
+      }
     } finally {
       setIsDrafting(false);
     }
@@ -761,11 +791,25 @@ export default function ClaimsRecoveryPage() {
 
       {/* New Claim Modal */}
       {isNewClaimModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto overscroll-contain"
+          role="dialog"
+          aria-modal="true"
+          onKeyDown={(e) => { if (e.key === 'Escape') setIsNewClaimModalOpen(false); }}
+        >
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
+            onClick={() => setIsNewClaimModalOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="relative flex min-h-full items-center justify-center p-4">
+          <div
+            className="relative bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-900 font-headline">Create New Claim</h3>
-              <button 
+              <button
                 onClick={() => setIsNewClaimModalOpen(false)}
                 className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
               >
@@ -813,7 +857,7 @@ export default function ClaimsRecoveryPage() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Claim Type</label>
-                <select 
+                <select
                   value={newClaim.type}
                   onChange={e => setNewClaim({...newClaim, type: e.target.value})}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
@@ -826,6 +870,22 @@ export default function ClaimsRecoveryPage() {
                   <option>Imaging</option>
                   <option>Primary Care</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Denial / Hold Reason <span className="normal-case font-medium text-slate-400">(optional, from the EOB)</span>
+                </label>
+                <input
+                  type="text"
+                  value={newClaim.denialReason}
+                  onChange={e => setNewClaim({...newClaim, denialReason: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
+                  placeholder="e.g. Missing radiograph, or leave blank if unknown"
+                />
+                <p className="text-[11px] text-slate-400 mt-1.5 leading-snug">
+                  Leave this blank if you don&apos;t know yet — the AI will flag it as missing information
+                  instead of guessing a denial category.
+                </p>
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button 
@@ -844,13 +904,32 @@ export default function ClaimsRecoveryPage() {
               </div>
             </form>
           </div>
+          </div>
         </div>
       )}
 
       {/* Claim Details Modal */}
       {selectedClaim && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100">
+        // overflow-y-auto here (not just on the panel) is load-bearing: useScrollLock
+        // pins <body> with position:fixed while this is open, so if this wrapper can't
+        // scroll either, a panel taller than the viewport traps its own Close button
+        // off-screen with no way to reach it. See hooks/use-scroll-lock.ts.
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto overscroll-contain"
+          role="dialog"
+          aria-modal="true"
+          onKeyDown={(e) => { if (e.key === 'Escape') closeClaim(); }}
+        >
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
+            onClick={closeClaim}
+            aria-hidden="true"
+          />
+          <div className="relative flex min-h-full items-center justify-center p-4">
+          <div
+            className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
@@ -1080,6 +1159,7 @@ export default function ClaimsRecoveryPage() {
                 </button>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}

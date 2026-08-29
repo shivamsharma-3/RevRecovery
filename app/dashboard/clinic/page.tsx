@@ -201,8 +201,12 @@ export default function ClinicInsightsPage() {
           {/* Network Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { label: 'Total Clinics', value: clinics.length.toString(), icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50', trend: '+2 this quarter', filter: null },
-              { label: 'Active Patients', value: totalPatients.toLocaleString(), icon: Users, color: 'text-teal-600', bg: 'bg-teal-50', trend: '+15% vs last month', filter: null },
+              // trend used to be a hardcoded '+2 this quarter' / '+15% vs last month' —
+              // fabricated growth numbers shown next to a real, sometimes-zero count.
+              // We don't track historical snapshots yet, so there's no real trend to
+              // report; say what the number actually is instead of inventing a delta.
+              { label: 'Total Clinics', value: clinics.length.toString(), icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50', trend: 'In your network', filter: null },
+              { label: 'Active Patients', value: totalPatients.toLocaleString(), icon: Users, color: 'text-teal-600', bg: 'bg-teal-50', trend: 'Across your clinics', filter: null },
               { label: 'Avg. Recovery Rate', value: avgRecoveryRate, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50', trend: 'Across your clinics', filter: 'recovery' },
               { label: 'Clinics Tracked', value: clinics.length.toString(), icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50', trend: 'In your network', filter: 'adoption' },
             ].map((stat, i) => (

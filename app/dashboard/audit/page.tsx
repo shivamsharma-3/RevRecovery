@@ -21,6 +21,11 @@ interface AuditLog {
   severity: 'Low' | 'Medium' | 'High' | 'Info';
   type: string;
   ip: string;
+  /** True only for rows written by generateSampleLogs() below — never set on a
+   *  real event. This is what lets the table mark them so a fabricated "Sarah
+   *  Miller" entry can't be mistaken for a real one in what's sold as a
+   *  compliance audit trail. */
+  sample?: boolean;
 }
 
 export default function AuditLogsPage() {
@@ -64,12 +69,16 @@ export default function AuditLogsPage() {
     setLoading(true);
     try {
       const logsRef = collection(db, 'users', user.uid, 'audit_logs');
+      // sample: true on every row here — this is fabricated demo data (fake names,
+      // fake IPs) sharing a collection with real events. It must stay visually
+      // distinguishable in the table (see the SAMPLE badge below); never remove
+      // the flag to "clean up" a row.
       const sampleLogs = [
-        { user: 'Admin (John Doe)', action: 'Claim Approved', target: 'CLM-7829', date: new Date().toISOString(), status: 'Success', severity: 'Low', type: 'claim', ip: '192.168.1.45' },
-        { user: 'System', action: 'Security Scan', target: 'Network', date: new Date(Date.now() - 3600000).toISOString(), status: 'Success', severity: 'Info', type: 'system', ip: 'internal' },
-        { user: 'Sarah Miller', action: 'Access Denied', target: 'Settings', date: new Date(Date.now() - 7200000).toISOString(), status: 'Failed', severity: 'High', type: 'security', ip: '203.0.113.12' },
-        { user: 'Admin (John Doe)', action: 'User Created', target: 'Emma Wilson', date: new Date(Date.now() - 86400000).toISOString(), status: 'Success', severity: 'Medium', type: 'user', ip: '192.168.1.45' },
-        { user: 'System', action: 'Data Backup', target: 'Database', date: new Date(Date.now() - 172800000).toISOString(), status: 'Success', severity: 'Low', type: 'system', ip: 'internal' },
+        { user: 'Admin (John Doe)', action: 'Claim Approved', target: 'CLM-7829', date: new Date().toISOString(), status: 'Success', severity: 'Low', type: 'claim', ip: '192.168.1.45', sample: true },
+        { user: 'System', action: 'Security Scan', target: 'Network', date: new Date(Date.now() - 3600000).toISOString(), status: 'Success', severity: 'Info', type: 'system', ip: 'internal', sample: true },
+        { user: 'Sarah Miller', action: 'Access Denied', target: 'Settings', date: new Date(Date.now() - 7200000).toISOString(), status: 'Failed', severity: 'High', type: 'security', ip: '203.0.113.12', sample: true },
+        { user: 'Admin (John Doe)', action: 'User Created', target: 'Emma Wilson', date: new Date(Date.now() - 86400000).toISOString(), status: 'Success', severity: 'Medium', type: 'user', ip: '192.168.1.45', sample: true },
+        { user: 'System', action: 'Data Backup', target: 'Database', date: new Date(Date.now() - 172800000).toISOString(), status: 'Success', severity: 'Low', type: 'system', ip: 'internal', sample: true },
       ];
 
       const batch = writeBatch(db);
@@ -302,7 +311,17 @@ export default function AuditLogsPage() {
                     <p className="text-xs text-slate-400 font-mono mt-0.5">{log.ip}</p>
                   </td>
                   <td className="p-4">
-                    <p className="text-sm font-bold text-slate-700">{log.action}</p>
+                    <p className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                      {log.action}
+                      {log.sample && (
+                        <span
+                          title="Fabricated demo entry from 'Generate Sample Logs' — not a real event"
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest bg-slate-100 text-slate-500 border border-slate-200"
+                        >
+                          Sample
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs font-medium text-teal-600 mt-0.5">{log.target}</p>
                   </td>
                   <td className="p-4">
