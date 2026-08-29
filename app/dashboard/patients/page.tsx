@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { 
   Users, Search, Filter, MoreHorizontal, 
@@ -229,8 +230,15 @@ export default function PatientsPage() {
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-slate-400" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">No patients found</h3>
-              <p className="text-slate-500 mb-6">Get started by adding patients or generating sample data.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">No patients yet</h3>
+              <p className="text-slate-500 mb-6 max-w-md mx-auto leading-relaxed">
+                Patient records are created automatically when you move a triaged claim into the recovery queue, so
+                the fastest way to fill this is to{' '}
+                <Link href="/dashboard/claims" className="font-bold text-teal-700 underline hover:text-teal-800">
+                  triage your claims
+                </Link>
+                . You can also add one by hand.
+              </p>
               <div className="flex justify-center gap-4">
                 <button 
                   onClick={() => setIsAddModalOpen(true)}

@@ -28,13 +28,30 @@ export type NoShowRisk = {
   confidence: 'Low' | 'Medium' | 'High';
 };
 
-/** Calls a protected AI route with the caller's Firebase ID token attached. */
-async function callAi<T>(path: string, payload: unknown): Promise<T> {
-  const currentUser = auth.currentUser;
-  if (!currentUser) throw new Error('You need to be signed in to use the AI engine.');
+/**
+ * Statuses worth trying again. 502/500 are what the server returns when the
+ * upstream model is briefly unavailable or hands back malformed JSON — those
+ * clear on their own. Deliberately absent: 400/401/403 (the request itself is
+ * wrong), 503 (AI is not configured on this server) and 429 (rate limited or
+ * out of quota — retrying immediately only makes it worse).
+ */
+const RETRYABLE_STATUSES = new Set([408, 500, 502, 504]);
 
-  const token = await currentUser.getIdToken();
+const RETRY_DELAY_MS = 1_200;
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Thrown when the response carried a status; lets callers reason about it. */
+class AiRequestError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'AiRequestError';
+    this.status = status;
+  }
+}
+
+async function attemptAi<T>(path: string, payload: unknown, token: string): Promise<T> {
   const res = await fetch(path, {
     method: 'POST',
     headers: {
@@ -46,9 +63,49 @@ async function callAi<T>(path: string, payload: unknown): Promise<T> {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data?.error || 'The AI engine could not complete that request.');
+    throw new AiRequestError(
+      data?.error || 'The AI engine could not complete that request.',
+      res.status
+    );
   }
   return data as T;
+}
+
+/**
+ * Calls a protected AI route with the caller's Firebase ID token attached.
+ *
+ * Retries once on a transient failure. Every route behind this is a read-only
+ * analysis or a draft generation, so replaying a request is safe — nothing is
+ * written server-side. A single automatic retry is enough to stop a blip in
+ * the model provider reading to the user as a broken product.
+ */
+async function callAi<T>(path: string, payload: unknown, retries = 1): Promise<T> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('You need to be signed in to use the AI engine.');
+
+  const token = await currentUser.getIdToken();
+
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await attemptAi<T>(path, payload, token);
+    } catch (error) {
+      const isLastAttempt = attempt >= retries;
+      // A thrown fetch (rather than a bad status) means the request never
+      // landed — a dropped connection or a flaky network. Worth one retry.
+      const isNetworkError = !(error instanceof AiRequestError);
+      const isTransient =
+        isNetworkError || RETRYABLE_STATUSES.has((error as AiRequestError).status);
+
+      if (isLastAttempt || !isTransient) {
+        if (isNetworkError) {
+          throw new Error('Could not reach the AI engine. Check your connection and try again.');
+        }
+        throw new Error((error as AiRequestError).message);
+      }
+
+      await wait(RETRY_DELAY_MS);
+    }
+  }
 }
 
 export const analyzeClaim = (payload: {

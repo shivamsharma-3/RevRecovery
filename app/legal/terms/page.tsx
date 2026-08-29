@@ -148,9 +148,7 @@ export default function TermsOfServicePage() {
           </h2>
         <p>If you have any questions about these Terms, please contact us at:</p>
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mt-4">
-          <p className="mb-1"><strong>Email:</strong> legal@revrecoverai.com</p>
-          <p className="mb-1"><strong>Phone:</strong> +1 (800) 555-0199</p>
-          <p className="mb-0"><strong>Address:</strong> 100 Healthcare Tech Blvd, Suite 400, San Francisco, CA 94105</p>
+          <p className="mb-0"><strong>Email:</strong> <a href="mailto:shivam.sharma4c21@gmail.com" className="text-teal-700 underline">shivam.sharma4c21@gmail.com</a></p>
         </div>
         </div>
       </main>

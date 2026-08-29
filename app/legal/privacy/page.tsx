@@ -155,17 +155,15 @@ export default function PrivacyPolicyPage() {
           <li>Request the deletion of your personal data.</li>
           <li>Opt-out of certain data processing activities.</li>
         </ul>
-        <p>To exercise these rights, please contact our Data Protection Officer using the details below.</p>
+        <p>To exercise these rights, please contact us using the details below.</p>
 
           <h2 className="text-2xl font-bold text-teal-900 mt-12 mb-4 flex items-center gap-3">
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-50 text-teal-700 text-sm">10</span>
             Contact Us
           </h2>
-        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact our Privacy Team and Data Protection Officer at:</p>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:</p>
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mt-4">
-          <p className="mb-1"><strong>Email:</strong> privacy@revrecoverai.com</p>
-          <p className="mb-1"><strong>Phone:</strong> +1 (800) 555-0199</p>
-          <p className="mb-0"><strong>Address:</strong> 100 Healthcare Tech Blvd, Suite 400, San Francisco, CA 94105</p>
+          <p className="mb-0"><strong>Email:</strong> <a href="mailto:shivam.sharma4c21@gmail.com" className="text-teal-700 underline">shivam.sharma4c21@gmail.com</a></p>
         </div>
         </div>
       </main>

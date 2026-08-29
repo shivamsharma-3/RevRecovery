@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { auth, db } from '@/firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { updatePassword, updateProfile, signOut } from 'firebase/auth';
 import { logAuditAction } from '@/lib/audit';
 import { useScrollLock } from '@/hooks/use-scroll-lock';
@@ -25,13 +25,14 @@ export default function SettingsPage() {
   const [modalData, setModalData] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
+  const [isNotifying, setIsNotifying] = useState(false);
 
   // Profile State
   const [profileData, setProfileData] = useState({
     firstName: user?.email?.split('@')[0].split('.')[0] || 'Admin',
     lastName: user?.email?.split('@')[0].split('.')[1] || 'User',
-    phone: '+1 (415) 555-0198',
-    jobTitle: 'Revenue Cycle Director'
+    phone: '',
+    jobTitle: ''
   });
 
   // Integrations State
@@ -354,6 +355,7 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Job Title</label>
                     <input 
                       type="text" 
+                      placeholder="e.g. Practice Manager"
                       value={profileData.jobTitle}
                       onChange={(e) => setProfileData({...profileData, jobTitle: e.target.value})}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
@@ -746,15 +748,59 @@ export default function SettingsPage() {
                       <p className="text-xs text-amber-700 mt-1 leading-relaxed">
                         During early access, RevRecover AI only works from CSV exports — see our{' '}
                         <a href="/compliance" className="underline font-semibold">compliance page</a> for why (we haven&apos;t completed a HIPAA
-                        attestation and can&apos;t sign BAAs yet, so we don&apos;t accept a live feed of PHI). Leave your email and
-                        we&apos;ll reach out when direct {modalData?.pms?.name} sync is ready.
+                        attestation and can&apos;t sign BAAs yet, so we don&apos;t accept a live feed of PHI). We&apos;ll email you at{' '}
+                        <strong className="font-semibold">{user?.email}</strong> when direct {modalData?.pms?.name} sync is ready.
                       </p>
                     </div>
                   </div>
-                  <button onClick={() => {
-                    setActiveModal(null);
-                    toast.success(`Thanks — we'll email you when ${modalData?.pms?.name} sync is available.`);
-                  }} className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all">Notify Me</button>
+                  <button
+                    disabled={isNotifying}
+                    onClick={async () => {
+                      const pmsName = modalData?.pms?.name;
+                      if (!user?.uid || !pmsName) return;
+                      setIsNotifying(true);
+                      // Persist the request before confirming it, so the toast is actually true.
+                      try {
+                        await setDoc(
+                          doc(db, 'users', user.uid),
+                          {
+                            pmsSyncInterest: arrayUnion({
+                              pms: pmsName,
+                              email: user.email ?? '',
+                              requestedAt: new Date().toISOString(),
+                            }),
+                          },
+                          { merge: true }
+                        );
+                        await logAuditAction(user.uid, {
+                          user: user.displayName || user.email || 'User',
+                          action: 'Requested PMS Sync Notification',
+                          target: pmsName,
+                          status: 'Success',
+                          severity: 'Info',
+                          type: 'system'
+                        });
+                        setActiveModal(null);
+                        toast.success(`Recorded — we'll email you at ${user.email} when ${pmsName} sync is available.`);
+                      } catch (err) {
+                        console.error('Failed to record PMS sync interest:', err);
+                        await logAuditAction(user.uid, {
+                          user: user.displayName || user.email || 'User',
+                          action: 'Requested PMS Sync Notification',
+                          target: pmsName,
+                          status: 'Failed',
+                          severity: 'Medium',
+                          type: 'system'
+                        });
+                        toast.error("We couldn't save your request. Please try again.");
+                      } finally {
+                        setIsNotifying(false);
+                      }
+                    }}
+                    className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isNotifying ? 'Saving…' : 'Notify Me'}
+                  </button>
                 </div>
               )}
 

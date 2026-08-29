@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { 
   Plus, ArrowRight, DollarSign, Clock, CheckCircle2, 
@@ -341,6 +342,23 @@ export default function RecoveryPage() {
         <div className="max-w-[1600px] mx-auto flex gap-8 min-w-max h-full">
           {isLoading ? (
             <div className="w-full flex items-center justify-center p-12 text-slate-500">Loading cases...</div>
+          ) : cases.length === 0 ? (
+            <div className="w-full flex flex-col items-center justify-center text-center p-12 gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No balances in the queue yet</h3>
+              <p className="text-sm text-slate-500 max-w-md leading-relaxed">
+                Cases arrive here from triaged claims. When the engine decides a denial is the patient&apos;s
+                responsibility rather than something to appeal, send it over from the claims screen — or add one by hand.
+              </p>
+              <Link
+                href="/dashboard/claims"
+                className="mt-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all"
+              >
+                Go to claims
+              </Link>
+            </div>
           ) : pipelines.map((column, i) => (
             <div 
               key={i} 
@@ -497,6 +515,24 @@ export default function RecoveryPage() {
                   <span className="text-sm font-bold text-slate-500">Current Stage</span>
                   <span className="text-sm font-bold text-slate-900 capitalize">{selectedCase.pipelineId.replace('-', ' ')}</span>
                 </div>
+                {selectedCase.sourceClaimId && (
+                  <div className="p-4 rounded-2xl border border-teal-100 bg-teal-50">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm font-bold text-teal-800">Came from a claim</span>
+                      <Link
+                        href="/dashboard/claims"
+                        className="text-xs font-bold text-teal-700 underline hover:text-teal-900 shrink-0"
+                      >
+                        View claims
+                      </Link>
+                    </div>
+                    {selectedCase.sourceDenialReason && (
+                      <p className="text-xs text-teal-800 mt-2 leading-relaxed">
+                        Denied for: {selectedCase.sourceDenialReason}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {caseAnalysis && (

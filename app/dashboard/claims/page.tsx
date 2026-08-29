@@ -15,6 +15,7 @@ import { collection, getDocs, addDoc, updateDoc, doc, query, orderBy } from 'fir
 import { logAuditAction } from '@/lib/audit';
 import { analyzeClaim, generateAppealLetter, type ClaimAnalysis } from '@/lib/ai/api';
 import { toCsv } from '@/lib/csv';
+import { isRecoverable, sendClaimToRecovery } from '@/lib/flow';
 import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export default function ClaimsRecoveryPage() {
@@ -32,6 +33,7 @@ export default function ClaimsRecoveryPage() {
   const [claims, setClaims] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSendingToRecovery, setIsSendingToRecovery] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -211,6 +213,83 @@ export default function ClaimsRecoveryPage() {
   const unanalysedCount = claims.filter(
     (c) => typeof c.aiRecoveryProbability !== 'number' && c.status !== 'Recovered'
   ).length;
+
+  // Triage says these are the patient's to pay — they belong in the recovery queue.
+  const recoverableClaims = claims.filter(isRecoverable);
+
+  const applyRecoveryLink = (claimId: string, caseId: string, patientId: string) => {
+    setClaims((prev) =>
+      prev.map((c) => (c.id === claimId ? { ...c, recoveryCaseId: caseId, patientId } : c))
+    );
+    setSelectedClaim((prev: any) =>
+      prev && prev.id === claimId ? { ...prev, recoveryCaseId: caseId, patientId } : prev
+    );
+  };
+
+  const handleSendToRecovery = async (claim: any) => {
+    if (!user?.uid) return;
+    setIsSendingToRecovery(true);
+    try {
+      const actor = user.displayName || user.email || 'User';
+      const result = await sendClaimToRecovery(user.uid, claim, actor);
+      if (result.alreadyLinked) {
+        toast.info('That claim is already in the recovery queue.');
+        return;
+      }
+      applyRecoveryLink(claim.id, result.caseId, result.patientId);
+      toast.success(
+        result.patientCreated
+          ? 'Added to the recovery queue and created a patient record.'
+          : 'Added to the recovery queue.'
+      );
+    } catch (error) {
+      console.error('Send to recovery failed:', error);
+      await logAuditAction(user.uid, {
+        user: user.displayName || user.email || 'User',
+        action: 'Sent Claim to Recovery Queue',
+        target: `Claim ${claim.id}`,
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'recovery'
+      });
+      toast.error("We couldn't add that to the recovery queue. Please try again.");
+    } finally {
+      setIsSendingToRecovery(false);
+    }
+  };
+
+  const handleSendAllToRecovery = async () => {
+    if (!user?.uid || recoverableClaims.length === 0) return;
+    setIsSendingToRecovery(true);
+    const actor = user.displayName || user.email || 'User';
+    let sent = 0;
+    let failed = 0;
+    // Sequential on purpose: each write may create or update the same patient
+    // record, and parallel upserts would race into duplicates.
+    for (const claim of recoverableClaims) {
+      try {
+        const result = await sendClaimToRecovery(user.uid, claim, actor);
+        applyRecoveryLink(claim.id, result.caseId, result.patientId);
+        sent += 1;
+      } catch (error) {
+        console.error('Send to recovery failed for', claim.id, error);
+        failed += 1;
+      }
+    }
+    setIsSendingToRecovery(false);
+    if (sent > 0) toast.success(`Moved ${sent} claim${sent === 1 ? '' : 's'} into the recovery queue.`);
+    if (failed > 0) toast.error(`${failed} could not be moved. Please try again.`);
+    if (failed > 0) {
+      await logAuditAction(user.uid, {
+        user: actor,
+        action: 'Sent Claims to Recovery Queue',
+        target: `${failed} of ${sent + failed} failed`,
+        status: 'Failed',
+        severity: 'Medium',
+        type: 'recovery'
+      });
+    }
+  };
 
   const worklist = claims.filter(
     (c) => typeof c.aiRecoveryProbability === 'number' && !c.aiPatientResponsibility && c.aiRecoveryProbability >= 0.4
@@ -607,6 +686,27 @@ export default function ClaimsRecoveryPage() {
               </div>
             </div>
             
+            {recoverableClaims.length > 0 && (
+              <div className="mx-6 mb-4 p-4 bg-teal-50 border border-teal-100 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <Users className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+                  <p className="text-xs text-teal-900 font-medium leading-relaxed">
+                    {recoverableClaims.length} triaged claim{recoverableClaims.length === 1 ? ' is' : 's are'} patient
+                    responsibility rather than an appeal. Move {recoverableClaims.length === 1 ? 'it' : 'them'} into the
+                    recovery queue to chase the balance.
+                  </p>
+                </div>
+                <button
+                  onClick={handleSendAllToRecovery}
+                  disabled={isSendingToRecovery}
+                  className="shrink-0 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSendingToRecovery && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Send to recovery queue
+                </button>
+              </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
@@ -1101,6 +1201,42 @@ export default function ClaimsRecoveryPage() {
                     <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
                       Review every bracketed placeholder and confirm the clinical detail before sending.
                     </p>
+                  </div>
+                )}
+
+                {(aiAnalysis?.isPatientResponsibility ?? selectedClaim.aiPatientResponsibility) && (
+                  <div className="mt-6 p-5 bg-teal-50 border border-teal-100 rounded-2xl">
+                    <div className="text-[10px] font-bold text-teal-700 uppercase tracking-widest mb-2">Next step</div>
+                    {selectedClaim.recoveryCaseId ? (
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+                        <p className="text-sm text-teal-900 leading-relaxed">
+                          This balance is already being chased in the{' '}
+                          <Link href="/dashboard/recovery" className="font-bold underline hover:text-teal-700">
+                            recovery queue
+                          </Link>.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm text-teal-900 leading-relaxed mb-4">
+                          Because this is the patient&apos;s balance rather than something to appeal, it belongs in the
+                          recovery queue. Sending it there also creates the patient record if one doesn&apos;t exist yet.
+                        </p>
+                        <button
+                          onClick={() => handleSendToRecovery(selectedClaim)}
+                          disabled={isSendingToRecovery}
+                          className="px-4 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {isSendingToRecovery ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Users className="w-3.5 h-3.5" />
+                          )}
+                          Send to recovery queue
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
